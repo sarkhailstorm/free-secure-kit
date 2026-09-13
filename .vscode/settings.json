@@ -1,0 +1,20 @@
+{
+  // Teach the built-in CSS language service Tailwind's at-rules, so
+  // `@tailwind` and `@apply` stop being reported as "Unknown at rule".
+  // Using custom data rather than switching unknownAtRules off wholesale
+  // keeps real typos ("@medai") reported.
+  "css.customData": [".vscode/css-custom-data.json"],
+
+  // Tailwind generates the final values, so the editor's duplicate-property
+  // and vendor-prefix heuristics produce noise on the source file.
+  "css.lint.duplicateProperties": "ignore",
+
+  // Use the TypeScript version pinned in the repo, not the editor's bundled one.
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "[css]": { "editor.defaultFormatter": "vscode.css-language-features" }
+}

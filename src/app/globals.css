@@ -42,7 +42,11 @@
   }
 
   html {
+    /* Stop mobile browsers inflating text when the device is rotated.
+       WebKit and Gecko only honour the prefixed form; Chromium and Edge
+       implement the standard property, so both are set. */
     -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
@@ -64,10 +68,16 @@
     background: rgb(var(--accent) / 0.22);
   }
 
-  /* Thin, unobtrusive scrollbars inside panels. */
-  .scroll-thin {
-    scrollbar-width: thin;
-    scrollbar-color: rgb(var(--line)) transparent;
+  /* Thin, unobtrusive scrollbars inside panels.
+     Two mechanisms, deliberately: the standard Scrollbars Styling properties
+     where the engine implements them, and the ::-webkit-scrollbar pseudo
+     elements below everywhere else. The @supports guard marks the standard
+     pair as progressive enhancement rather than an assumed baseline. */
+  @supports (scrollbar-width: thin) {
+    .scroll-thin {
+      scrollbar-width: thin;
+      scrollbar-color: rgb(var(--line)) transparent;
+    }
   }
   .scroll-thin::-webkit-scrollbar {
     width: 10px;
@@ -102,8 +112,8 @@
       linear-gradient(to right, rgb(var(--line) / 0.55) 1px, transparent 1px),
       linear-gradient(to bottom, rgb(var(--line) / 0.55) 1px, transparent 1px);
     background-size: 56px 56px;
-    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
     -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
   }
 }
 

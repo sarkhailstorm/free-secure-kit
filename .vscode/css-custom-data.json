@@ -1,0 +1,47 @@
+{
+  "version": 1.1,
+  "atDirectives": [
+    {
+      "name": "@tailwind",
+      "description": "Inserts one of Tailwind's style blocks (base, components, utilities) at this point in the stylesheet. Processed away by the Tailwind PostCSS plugin at build time.",
+      "references": [
+        { "name": "Tailwind docs", "url": "https://tailwindcss.com/docs/functions-and-directives#tailwind" }
+      ]
+    },
+    {
+      "name": "@apply",
+      "description": "Inlines the declarations from existing utility classes into a custom CSS rule.",
+      "references": [
+        { "name": "Tailwind docs", "url": "https://tailwindcss.com/docs/functions-and-directives#apply" }
+      ]
+    },
+    {
+      "name": "@config",
+      "description": "Points at the Tailwind config file this stylesheet should be compiled with.",
+      "references": [
+        { "name": "Tailwind docs", "url": "https://tailwindcss.com/docs/functions-and-directives#config" }
+      ]
+    },
+    {
+      "name": "@screen",
+      "description": "Expands to the media query for a named breakpoint from the Tailwind config.",
+      "references": [
+        { "name": "Tailwind docs", "url": "https://tailwindcss.com/docs/functions-and-directives#screen" }
+      ]
+    },
+    {
+      "name": "@variants",
+      "description": "Generates the listed variants (hover, focus, ...) for the enclosed utilities.",
+      "references": [
+        { "name": "Tailwind docs", "url": "https://tailwindcss.com/docs/functions-and-directives" }
+      ]
+    },
+    {
+      "name": "@responsive",
+      "description": "Generates responsive variants of the enclosed utilities.",
+      "references": [
+        { "name": "Tailwind docs", "url": "https://tailwindcss.com/docs/functions-and-directives" }
+      ]
+    }
+  ]
+}
