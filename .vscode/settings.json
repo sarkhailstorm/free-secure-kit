@@ -5,9 +5,28 @@
   // keeps real typos ("@medai") reported.
   "css.customData": [".vscode/css-custom-data.json"],
 
-  // Tailwind generates the final values, so the editor's duplicate-property
-  // and vendor-prefix heuristics produce noise on the source file.
-  "css.lint.duplicateProperties": "ignore",
+  // Hide generated build output, the way node_modules is hidden.
+  //
+  // out/ and .next/ are produced by `next build` and are gitignored. Opening
+  // them is what surfaces browser-compatibility warnings about code nobody
+  // wrote by hand: autoprefixer's vendor prefixes, Next's own preload hints
+  // and the compiled Tailwind bundle. Editing anything in there is pointless
+  // because the next build overwrites it. Set these to false if you ever want
+  // to inspect a build.
+  "files.exclude": {
+    "**/.next": true,
+    "**/out": true
+  },
+  "search.exclude": {
+    "**/.next": true,
+    "**/out": true,
+    "**/package-lock.json": true
+  },
+  "files.watcherExclude": {
+    "**/.next/**": true,
+    "**/out/**": true,
+    "**/node_modules/**": true
+  },
 
   // Use the TypeScript version pinned in the repo, not the editor's bundled one.
   "typescript.tsdk": "node_modules/typescript/lib",

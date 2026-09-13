@@ -46,7 +46,10 @@
     background-color: rgb(var(--bg));
     color: rgb(var(--ink));
     font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
+    /* Font smoothing comes from Tailwind's `antialiased` utility on <body>,
+       which emits both -webkit-font-smoothing and -moz-osx-font-smoothing.
+       Repeating the -webkit- half here added nothing and covered one engine
+       fewer. */
     text-rendering: optimizeLegibility;
   }
 
@@ -61,7 +64,15 @@
   }
 
 
-  @supports (scrollbar-width: thin) {
+  /* Thin, unobtrusive scrollbars inside panels.
+     Blink and WebKit DISCARD every ::-webkit-scrollbar rule on an element that
+     also sets scrollbar-width or scrollbar-color. Declaring both, as this rule
+     used to, silently threw away the custom thumb in Chrome and Edge 121+ and
+     handed users the native thin scrollbar with stepper arrows instead.
+     So gate the standard pair on the ABSENCE of ::-webkit-scrollbar support:
+     Firefox takes this branch, Chromium and WebKit fall through to the
+     pseudo-element rules below and keep the rounded thumb. */
+  @supports not selector(::-webkit-scrollbar) {
     .scroll-thin {
       scrollbar-width: thin;
       scrollbar-color: rgb(var(--line)) transparent;

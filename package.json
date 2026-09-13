@@ -47,5 +47,14 @@
   },
   "overrides": {
     "postcss": "^8.5.28"
-  }
+  },
+  "browserslist": [
+    "defaults",
+    "safari >= 15.4",
+    "ios_saf >= 15.4",
+    "not op_mini all",
+    "not kaios > 0",
+    "not and_uc > 0",
+    "not and_qq > 0"
+  ]
 }
