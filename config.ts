@@ -18,7 +18,7 @@ export const site = {
   /** Public URL of the deployed site. Used for metadata + social cards. */
   url: 'https://securekit.vercel.app',
   /** Public GitHub repository. Also used to build "view source" links. */
-  repo: 'https://github.com/your-username/securekit',
+  repo: 'https://github.com/sarkhailstorm/securekit',
   /** Branch that `repo` links should point at. */
   repoBranch: 'main',
 } as const;
