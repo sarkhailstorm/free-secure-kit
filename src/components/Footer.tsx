@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Github, Lock } from 'lucide-react';
-import { site, tools, donationsConfigured } from '@/config';
+import { site, tools, author, donationsConfigured } from '@/config';
 import { BuyMeACoffeeButton } from './BuyMeACoffeeButton';
 
 export function Footer() {
@@ -87,9 +87,32 @@ export function Footer() {
           </nav>
         </div>
 
-        <p className="mt-10 border-t border-line pt-6 text-[12px] text-faint">
-          Released under the MIT License. Built with Next.js — every tool runs client-side.
-        </p>
+        <div className="mt-10 flex flex-col gap-3 border-t border-line pt-6 text-[12px] text-faint sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            &copy; {author.since} {author.name}. Released under the{' '}
+            <a
+              href={`${site.repo}/blob/${site.repoBranch}/LICENSE`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline decoration-line underline-offset-2 transition-colors hover:text-ink"
+            >
+              MIT License
+            </a>
+            .
+          </p>
+
+          <p>
+            Built by{' '}
+            <a
+              href={author.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-muted underline decoration-line underline-offset-2 transition-colors hover:text-ink"
+            >
+              {author.name}
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   );

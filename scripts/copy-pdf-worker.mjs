@@ -1,10 +1,4 @@
-/**
- * Copy the pdf.js worker out of node_modules into /public.
- *
- * pdf.js renders page thumbnails on a background worker thread. Serving that
- * worker from our own origin (rather than a CDN) keeps the "no third-party
- * requests" promise intact and lets the PDF tools work fully offline.
- */
+
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

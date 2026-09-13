@@ -27,17 +27,7 @@ const icons: Record<string, LucideIcon> = {
   Type,
 };
 
-/**
- * Custom 404.
- *
- * Without this file Next falls back to its built-in error component, which
- * injects an inline <style> block setting `body { color:#000; background:#fff }`.
- * That overrides this site's theme tokens, so a mistyped URL rendered a white
- * body sandwiched between a correctly themed header and footer. It also emitted
- * inline style attributes that have no business in a static export.
- *
- * Rendering our own page replaces all of that and gives people a way back.
- */
+
 export default function NotFound() {
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-20 sm:px-6 sm:py-28">

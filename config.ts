@@ -1,14 +1,4 @@
-/**
- * Single source of truth for site-wide settings.
- *
- * ──────────────────────────────────────────────────────────────────────────
- *  TO RECEIVE DONATIONS: change `buyMeACoffee.username` below to your own
- *  Buy Me a Coffee username (the part after buymeacoffee.com/ in your page
- *  URL). Everything else — header button, footer callout, post-download
- *  toast — picks it up automatically. Nothing else in the codebase needs
- *  to change.
- * ──────────────────────────────────────────────────────────────────────────
- */
+/** Site-wide settings. Set buyMeACoffee.username to enable the donation links. */
 
 export const site = {
   name: 'SecureKit',
@@ -21,6 +11,13 @@ export const site = {
   repo: 'https://github.com/sarkhailstorm/securekit',
   /** Branch that `repo` links should point at. */
   repoBranch: 'main',
+} as const;
+
+export const author = {
+  name: 'Sarkhail',
+  github: 'https://github.com/sarkhailstorm',
+  /** First publication year, not a last-updated date. */
+  since: 2026,
 } as const;
 
 export const buyMeACoffee = {
