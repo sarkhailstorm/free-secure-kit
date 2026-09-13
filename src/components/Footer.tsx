@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Github, Lock } from 'lucide-react';
 import { site, tools, author, donationsConfigured } from '@/config';
-import { BuyMeACoffeeButton } from './BuyMeACoffeeButton';
+import { SupportButton } from './SupportButton';
 
 export function Footer() {
   return (
@@ -14,10 +14,10 @@ export function Footer() {
                 This toolkit is free and open source.
               </p>
               <p className="mt-0.5 text-[13px] text-muted">
-                If it saved you time, you can buy me a coffee ☕
+                If it saved you time, you are welcome to chip in ☕
               </p>
             </div>
-            <BuyMeACoffeeButton />
+            <SupportButton />
           </div>
         ) : null}
 

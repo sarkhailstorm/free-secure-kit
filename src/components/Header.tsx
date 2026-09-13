@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Github, Menu, ShieldCheck, X } from 'lucide-react';
 import { site, tools } from '@/config';
-import { BuyMeACoffeeButton } from './BuyMeACoffeeButton';
+import { SupportButton } from './SupportButton';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
@@ -48,7 +48,7 @@ export function Header() {
           </a>
           <ThemeToggle />
           <div className="hidden sm:block">
-            <BuyMeACoffeeButton size="sm" />
+            <SupportButton size="sm" />
           </div>
           <button
             type="button"
@@ -87,7 +87,7 @@ export function Header() {
                 GitHub
               </a>
               <span className="ml-auto">
-                <BuyMeACoffeeButton size="sm" />
+                <SupportButton size="sm" />
               </span>
             </div>
           </nav>

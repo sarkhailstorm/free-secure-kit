@@ -10,7 +10,7 @@ import {
   useState,
 } from 'react';
 import { CheckCircle2, AlertTriangle, X, Info } from 'lucide-react';
-import { buyMeACoffee, buyMeACoffeeUrl, donationsConfigured } from '@/config';
+import { support, donationsConfigured } from '@/config';
 import { cn } from '@/lib/cn';
 
 type ToastKind = 'success' | 'error' | 'info';
@@ -31,7 +31,7 @@ interface ToastApi {
 
 const ToastContext = createContext<ToastApi | null>(null);
 
-const NUDGE_KEY = 'securekit:coffee-nudge-seen';
+const NUDGE_KEY = 'securekit:support-nudge-seen';
 
 export function useToast(): ToastApi {
   const ctx = useContext(ToastContext);
@@ -143,17 +143,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         {nudge ? (
           <div className="pointer-events-auto flex items-start gap-3 rounded-xl border border-accent/25 bg-elevated px-3.5 py-3 shadow-lift animate-slide-up">
             <span className="mt-0.5 text-base leading-none" aria-hidden>
-              {buyMeACoffee.emoji}
+              {support.emoji}
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-medium leading-snug text-ink">Glad that helped!</p>
               <a
-                href={buyMeACoffeeUrl}
+                href={support.url}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-0.5 inline-block text-[13px] font-medium text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent"
               >
-                {buyMeACoffee.label}
+                {support.label}
               </a>
               <p className="mt-1 text-[11px] text-faint">Entirely optional — every tool stays free.</p>
             </div>

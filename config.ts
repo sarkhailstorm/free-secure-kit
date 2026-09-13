@@ -1,4 +1,4 @@
-/** Site-wide settings. Set buyMeACoffee.username to enable the donation links. */
+/** Site-wide settings. Set support.url to a Razorpay Payment Page to enable donation links. */
 
 export const site = {
   name: 'SecureKit',
@@ -20,25 +20,14 @@ export const author = {
   since: 2026,
 } as const;
 
-export const buyMeACoffee = {
-  /** 👉 Your Buy Me a Coffee username — replace this one value. */
-  username: 'your-username',
-  /** Label shown on the button. */
-  label: 'Buy me a coffee',
-  /** Emoji/brand mark. */
+export const support = {
+  /** Razorpay Payment Page URL, e.g. https://rzp.io/rzp/abc1234. Empty hides every donation link. */
+  url: '',
+  label: 'Support this project',
   emoji: '☕',
 } as const;
 
-/** Full URL to the Buy Me a Coffee page. */
-export const buyMeACoffeeUrl = `https://www.buymeacoffee.com/${buyMeACoffee.username}`;
-
-/**
- * True when the donation link is still the placeholder. Lets the UI hide the
- * donation affordances on a fresh clone instead of sending people to a 404.
- */
-export const donationsConfigured: boolean =
-  (buyMeACoffee.username as string) !== 'your-username' &&
-  (buyMeACoffee.username as string).length > 0;
+export const donationsConfigured: boolean = (support.url as string).length > 0;
 
 /** Build a link to a file in the public repo ("See how this works →"). */
 export function sourceUrl(path: string): string {

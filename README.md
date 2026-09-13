@@ -1,4 +1,4 @@
-<div align="center">
+undefined<div align="center">
 
 # SecureKit
 
@@ -7,7 +7,7 @@
 Clean spreadsheets, convert data formats, compress images and edit PDFs —
 all processed locally, with nothing uploaded to a server.
 
-[Live site](https://securekit.vercel.app) · [Report an issue](https://github.com/your-username/securekit/issues) · [Buy me a coffee ☕](https://www.buymeacoffee.com/your-username)
+[Live site](https://securekit.vercel.app) · [Report an issue](https://github.com/sarkhailstorm/securekit/issues)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -65,9 +65,9 @@ getting it right. If a dependency ever tried to phone home, the request would si
 ### What is *not* collected
 
 No analytics, no tracking pixels, no cookies, no error reporting service, no fonts or scripts
-fetched from a third-party CDN at runtime. The Buy Me a Coffee button is a plain outbound link
-rather than their embeddable JavaScript widget, specifically so that no third-party script runs on
-the page.
+fetched from a third-party CDN at runtime. The support button is a plain outbound link to a hosted
+Razorpay Payment Page rather than an embedded payment widget, specifically so that no third-party
+script runs on this site and no payment code ever touches a page that handles your files.
 
 The only data stored at all is in your own browser: your light/dark theme preference, the Markdown
 editor's draft so a refresh does not lose your work, and a flag recording that you dismissed the
@@ -141,17 +141,18 @@ than a domain root, set `basePath` in [`next.config.mjs`](next.config.mjs) to ma
 
 Everything site-specific lives in one file: **[`config.ts`](config.ts)**.
 
-To point donations at your own account, change the one value:
+Donations run through a hosted Razorpay Payment Page, so there is no server and no API key in this
+repository. To point them at your own account, set the one value:
 
 ```ts
-export const buyMeACoffee = {
-  username: 'your-username',   // ← from buymeacoffee.com/your-username
+export const support = {
+  url: '',   // ← your Razorpay Payment Page URL, e.g. https://rzp.io/rzp/abc1234
   ...
 };
 ```
 
-The header button, the footer callout and the post-download message all read from it. Until it is
-changed from the placeholder, the donation UI hides itself rather than linking to a dead page.
+The header button, the footer callout and the post-download message all read from it. While it is
+empty, the donation UI hides itself rather than linking to a dead page.
 
 The same file holds the site name, URL, repository link and the tool registry that drives the
 landing page and navigation.
@@ -159,8 +160,8 @@ landing page and navigation.
 ## Support
 
 SecureKit is free and open source, and every feature works without paying. If it saved you some time,
-you are welcome to [buy me a coffee ☕](https://www.buymeacoffee.com/your-username) — entirely
-optional, and nothing is gated behind it.
+you are welcome to chip in via the support link in the footer — entirely optional, and nothing is
+gated behind it.
 
 ## Contributing
 
