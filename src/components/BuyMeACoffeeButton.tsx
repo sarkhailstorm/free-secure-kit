@@ -1,16 +1,6 @@
 import { buyMeACoffee, buyMeACoffeeUrl, donationsConfigured } from '@/config';
 import { cn } from '@/lib/cn';
 
-/**
- * Buy Me a Coffee link, styled in their brand yellow (#FFDD00 on near-black)
- * so it reads as the familiar donation button.
- *
- * This is a plain outbound link rather than their embeddable JS widget: the
- * widget injects a third-party script that loads on every page and can set
- * cookies, which would undercut the "nothing leaves your browser" promise this
- * site is built on. Payment processing still happens entirely on Buy Me a
- * Coffee's hosted page — this app never sees or handles money.
- */
 export function BuyMeACoffeeButton({
   size = 'md',
   className,

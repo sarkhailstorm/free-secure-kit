@@ -3,10 +3,6 @@ import { ArrowLeft, Code2 } from 'lucide-react';
 import { getTool, sourceUrl, type ToolId } from '@/config';
 import { PrivacyBadge } from './PrivacyBadge';
 
-/**
- * Shared frame for every tool page: back link, title, description, the
- * "never uploaded" badge, and a link to this tool's own source file.
- */
 export function ToolShell({
   id,
   children,

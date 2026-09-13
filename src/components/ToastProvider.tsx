@@ -22,26 +22,15 @@ interface Toast {
 }
 
 interface ToastApi {
-  /** Transient success note. */
   success: (message: string) => void;
-  /** Transient error note. */
   error: (message: string) => void;
-  /** Transient neutral note. */
   info: (message: string) => void;
-  /**
-   * Call after a user successfully completes a tool action (a download, a
-   * copy). Shows the success note and — at most once per browser session, and
-   * never again after it is dismissed — a soft "buy me a coffee" nudge.
-   *
-   * This never blocks or delays the action it follows; fire it *after* the
-   * download has already been triggered.
-   */
+
   celebrate: (message: string) => void;
 }
 
 const ToastContext = createContext<ToastApi | null>(null);
 
-/** sessionStorage key: set once the nudge has been shown or dismissed. */
 const NUDGE_KEY = 'securekit:coffee-nudge-seen';
 
 export function useToast(): ToastApi {
@@ -75,7 +64,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     [dismiss],
   );
 
-  // Clear any pending timers if the provider unmounts.
   useEffect(() => {
     const pending = timers.current;
     return () => {
@@ -89,8 +77,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     try {
       sessionStorage.setItem(NUDGE_KEY, '1');
     } catch {
-      // Private mode or storage disabled — the in-memory state still holds
-      // for the rest of this page's lifetime.
+
     }
   }, []);
 
@@ -113,9 +100,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         try {
           sessionStorage.setItem(NUDGE_KEY, '1');
         } catch {
-          /* ignore */
         }
-        // Let the download start first; the nudge slides in just after.
         setTimeout(() => setNudge(true), 700);
       },
     };
@@ -124,8 +109,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={api}>
       {children}
-
-      {/* Live region: announces results to screen readers without stealing focus. */}
       <div
         aria-live="polite"
         aria-atomic="false"

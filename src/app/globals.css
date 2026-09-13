@@ -41,11 +41,6 @@
     border-color: rgb(var(--line));
   }
 
-  /* No `html { text-size-adjust }` rule here on purpose: Tailwind's preflight
-     already sets -webkit-text-size-adjust: 100% on html, which is the form the
-     browsers that actually do mobile text inflation (iOS Safari, Chrome and
-     Firefox on Android) honour. Declaring it again only duplicated the rule
-     and invited vendor-prefix lint warnings. */
 
   body {
     background-color: rgb(var(--bg));
@@ -55,7 +50,6 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* Visible, consistent focus ring for keyboard users. */
   :focus-visible {
     outline: 2px solid rgb(var(--accent));
     outline-offset: 2px;
@@ -66,11 +60,7 @@
     background: rgb(var(--accent) / 0.22);
   }
 
-  /* Thin, unobtrusive scrollbars inside panels.
-     Two mechanisms, deliberately: the standard Scrollbars Styling properties
-     where the engine implements them, and the ::-webkit-scrollbar pseudo
-     elements below everywhere else. The @supports guard marks the standard
-     pair as progressive enhancement rather than an assumed baseline. */
+
   @supports (scrollbar-width: thin) {
     .scroll-thin {
       scrollbar-width: thin;
@@ -104,7 +94,6 @@
 }
 
 @layer components {
-  /* Grid backdrop used behind the landing hero. */
   .hero-grid {
     background-image:
       linear-gradient(to right, rgb(var(--line) / 0.55) 1px, transparent 1px),
@@ -115,7 +104,6 @@
   }
 }
 
-/* Only the preview surface is printed when exporting Markdown to PDF. */
 @media print {
   .no-print {
     display: none !important;

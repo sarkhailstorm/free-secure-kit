@@ -48,10 +48,6 @@ export const viewport: Viewport = {
   ],
 };
 
-/**
- * Applies the saved theme before first paint so there is no light-mode flash.
- * Kept inline and tiny; it reads only localStorage, never the network.
- */
 const themeScript = `
 (function () {
   try {
@@ -63,33 +59,6 @@ const themeScript = `
 })();
 `;
 
-/**
- * Content-Security-Policy, delivered as a meta tag because a static export has
- * no server to set headers.
- *
- * The directive that matters here is `connect-src 'self'`: it makes the
- * "your files are never uploaded" promise something the *browser* enforces
- * rather than something you have to take on trust. Even if a dependency tried
- * to phone home — or a future edit introduced a bug — the request would be
- * blocked outright. `form-action 'none'` closes the other obvious exfiltration
- * route, and `object-src 'none'` blocks plugin content.
- *
- * `script-src` has to keep 'unsafe-inline' for now: Next.js emits inline
- * bootstrap scripts, and a static site cannot issue per-request nonces. So
- * this policy is hardening against data exfiltration, not a complete defence
- * against XSS — the Markdown tool sanitises its own HTML with DOMPurify for
- * that.
- *
- * blob: and data: are needed for canvas output, generated file previews and
- * the pdf.js worker, and are all local to the page.
- *
- * One thing this policy must NOT do is break `next dev`. The dev server
- * compiles modules through eval() for hot reloading and talks to a websocket,
- * so development needs 'unsafe-eval' and a ws: connection. Without them React
- * never hydrates and the whole app goes inert — rendered, but nothing
- * clickable. Those two allowances are development-only; the deployed build
- * keeps the strict policy.
- */
 const isDev = process.env.NODE_ENV === 'development';
 
 const csp = [

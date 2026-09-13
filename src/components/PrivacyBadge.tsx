@@ -2,7 +2,6 @@ import { ShieldCheck } from 'lucide-react';
 import { privacyBadge } from '@/config';
 import { cn } from '@/lib/cn';
 
-/** The trust badge shown on every tool page. */
 export function PrivacyBadge({ className }: { className?: string }) {
   return (
     <p

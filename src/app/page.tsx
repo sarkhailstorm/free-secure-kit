@@ -45,7 +45,6 @@ const promises = [
 export default function HomePage() {
   return (
     <>
-      {/* ---------------------------------------------------------------- hero */}
       <section className="relative overflow-hidden border-b border-line">
         <div className="hero-grid pointer-events-none absolute inset-0" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
@@ -91,7 +90,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --------------------------------------------------------------- tools */}
       <section id="tools" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
         <div className="flex items-end justify-between gap-4">
           <div>
@@ -147,7 +145,6 @@ export default function HomePage() {
         </ul>
       </section>
 
-      {/* ------------------------------------------------------------- promise */}
       <section className="border-t border-line bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="text-xl font-semibold tracking-tight text-ink">
