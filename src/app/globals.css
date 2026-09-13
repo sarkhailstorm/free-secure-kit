@@ -41,13 +41,11 @@
     border-color: rgb(var(--line));
   }
 
-  html {
-    /* Stop mobile browsers inflating text when the device is rotated.
-       WebKit and Gecko only honour the prefixed form; Chromium and Edge
-       implement the standard property, so both are set. */
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
+  /* No `html { text-size-adjust }` rule here on purpose: Tailwind's preflight
+     already sets -webkit-text-size-adjust: 100% on html, which is the form the
+     browsers that actually do mobile text inflation (iOS Safari, Chrome and
+     Firefox on Android) honour. Declaring it again only duplicated the rule
+     and invited vendor-prefix lint warnings. */
 
   body {
     background-color: rgb(var(--bg));
