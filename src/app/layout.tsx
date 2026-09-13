@@ -82,14 +82,23 @@ const themeScript = `
  *
  * blob: and data: are needed for canvas output, generated file previews and
  * the pdf.js worker, and are all local to the page.
+ *
+ * One thing this policy must NOT do is break `next dev`. The dev server
+ * compiles modules through eval() for hot reloading and talks to a websocket,
+ * so development needs 'unsafe-eval' and a ws: connection. Without them React
+ * never hydrates and the whole app goes inert — rendered, but nothing
+ * clickable. Those two allowances are development-only; the deployed build
+ * keeps the strict policy.
  */
+const isDev = process.env.NODE_ENV === 'development';
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' blob:",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''} blob:`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self' blob: data:",
+  `connect-src 'self' blob: data:${isDev ? ' ws: wss:' : ''}`,
   "worker-src 'self' blob:",
   "frame-src 'none'",
   "object-src 'none'",
