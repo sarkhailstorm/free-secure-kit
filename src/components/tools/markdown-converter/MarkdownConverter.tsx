@@ -38,8 +38,8 @@ import { PreviewPane } from './PreviewPane';
 import { PrintSurface } from './PrintSurface';
 
 /** Drafts live in this browser only — never on a server, because there isn't one. */
-const DOC_KEY = 'privly:markdown-converter:doc';
-const THEME_KEY = 'privly:markdown-converter:theme';
+const DOC_KEY = 'securekit:markdown-converter:doc';
+const THEME_KEY = 'securekit:markdown-converter:theme';
 
 /** How long after the last keystroke the preview re-renders. */
 const RENDER_DEBOUNCE_MS = 150;

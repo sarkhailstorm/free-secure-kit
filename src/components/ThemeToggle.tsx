@@ -21,7 +21,7 @@ export function ThemeToggle() {
     setTheme(next);
     document.documentElement.classList.toggle('dark', next === 'dark');
     try {
-      localStorage.setItem('privly:theme', next);
+      localStorage.setItem('securekit:theme', next);
     } catch {
       /* storage blocked — the choice still applies for this page view */
     }

@@ -42,7 +42,7 @@ interface ToastApi {
 const ToastContext = createContext<ToastApi | null>(null);
 
 /** sessionStorage key: set once the nudge has been shown or dismissed. */
-const NUDGE_KEY = 'privly:coffee-nudge-seen';
+const NUDGE_KEY = 'securekit:coffee-nudge-seen';
 
 export function useToast(): ToastApi {
   const ctx = useContext(ToastContext);

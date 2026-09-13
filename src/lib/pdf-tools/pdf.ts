@@ -113,7 +113,7 @@ export async function mergePdfs(
   }
 
   onProgress(items.length, items.length);
-  out.setProducer('Privly');
+  out.setProducer('SecureKit');
   return out.save({ useObjectStreams: true, addDefaultPage: false });
 }
 
@@ -151,7 +151,7 @@ export async function extractPages(
     pages.map((p) => p - 1),
   );
   for (const page of copied) out.addPage(page);
-  out.setProducer('Privly');
+  out.setProducer('SecureKit');
   return out.save({ useObjectStreams: true, addDefaultPage: false });
 }
 
@@ -178,7 +178,7 @@ export async function splitIntoFiles(
       pages.map((p) => p - 1),
     );
     for (const page of copied) out.addPage(page);
-    out.setProducer('Privly');
+    out.setProducer('SecureKit');
     files.push({
       name: downloadName(`${stem} - ${groupLabel(pages)}`, 'pdf', `part-${i + 1}.pdf`),
       bytes: await out.save({ useObjectStreams: true, addDefaultPage: false }),
@@ -288,7 +288,7 @@ export async function compressPdf(
   for (const page of doc.getPages()) {
     page.node.delete(PDFName.of('PieceInfo'));
   }
-  doc.setProducer('Privly');
+  doc.setProducer('SecureKit');
 
   const resolve = (dict: PdfDict, key: string): PdfObject | undefined =>
     ctx.lookup(dict.get(PDFName.of(key)));

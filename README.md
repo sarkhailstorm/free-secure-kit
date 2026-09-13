@@ -1,13 +1,13 @@
 <div align="center">
 
-# Privly
+# SecureKit
 
 **Private file tools that never leave your browser.**
 
 Clean spreadsheets, convert data formats, compress images and edit PDFs —
 all processed locally, with nothing uploaded to a server.
 
-[Live site](https://privly.vercel.app) · [Report an issue](https://github.com/your-username/privly/issues) · [Buy me a coffee ☕](https://www.buymeacoffee.com/your-username)
+[Live site](https://securekit.vercel.app) · [Report an issue](https://github.com/your-username/securekit/issues) · [Buy me a coffee ☕](https://www.buymeacoffee.com/your-username)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -39,7 +39,7 @@ sending the result back. That means your spreadsheet of customer records, your s
 your private photos land on a machine you do not control, subject to a retention policy you did not
 read.
 
-Privly does the processing in **the page you already have open**. When you drop a file onto a tool,
+SecureKit does the processing in **the page you already have open**. When you drop a file onto a tool,
 the browser reads it into memory with the standard `File` API and the conversion runs in JavaScript
 on your own machine. The result is handed back to you as an in-memory blob. There is no upload step
 because there is no server to upload to — the whole site is static files.
@@ -96,8 +96,8 @@ Vercel, Cloudflare Pages, Netlify or GitHub Pages, and stays free regardless of 
 Requires Node.js 18.18 or newer.
 
 ```bash
-git clone https://github.com/your-username/privly.git
-cd privly
+git clone https://github.com/your-username/securekit.git
+cd securekit
 npm install
 npm run dev
 ```
@@ -158,7 +158,7 @@ landing page and navigation.
 
 ## Support
 
-Privly is free and open source, and every feature works without paying. If it saved you some time,
+SecureKit is free and open source, and every feature works without paying. If it saved you some time,
 you are welcome to [buy me a coffee ☕](https://www.buymeacoffee.com/your-username) — entirely
 optional, and nothing is gated behind it.
 

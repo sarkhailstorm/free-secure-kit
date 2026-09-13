@@ -325,7 +325,7 @@ function OutputSurface({
 
       <pre
         className={cn(
-          'scroll-thin privly-hl m-0 min-h-0 flex-1 overflow-auto px-3 py-2.5 font-mono text-[12.5px] leading-relaxed text-ink transition-opacity',
+          'scroll-thin securekit-hl m-0 min-h-0 flex-1 overflow-auto px-3 py-2.5 font-mono text-[12.5px] leading-relaxed text-ink transition-opacity',
           wrap ? 'whitespace-pre-wrap break-words' : 'whitespace-pre',
           busy && 'opacity-40',
         )}

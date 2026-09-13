@@ -91,10 +91,10 @@ export async function highlightToHtml(text: string, format: DataFormat): Promise
  * of highlight.js's own stylesheets would hard-code a single palette.
  */
 export const HIGHLIGHT_THEME_CSS = `
-.privly-hl .hljs-attr,.privly-hl .hljs-attribute{color:rgb(var(--accent))}
-.privly-hl .hljs-string,.privly-hl .hljs-quote{color:rgb(var(--ok))}
-.privly-hl .hljs-number,.privly-hl .hljs-literal,.privly-hl .hljs-keyword{color:rgb(var(--warn))}
-.privly-hl .hljs-bullet,.privly-hl .hljs-meta,.privly-hl .hljs-type,.privly-hl .hljs-tag{color:rgb(var(--muted))}
-.privly-hl .hljs-comment{color:rgb(var(--faint));font-style:italic}
-.privly-hl .hljs-punctuation{color:rgb(var(--faint))}
+.securekit-hl .hljs-attr,.securekit-hl .hljs-attribute{color:rgb(var(--accent))}
+.securekit-hl .hljs-string,.securekit-hl .hljs-quote{color:rgb(var(--ok))}
+.securekit-hl .hljs-number,.securekit-hl .hljs-literal,.securekit-hl .hljs-keyword{color:rgb(var(--warn))}
+.securekit-hl .hljs-bullet,.securekit-hl .hljs-meta,.securekit-hl .hljs-type,.securekit-hl .hljs-tag{color:rgb(var(--muted))}
+.securekit-hl .hljs-comment{color:rgb(var(--faint));font-style:italic}
+.securekit-hl .hljs-punctuation{color:rgb(var(--faint))}
 `.trim();

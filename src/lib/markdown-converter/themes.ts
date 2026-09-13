@@ -4,7 +4,7 @@
  * Three genuinely different looks — not three shades of one — each written as
  * a real stylesheet. Every rule is generated against a *root selector* so the
  * same sheet can be pointed at the live preview (`.md-doc`), at the hidden
- * print surface (`#privly-md-print .md-body`) or at the exported standalone
+ * print surface (`#securekit-md-print .md-body`) or at the exported standalone
  * file, without any chance of the three bleeding into each other.
  *
  * Colours are plain hex rather than the site's theme tokens on purpose: the
@@ -17,7 +17,7 @@ export type ThemeId = 'minimal' | 'github' | 'serif';
 /** Class applied to the on-screen preview root. */
 export const PREVIEW_ROOT_CLASS = 'md-doc';
 /** Id of the body-level element that exists only to be printed. */
-export const PRINT_ROOT_ID = 'privly-md-print';
+export const PRINT_ROOT_ID = 'securekit-md-print';
 /** Class applied to the document inside the print surface. */
 export const PRINT_BODY_CLASS = 'md-body';
 

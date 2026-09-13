@@ -102,7 +102,7 @@ export function buildStandaloneHtml({
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="generator" content="Privly Markdown Converter">
+<meta name="generator" content="SecureKit Markdown Converter">
 <title>${escapeHtml(title)}</title>
 <style>${exportStylesheet(themeId, `.${root}`)}</style>
 </head>

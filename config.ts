@@ -11,14 +11,14 @@
  */
 
 export const site = {
-  name: 'Privly',
+  name: 'SecureKit',
   tagline: 'Private file tools that never leave your browser',
   description:
     'A free, open-source suite of file and data utilities — CSV cleaning, format conversion, image compression, PDF editing and more. Every file is processed locally in your browser and never uploaded to a server.',
   /** Public URL of the deployed site. Used for metadata + social cards. */
-  url: 'https://privly.vercel.app',
+  url: 'https://securekit.vercel.app',
   /** Public GitHub repository. Also used to build "view source" links. */
-  repo: 'https://github.com/your-username/privly',
+  repo: 'https://github.com/your-username/securekit',
   /** Branch that `repo` links should point at. */
   repoBranch: 'main',
 } as const;

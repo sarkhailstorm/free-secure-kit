@@ -55,7 +55,7 @@ export const viewport: Viewport = {
 const themeScript = `
 (function () {
   try {
-    var saved = localStorage.getItem('privly:theme');
+    var saved = localStorage.getItem('securekit:theme');
     var dark = saved ? saved === 'dark'
       : window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (dark) document.documentElement.classList.add('dark');
