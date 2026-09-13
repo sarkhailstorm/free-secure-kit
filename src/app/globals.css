@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg: 250 250 249;
+    --surface: 255 255 255;
+    --elevated: 255 255 255;
+    --line: 231 229 228;
+    --ink: 28 25 23;
+    --muted: 87 83 78;
+    --faint: 138 133 128;
+    --accent: 79 70 229;
+    --accent-soft: 238 238 255;
+    --accent-ink: 255 255 255;
+    --ok: 5 150 105;
+    --warn: 217 119 6;
+    --danger: 220 38 38;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', Menlo, monospace;
+  }
+
+  .dark {
+    --bg: 12 12 14;
+    --surface: 24 24 27;
+    --elevated: 32 32 36;
+    --line: 48 48 54;
+    --ink: 244 244 245;
+    --muted: 161 161 170;
+    --faint: 113 113 122;
+    --accent: 129 140 248;
+    --accent-soft: 40 40 64;
+    --accent-ink: 18 18 22;
+    --ok: 52 211 153;
+    --warn: 251 191 36;
+    --danger: 248 113 113;
+  }
+
+  * {
+    border-color: rgb(var(--line));
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: rgb(var(--bg));
+    color: rgb(var(--ink));
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Visible, consistent focus ring for keyboard users. */
+  :focus-visible {
+    outline: 2px solid rgb(var(--accent));
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: rgb(var(--accent) / 0.22);
+  }
+
+  /* Thin, unobtrusive scrollbars inside panels. */
+  .scroll-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--line)) transparent;
+  }
+  .scroll-thin::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  .scroll-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(var(--line));
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+  .scroll-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Grid backdrop used behind the landing hero. */
+  .hero-grid {
+    background-image:
+      linear-gradient(to right, rgb(var(--line) / 0.55) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--line) / 0.55) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 40%, transparent 100%);
+  }
+}
+
+/* Only the preview surface is printed when exporting Markdown to PDF. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

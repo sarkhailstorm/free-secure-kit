@@ -1,0 +1,178 @@
+<div align="center">
+
+# Privly
+
+**Private file tools that never leave your browser.**
+
+Clean spreadsheets, convert data formats, compress images and edit PDFs —
+all processed locally, with nothing uploaded to a server.
+
+[Live site](https://privly.vercel.app) · [Report an issue](https://github.com/your-username/privly/issues) · [Buy me a coffee ☕](https://www.buymeacoffee.com/your-username)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+</div>
+
+---
+
+## What this is
+
+Six everyday file and data utilities, in one place, free and without an account:
+
+| Tool | What it does |
+| --- | --- |
+| [CSV & Excel Cleaner](src/app/tools/csv-cleaner/page.tsx) | Remove duplicate and blank rows, trim whitespace, standardise headers, normalise inconsistent date formats |
+| [JSON ↔ CSV ↔ YAML](src/app/tools/json-csv-yaml-converter/page.tsx) | Convert between the three formats, flattening nested data to dot-notation columns and back |
+| [Image Compressor](src/app/tools/image-compressor/page.tsx) | Batch compress and resize JPEG, PNG and WebP, download individually or as a ZIP |
+| [PDF Tools](src/app/tools/pdf-tools/page.tsx) | Merge, split and compress PDFs |
+| [Markdown Converter](src/app/tools/markdown-converter/page.tsx) | Live Markdown editor, export to standalone HTML or PDF with themes |
+| [Text Utilities](src/app/tools/text-utilities/page.tsx) | Diff checker, case converter, whitespace cleaner, Base64 / URL / JWT encoding |
+
+No sign-up, no email wall, no file size caps, no paywalled features. Every tool is complete.
+
+## The "no upload" part
+
+This is the whole point, so it is worth being precise about what it means.
+
+Conventional online converters work by **uploading your file to a server**, processing it there and
+sending the result back. That means your spreadsheet of customer records, your scanned contract or
+your private photos land on a machine you do not control, subject to a retention policy you did not
+read.
+
+Privly does the processing in **the page you already have open**. When you drop a file onto a tool,
+the browser reads it into memory with the standard `File` API and the conversion runs in JavaScript
+on your own machine. The result is handed back to you as an in-memory blob. There is no upload step
+because there is no server to upload to — the whole site is static files.
+
+**You can verify this yourself**, and you should not take our word for it:
+
+- Open your browser's developer tools, switch to the Network tab, and use any tool. You will not
+  see your file go anywhere.
+- Load the site, turn off your Wi-Fi, and keep using it. Every tool still works offline.
+- Read the source. Every tool's page links directly to its own source file.
+
+What this approach genuinely costs you: very large files are limited by your device's memory rather
+than by a server's, and PDF compression is weaker than what a server-side tool like Ghostscript can
+manage. We would rather be honest about that trade-off than quietly take your documents.
+
+### Enforced, not just promised
+
+The app ships a [Content-Security-Policy](src/app/layout.tsx) with `connect-src 'self'` and
+`form-action 'none'`. The browser itself then refuses any attempt to send data to another origin,
+so the no-upload guarantee does not rest on trusting the code — or on every future contributor
+getting it right. If a dependency ever tried to phone home, the request would simply be blocked.
+
+### What is *not* collected
+
+No analytics, no tracking pixels, no cookies, no error reporting service, no fonts or scripts
+fetched from a third-party CDN at runtime. The Buy Me a Coffee button is a plain outbound link
+rather than their embeddable JavaScript widget, specifically so that no third-party script runs on
+the page.
+
+The only data stored at all is in your own browser: your light/dark theme preference, the Markdown
+editor's draft so a refresh does not lose your work, and a flag recording that you dismissed the
+donation message. All of it is in `localStorage`/`sessionStorage` on your device and none of it is
+ever transmitted.
+
+## Tech stack
+
+- **[Next.js](https://nextjs.org) 15** (App Router) with a fully static export — no server runtime
+- **TypeScript** in strict mode
+- **Tailwind CSS**, themed with CSS variables for light and dark modes
+- Processing libraries, all running client-side and loaded on demand:
+  [papaparse](https://www.papaparse.com/), [SheetJS](https://sheetjs.com/),
+  [js-yaml](https://github.com/nodeca/js-yaml),
+  [browser-image-compression](https://github.com/Donaldcwl/browser-image-compression),
+  [pdf-lib](https://pdf-lib.js.org/), [pdf.js](https://mozilla.github.io/pdf.js/),
+  [JSZip](https://stuk.github.io/jszip/), [marked](https://marked.js.org/),
+  [highlight.js](https://highlightjs.org/), [DOMPurify](https://github.com/cure53/DOMPurify),
+  [jsdiff](https://github.com/kpdecker/jsdiff)
+
+Because the output is a static site with no serverless functions, hosting it costs nothing on
+Vercel, Cloudflare Pages, Netlify or GitHub Pages, and stays free regardless of traffic.
+
+## Running it locally
+
+Requires Node.js 18.18 or newer.
+
+```bash
+git clone https://github.com/your-username/privly.git
+cd privly
+npm install
+npm run dev
+```
+
+Then open <http://localhost:3000>.
+
+| Script | Does |
+| --- | --- |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Produce the static site in `out/` |
+| `npm run start` | Serve the built `out/` directory locally |
+| `npm run typecheck` | Type-check without emitting |
+| `npm run lint` | Lint |
+
+### A note on the SheetJS dependency
+
+`xlsx` is installed from `https://cdn.sheetjs.com/...` rather than from npm. This is deliberate and
+is [SheetJS's own documented installation method](https://docs.sheetjs.com/docs/getting-started/installation/nodejs/).
+The `xlsx` package published on npm is frozen at an old version with unpatched prototype-pollution
+and ReDoS advisories, which matters a great deal here because this app parses spreadsheets that
+users supply. The vendor CDN serves the current, patched release.
+
+### The pdf.js worker
+
+`npm install` and `npm run build` copy the pdf.js worker from `node_modules` into `public/` via
+`scripts/copy-pdf-worker.mjs`, so it is served from this site's own origin instead of a CDN. That
+keeps the no-third-party-requests promise intact and lets the PDF tools work offline.
+
+## Deploying
+
+The build produces a plain static site, so any static host works.
+
+**Vercel** — import the repository; the defaults are correct, and it will detect Next.js.
+
+**Cloudflare Pages / Netlify** — build command `npm run build`, output directory `out`.
+
+**GitHub Pages** — `npm run build`, then publish `out/`. If you deploy to a project subpath rather
+than a domain root, set `basePath` in [`next.config.mjs`](next.config.mjs) to match.
+
+## Configuration
+
+Everything site-specific lives in one file: **[`config.ts`](config.ts)**.
+
+To point donations at your own account, change the one value:
+
+```ts
+export const buyMeACoffee = {
+  username: 'your-username',   // ← from buymeacoffee.com/your-username
+  ...
+};
+```
+
+The header button, the footer callout and the post-download message all read from it. Until it is
+changed from the placeholder, the donation UI hides itself rather than linking to a dead page.
+
+The same file holds the site name, URL, repository link and the tool registry that drives the
+landing page and navigation.
+
+## Support
+
+Privly is free and open source, and every feature works without paying. If it saved you some time,
+you are welcome to [buy me a coffee ☕](https://www.buymeacoffee.com/your-username) — entirely
+optional, and nothing is gated behind it.
+
+## Contributing
+
+Issues and pull requests are welcome. Two rules matter more than the rest:
+
+1. **Nothing may be uploaded.** Any change that sends user file content off the device will be
+   rejected. That includes analytics and third-party runtime scripts.
+2. **No feature gets paywalled.** Donations are a tip, not a subscription.
+
+Beyond that: keep tools focused on one job, use the semantic theme tokens so dark mode keeps
+working, and load heavy libraries with a dynamic `import()` so they stay out of the initial bundle.
+
+## License
+
+[MIT](LICENSE).
