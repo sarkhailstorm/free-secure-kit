@@ -11,6 +11,7 @@ import type {
   PDFContext as PdfContext,
   PDFDict as PdfDict,
   PDFObject as PdfObject,
+  PDFPage as PdfPage,
   PDFRawStream as PdfRawStream,
   PDFRef as PdfRef,
 } from 'pdf-lib';
@@ -93,26 +94,95 @@ export async function readPdf(file: File): Promise<LoadedPdf> {
 
 /* ------------------------------------------------------------------ merge */
 
-export async function mergePdfs(
-  items: readonly LoadedPdf[],
-  onProgress: (done: number, total: number) => void,
-): Promise<Uint8Array> {
+/** One page of one queued file. `page` is 1-based, the way it is shown. */
+export interface PageRef {
+  fileId: string;
+  page: number;
+}
+
+export function planKey(ref: PageRef): string {
+  return `${ref.fileId}:${ref.page}`;
+}
+
+/** Every page of every file, in file order — the plan before anything is touched. */
+export function allPages(items: readonly LoadedPdf[]): PageRef[] {
+  return items.flatMap((file) =>
+    Array.from({ length: file.pageCount }, (_, i) => ({ fileId: file.id, page: i + 1 })),
+  );
+}
+
+function checkPlan(items: readonly LoadedPdf[], plan: readonly PageRef[]): void {
   if (items.length === 0) {
     throw new PdfToolsError('There are no PDFs queued up to merge.');
   }
+  if (plan.length === 0) {
+    throw new PdfToolsError('Every page has been left out — put at least one back first.');
+  }
+
+  const byId = new Map(items.map((file) => [file.id, file]));
+  const seen = new Set<string>();
+
+  for (const ref of plan) {
+    const file = byId.get(ref.fileId);
+    if (!file) {
+      throw new PdfToolsError(
+        'This page order still refers to a file that has been removed. Reset the page order and try again.',
+      );
+    }
+    if (!Number.isInteger(ref.page) || ref.page < 1 || ref.page > file.pageCount) {
+      throw new PdfToolsError(
+        `“${file.name}” has ${file.pageCount} ${file.pageCount === 1 ? 'page' : 'pages'}, so page ${ref.page} can’t be pulled out of it.`,
+      );
+    }
+    const key = planKey(ref);
+    if (seen.has(key)) {
+      throw new PdfToolsError(`Page ${ref.page} of “${file.name}” is listed more than once.`);
+    }
+    seen.add(key);
+  }
+}
+
+/**
+ * Build one document from an explicit, ordered list of pages.
+ *
+ * One copyPages call per source, added in order afterwards. Copying per page
+ * would be shorter but pdf-lib uses a fresh object copier per call, so shared
+ * fonts and images get re-embedded for every page: measured at 11.7x the
+ * output size for 12 pages, ~50x at 200.
+ */
+export async function mergePdfPages(
+  items: readonly LoadedPdf[],
+  plan: readonly PageRef[],
+  onProgress: (done: number, total: number) => void,
+): Promise<Uint8Array> {
+  checkPlan(items, plan);
 
   const { PDFDocument } = await import('pdf-lib');
   const out = await PDFDocument.create();
+  const sources = items.filter((file) => plan.some((ref) => ref.fileId === file.id));
+  const copied = new Map<string, PdfPage>();
 
-  for (let i = 0; i < items.length; i++) {
-    onProgress(i, items.length);
+  for (let i = 0; i < sources.length; i++) {
+    const file = sources[i];
+    onProgress(i, sources.length);
     await tick();
-    const src = await PDFDocument.load(items[i].bytes.slice(), { updateMetadata: false });
-    const copied = await out.copyPages(src, src.getPageIndices());
-    for (const page of copied) out.addPage(page);
+
+    const wanted = [...new Set(plan.filter((ref) => ref.fileId === file.id).map((r) => r.page))]
+      .sort((a, b) => a - b);
+    const src = await PDFDocument.load(file.bytes.slice(), { updateMetadata: false });
+    const pages = await out.copyPages(
+      src,
+      wanted.map((page) => page - 1),
+    );
+    wanted.forEach((page, n) => copied.set(planKey({ fileId: file.id, page }), pages[n]));
   }
 
-  onProgress(items.length, items.length);
+  for (const ref of plan) {
+    const page = copied.get(planKey(ref));
+    if (page) out.addPage(page);
+  }
+
+  onProgress(sources.length, sources.length);
   out.setProducer('SecureKit');
   return out.save({ useObjectStreams: true, addDefaultPage: false });
 }

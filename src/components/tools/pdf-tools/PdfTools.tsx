@@ -36,7 +36,7 @@ export function PdfTools() {
       <Tabs tabs={TABS} active={mode} onChange={setMode} label="PDF tools" />
 
       <div role="tabpanel" aria-label="Merge" hidden={mode !== 'merge'} className={cn(mode !== 'merge' && 'hidden')}>
-        <MergePanel />
+        <MergePanel active={mode === 'merge'} />
       </div>
       <div role="tabpanel" aria-label="Split" hidden={mode !== 'split'} className={cn(mode !== 'split' && 'hidden')}>
         <SplitPanel />

@@ -24,7 +24,7 @@ Six everyday file and data utilities, in one place, free and without an account:
 | [CSV & Excel Cleaner](src/app/tools/csv-cleaner/page.tsx) | Remove duplicate and blank rows, trim whitespace, standardise headers, normalise inconsistent date formats |
 | [JSON ↔ CSV ↔ YAML](src/app/tools/json-csv-yaml-converter/page.tsx) | Convert between the three formats, flattening nested data to dot-notation columns and back |
 | [Image Compressor](src/app/tools/image-compressor/page.tsx) | Batch compress and resize JPEG, PNG and WebP, download individually or as a ZIP |
-| [PDF Tools](src/app/tools/pdf-tools/page.tsx) | Merge, split and compress PDFs |
+| [PDF Tools](src/app/tools/pdf-tools/page.tsx) | Merge PDFs and drag their pages into any order, split by page, compress |
 | [Markdown Converter](src/app/tools/markdown-converter/page.tsx) | Live Markdown editor, export to standalone HTML or PDF with themes |
 | [Text Utilities](src/app/tools/text-utilities/page.tsx) | Diff checker, case converter, whitespace cleaner, Base64 / URL / JWT encoding |
 

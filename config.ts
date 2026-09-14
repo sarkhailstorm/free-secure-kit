@@ -97,9 +97,9 @@ export const tools: readonly Tool[] = [
     id: 'pdf-tools',
     name: 'PDF Tools',
     href: '/tools/pdf-tools',
-    blurb: 'Merge, split and compress PDFs without an upload.',
+    blurb: 'Merge and reorder pages, split and compress PDFs without an upload.',
     description:
-      'Merge several PDFs into one, split a document into separate files by picking pages, or shrink a PDF by re-encoding the images inside it — all locally.',
+      'Merge several PDFs into one and arrange the pages in any order you like, split a document into separate files by picking pages, or shrink a PDF by re-encoding the images inside it — all locally.',
     icon: 'FileStack',
     source: 'src/app/tools/pdf-tools/page.tsx',
     tags: ['Merge & reorder', 'Split by page', 'Compress', 'Page previews'],

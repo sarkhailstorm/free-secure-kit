@@ -182,7 +182,7 @@ export function useThumbnails(source: LoadedPdf | null): Thumbnails {
   return { urls, failed, opened, error, outstanding, request };
 }
 
-async function renderPage(doc: PDFDocumentProxy, pageNumber: number): Promise<string> {
+export async function renderPage(doc: PDFDocumentProxy, pageNumber: number): Promise<string> {
   const page = await doc.getPage(pageNumber);
   const viewport = page.getViewport({ scale: SCALE });
   const canvas = document.createElement('canvas');
