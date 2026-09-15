@@ -4,6 +4,7 @@ import {
   ArrowRight,
   FileCode2,
   FileStack,
+  FileType2,
   Github,
   ImageDown,
   Table2,
@@ -20,6 +21,7 @@ const icons: Record<string, LucideIcon> = {
   ArrowLeftRight,
   ImageDown,
   FileStack,
+  FileType2,
   FileCode2,
   Type,
 };
@@ -27,18 +29,18 @@ const icons: Record<string, LucideIcon> = {
 const promises = [
   {
     icon: WifiOff,
-    title: 'Nothing is uploaded',
-    body: 'Every file is processed by your own browser. No server ever receives it — you can disconnect from the internet and the tools still work.',
+    title: 'Your files never leave',
+    body: 'Your browser does the work, so there is nowhere to upload to. Turn off your Wi-Fi and everything still works.',
   },
   {
     icon: UserX,
-    title: 'No accounts, ever',
-    body: 'No sign-up, no email wall, no trial. Open a tool and use it. Nothing is metered and nothing is behind a paywall.',
+    title: 'Nothing to sign up for',
+    body: 'No account, no email, no trial that runs out. Every feature is free, for everyone.',
   },
   {
     icon: Zap,
-    title: 'Instant, not "processing…"',
-    body: 'Without a round trip to a server there is nothing to wait for. No queues, no artificial progress bars, no file size caps.',
+    title: 'No waiting around',
+    body: 'Nothing is queued or uploaded, so there is nothing to wait for. No size limits, no daily caps.',
   },
 ];
 
@@ -54,7 +56,7 @@ export default function HomePage() {
                 <span className="absolute inline-flex h-full w-full rounded-full bg-ok opacity-60" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-ok" />
               </span>
-              100% client-side · nothing uploaded
+              Your files stay on your device
             </p>
 
             <h1 className="mt-5 text-4xl font-semibold leading-[1.1] tracking-tight text-ink sm:text-5xl">
@@ -63,9 +65,8 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted">
-              Clean spreadsheets, convert data formats, compress images and edit PDFs — all
-              processed inside your browser. Your documents stay on your device, because there is
-              no server to send them to.
+              Tidy spreadsheets, convert data, shrink photos, sort out PDFs. Free — and nothing
+              is ever uploaded, because it all runs inside this page.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -73,7 +74,7 @@ export default function HomePage() {
                 href="#tools"
                 className="inline-flex h-11 items-center gap-2 rounded-xl bg-accent px-5 text-sm font-medium text-accent-ink shadow-sm transition-all hover:brightness-110"
               >
-                Browse the tools
+                See the tools
                 <ArrowRight className="h-4 w-4" aria-hidden />
               </a>
               <a
@@ -93,9 +94,9 @@ export default function HomePage() {
       <section id="tools" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight text-ink">Six tools, no strings</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-ink">Seven tools, no catch</h2>
             <p className="mt-1.5 text-sm text-muted">
-              Each one does a single job, with no limits and no sign-up.
+              Each one does a single job properly — no limits, no sign-up, nothing uploaded.
             </p>
           </div>
         </div>
@@ -132,7 +133,7 @@ export default function HomePage() {
                   </div>
 
                   <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-medium text-accent">
-                    Open tool
+                    Open this tool
                     <ArrowRight
                       className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
                       aria-hidden
@@ -148,13 +149,12 @@ export default function HomePage() {
       <section className="border-t border-line bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <h2 className="text-xl font-semibold tracking-tight text-ink">
-            Why &ldquo;no upload&rdquo; matters
+            What &ldquo;nothing is uploaded&rdquo; actually means
           </h2>
           <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-muted">
-            Most online converters ask you to hand over the file first. That means your spreadsheet
-            of customer records, your scanned contract or your private photos land on someone
-            else&rsquo;s machine. {site.name} takes a different route: the conversion code runs in
-            the page you already have open.
+            Most converters make you hand over your file first, so your records, contracts and
+            photos end up on a stranger&rsquo;s computer. {site.name} runs inside the page you
+            already have open — there is nowhere for your file to go.
           </p>
 
           <ul className="mt-8 grid gap-4 sm:grid-cols-3">
@@ -170,17 +170,17 @@ export default function HomePage() {
           </ul>
 
           <p className="mt-8 text-[13px] text-faint">
-            Don&rsquo;t take our word for it —{' '}
+            You don&rsquo;t have to take our word for it.{' '}
             <a
               href={site.repo}
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent"
             >
-              read the source
-            </a>{' '}
-            or open your browser&rsquo;s network tab while you use a tool. You won&rsquo;t see your
-            file go anywhere.
+              Read the code
+            </a>
+            , or open your browser&rsquo;s developer tools and watch the network while you use a
+            tool. You won&rsquo;t see your file leave, because it never does.
           </p>
         </div>
       </section>

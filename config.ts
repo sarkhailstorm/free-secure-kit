@@ -1,27 +1,20 @@
-/** Site-wide settings. Set support.url to a Razorpay Payment Page to enable donation links. */
-
 export const site = {
   name: 'SecureKit',
-  tagline: 'Private file tools that never leave your browser',
+  tagline: 'Free file tools that never upload your files',
   description:
-    'A free, open-source suite of file and data utilities — CSV cleaning, format conversion, image compression, PDF editing and more. Every file is processed locally in your browser and never uploaded to a server.',
-  /** Public URL of the deployed site. Used for metadata + social cards. */
+    'Free, open-source tools for spreadsheets, images, PDFs and text. Everything runs in your browser — your files are never uploaded.',
   url: 'https://securekit.vercel.app',
-  /** Public GitHub repository. Also used to build "view source" links. */
   repo: 'https://github.com/sarkhailstorm/securekit',
-  /** Branch that `repo` links should point at. */
   repoBranch: 'main',
 } as const;
 
 export const author = {
   name: 'Sarkhail',
   github: 'https://github.com/sarkhailstorm',
-  /** First publication year, not a last-updated date. */
   since: 2026,
 } as const;
 
 export const support = {
-  /** Razorpay Payment Page URL, e.g. https://rzp.io/rzp/abc1234. Empty hides every donation link. */
   url: '',
   label: 'Support this project',
   emoji: '☕',
@@ -29,7 +22,6 @@ export const support = {
 
 export const donationsConfigured: boolean = (support.url as string).length > 0;
 
-/** Build a link to a file in the public repo ("See how this works →"). */
 export function sourceUrl(path: string): string {
   const clean = path.replace(/^\/+/, '');
   return `${site.repo}/blob/${site.repoBranch}/${clean}`;
@@ -40,6 +32,7 @@ export type ToolId =
   | 'json-csv-yaml-converter'
   | 'image-compressor'
   | 'pdf-tools'
+  | 'pdf-to-word'
   | 'markdown-converter'
   | 'text-utilities';
 
@@ -47,15 +40,10 @@ export type Tool = {
   id: ToolId;
   name: string;
   href: string;
-  /** One-line description for the landing page card. */
   blurb: string;
-  /** Longer description used on the tool page + <meta description>. */
   description: string;
-  /** lucide-react icon name. */
   icon: string;
-  /** Repo-relative path to this tool's page source. */
   source: string;
-  /** Short capability bullets for the landing card. */
   tags: readonly string[];
 };
 
@@ -64,67 +52,78 @@ export const tools: readonly Tool[] = [
     id: 'csv-cleaner',
     name: 'CSV & Excel Cleaner',
     href: '/tools/csv-cleaner',
-    blurb: 'Strip duplicates, blank rows and messy headers from spreadsheets.',
+    blurb: 'Tidy up a messy spreadsheet — duplicates, blank rows and stray spaces.',
     description:
-      'Clean up CSV and Excel files: remove duplicate and blank rows, trim stray whitespace, standardise headers and normalise inconsistent date formats — then preview the result and download it as CSV or XLSX.',
+      'Remove duplicate and empty rows, trim stray spaces, tidy up headings and fix mixed-up date formats. Check the preview, then download as CSV or Excel.',
     icon: 'Table2',
     source: 'src/app/tools/csv-cleaner/page.tsx',
-    tags: ['Deduplicate', 'Trim & tidy', 'Date normalising', 'CSV + XLSX'],
-  },
-  {
-    id: 'json-csv-yaml-converter',
-    name: 'JSON ↔ CSV ↔ YAML',
-    href: '/tools/json-csv-yaml-converter',
-    blurb: 'Convert between the three formats, with nested data flattened.',
-    description:
-      'Paste or drop JSON, CSV or YAML and convert between them. Nested objects flatten to dot-notation columns for CSV and rebuild into real structures on the way back.',
-    icon: 'ArrowLeftRight',
-    source: 'src/app/tools/json-csv-yaml-converter/page.tsx',
-    tags: ['Auto-detect', 'Dot-notation', 'Round-trips', 'Copy or download'],
-  },
-  {
-    id: 'image-compressor',
-    name: 'Image Compressor',
-    href: '/tools/image-compressor',
-    blurb: 'Shrink and resize JPEG, PNG and WebP images in batches.',
-    description:
-      'Compress and resize images without uploading them. Batch-process a whole folder, pick a quality level and a size preset, then download the results individually or as a ZIP.',
-    icon: 'ImageDown',
-    source: 'src/app/tools/image-compressor/page.tsx',
-    tags: ['Batch', 'Quality slider', 'Resize presets', 'ZIP download'],
+    tags: ['Remove duplicates', 'Fix mixed dates', 'Tidy headings', 'CSV & Excel'],
   },
   {
     id: 'pdf-tools',
     name: 'PDF Tools',
     href: '/tools/pdf-tools',
-    blurb: 'Merge and reorder pages, split and compress PDFs without an upload.',
+    blurb: 'Combine, reorder, split and shrink PDFs, or swap between PDFs and pictures.',
     description:
-      'Merge several PDFs into one and arrange the pages in any order you like, split a document into separate files by picking pages, or shrink a PDF by re-encoding the images inside it — all locally.',
+      'Join PDFs and drag their pages into any order, pull out the pages you need as PDFs or pictures, shrink a file that is too big to email, or turn photos into a PDF.',
     icon: 'FileStack',
     source: 'src/app/tools/pdf-tools/page.tsx',
-    tags: ['Merge & reorder', 'Split by page', 'Compress', 'Page previews'],
+    tags: ['Merge & reorder', 'Extract pages', 'Pages to images', 'Images to PDF', 'Compress'],
+  },
+  {
+    id: 'pdf-to-word',
+    name: 'PDF to Word',
+    href: '/tools/pdf-to-word',
+    blurb: 'Turn a PDF into a Word document you can edit.',
+    description:
+      'Turn a PDF into a Word file that keeps its text, fonts, pictures and tables. Choose easy editing, or an exact copy of the layout.',
+    icon: 'FileType2',
+    source: 'src/app/tools/pdf-to-word/page.tsx',
+    tags: ['Keeps formatting', 'Editable or exact', 'Pictures & tables', 'Word .docx'],
+  },
+  {
+    id: 'image-compressor',
+    name: 'Image Compressor',
+    href: '/tools/image-compressor',
+    blurb: 'Make photos smaller without a visible drop in quality.',
+    description:
+      'Shrink and resize JPEG, PNG and WebP — one photo or a whole folder. Pick a quality level, see what you saved, then download them singly or as a ZIP.',
+    icon: 'ImageDown',
+    source: 'src/app/tools/image-compressor/page.tsx',
+    tags: ['Whole folders at once', 'Quality slider', 'Resize presets', 'ZIP download'],
+  },
+  {
+    id: 'json-csv-yaml-converter',
+    name: 'JSON ↔ CSV ↔ YAML',
+    href: '/tools/json-csv-yaml-converter',
+    blurb: 'Switch data between JSON, CSV and YAML — nesting handled for you.',
+    description:
+      'Drop in JSON, CSV or YAML and get either of the other two back. Nested data flattens into readable columns and rebuilds properly on the way back.',
+    icon: 'ArrowLeftRight',
+    source: 'src/app/tools/json-csv-yaml-converter/page.tsx',
+    tags: ['Spots the format', 'Handles nesting', 'Converts both ways', 'Copy or download'],
   },
   {
     id: 'markdown-converter',
     name: 'Markdown Converter',
     href: '/tools/markdown-converter',
-    blurb: 'Write Markdown, preview it live, export HTML or PDF.',
+    blurb: 'Write Markdown, watch it render, save it as a page or PDF.',
     description:
-      'A split-screen Markdown editor with live preview and syntax-highlighted code blocks. Export a clean standalone HTML file or print to PDF in one of several themes.',
+      'Type Markdown on the left and watch the finished page appear on the right. Save it as a self-contained web page or a PDF, in the theme you like.',
     icon: 'FileCode2',
     source: 'src/app/tools/markdown-converter/page.tsx',
-    tags: ['Live preview', 'Code highlighting', 'Export themes', 'HTML + PDF'],
+    tags: ['Live preview', 'Code highlighting', 'Choose a theme', 'Web page or PDF'],
   },
   {
     id: 'text-utilities',
     name: 'Text Utilities',
     href: '/tools/text-utilities',
-    blurb: 'Diff, re-case, de-whitespace, encode and decode text.',
+    blurb: 'Compare, re-case, clean up and encode any piece of text.',
     description:
-      'A grab-bag of everyday text tools: a line-and-word diff checker, case converters, a whitespace cleaner, and Base64 / URL / JWT encoding and decoding.',
+      'See what changed between two versions, switch capitalisation, clean up messy spacing, and encode or decode Base64, URLs and JWTs.',
     icon: 'Type',
     source: 'src/app/tools/text-utilities/page.tsx',
-    tags: ['Diff checker', 'Case convert', 'Whitespace', 'Base64 & JWT'],
+    tags: ['Spot the changes', 'Change the case', 'Clean up spacing', 'Base64 & JWT'],
   },
 ] as const;
 
@@ -135,4 +134,4 @@ export function getTool(id: ToolId): Tool {
 }
 
 /** Shown on every tool page. */
-export const privacyBadge = 'Runs entirely in your browser — your files are never uploaded';
+export const privacyBadge = 'Everything happens on your device — your files are never uploaded';
