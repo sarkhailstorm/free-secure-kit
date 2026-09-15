@@ -11,10 +11,10 @@ export function Footer() {
           <div className="mb-10 flex flex-col items-start gap-4 rounded-2xl border border-line bg-bg p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-medium text-ink">
-                This toolkit is free and open source.
+                These tools are free, and always will be.
               </p>
               <p className="mt-0.5 text-[13px] text-muted">
-                If it saved you time, you are welcome to chip in ☕
+                If they saved you some time, you are very welcome to chip in ☕
               </p>
             </div>
             <SupportButton />
@@ -25,7 +25,7 @@ export function Footer() {
           <div className="lg:col-span-2">
             <p className="text-sm font-semibold tracking-tight text-ink">{site.name}</p>
             <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted">
-              {site.tagline}. No accounts, no uploads, no limits.
+              Free tools for spreadsheets, images, PDFs and text. Nothing to sign up for, nothing uploaded.
             </p>
             <p className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-ok/25 bg-ok/10 px-2.5 py-1.5 text-[12px] font-medium text-ok">
               <Lock className="h-3.5 w-3.5" aria-hidden />
