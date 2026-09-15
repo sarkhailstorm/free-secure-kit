@@ -25,7 +25,7 @@ import {
   type WordProgress,
   type WordReport,
 } from '@/lib/pdf-to-word';
-import { ErrorNote, FileLine, Note, Progress, Stat } from '../pdf-tools/shared';
+import { ErrorNote, FileLine, Note, Progress, Stat } from './shared';
 
 const MODES: readonly {
   id: WordMode;
@@ -101,7 +101,7 @@ interface ConvertResult {
   report: WordReport;
 }
 
-export function PdfToWordPanel() {
+export function WordPanel() {
   const toast = useToast();
 
   const [file, setFile] = useState<LoadedPdf | null>(null);

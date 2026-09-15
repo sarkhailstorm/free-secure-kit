@@ -32,7 +32,6 @@ export type ToolId =
   | 'json-csv-yaml-converter'
   | 'image-compressor'
   | 'pdf-tools'
-  | 'pdf-to-word'
   | 'markdown-converter'
   | 'text-utilities';
 
@@ -63,23 +62,12 @@ export const tools: readonly Tool[] = [
     id: 'pdf-tools',
     name: 'PDF Tools',
     href: '/tools/pdf-tools',
-    blurb: 'Combine, reorder, split and shrink PDFs, or swap between PDFs and pictures.',
+    blurb: 'Combine, reorder, split and shrink PDFs, or turn one into Word.',
     description:
-      'Join PDFs and drag their pages into any order, pull out the pages you need as PDFs or pictures, shrink a file that is too big to email, or turn photos into a PDF.',
+      'Join PDFs and drag their pages into any order, pull out the pages you need as PDFs or pictures, shrink a file that is too big to email, turn photos into a PDF, or convert one into an editable Word file.',
     icon: 'FileStack',
     source: 'src/app/tools/pdf-tools/page.tsx',
-    tags: ['Merge & reorder', 'Extract pages', 'Pages to images', 'Images to PDF', 'Compress'],
-  },
-  {
-    id: 'pdf-to-word',
-    name: 'PDF to Word',
-    href: '/tools/pdf-to-word',
-    blurb: 'Turn a PDF into a Word document you can edit.',
-    description:
-      'Turn a PDF into a Word file that keeps its text, fonts, pictures and tables. Choose easy editing, or an exact copy of the layout.',
-    icon: 'FileType2',
-    source: 'src/app/tools/pdf-to-word/page.tsx',
-    tags: ['Keeps formatting', 'Editable or exact', 'Pictures & tables', 'Word .docx'],
+    tags: ['Merge & reorder', 'Extract pages', 'Pages to images', 'Images to PDF', 'PDF to Word'],
   },
   {
     id: 'image-compressor',

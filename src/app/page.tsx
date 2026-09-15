@@ -4,7 +4,6 @@ import {
   ArrowRight,
   FileCode2,
   FileStack,
-  FileType2,
   Github,
   ImageDown,
   Table2,
@@ -21,7 +20,6 @@ const icons: Record<string, LucideIcon> = {
   ArrowLeftRight,
   ImageDown,
   FileStack,
-  FileType2,
   FileCode2,
   Type,
 };
@@ -94,7 +92,7 @@ export default function HomePage() {
       <section id="tools" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight text-ink">Seven tools, no catch</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-ink">Six tools, no catch</h2>
             <p className="mt-1.5 text-sm text-muted">
               Each one does a single job properly — no limits, no sign-up, nothing uploaded.
             </p>

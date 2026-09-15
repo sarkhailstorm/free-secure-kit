@@ -5,7 +5,6 @@ import {
   ArrowRight,
   FileCode2,
   FileStack,
-  FileType2,
   Home,
   ImageDown,
   Table2,
@@ -24,7 +23,6 @@ const icons: Record<string, LucideIcon> = {
   ArrowLeftRight,
   ImageDown,
   FileStack,
-  FileType2,
   FileCode2,
   Type,
 };
