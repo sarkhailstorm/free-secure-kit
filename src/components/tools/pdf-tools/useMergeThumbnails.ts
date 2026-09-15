@@ -12,22 +12,13 @@ const MAX_OPEN_DOCS = 3;
 const MAX_CACHED_URLS = 600;
 
 export interface MergeThumbnails {
-  /** `${fileId}:${page}` -> object URL */
   urls: Record<string, string>;
   failed: Record<string, true>;
-  /** fileId -> why that document could not be opened at all */
   broken: Record<string, string>;
   outstanding: number;
   request: (fileId: string, page: number) => void;
 }
 
-/**
- * Page previews across several PDFs at once.
- *
- * Deliberately not a generalisation of useThumbnails: that hook tears
- * everything down whenever its one source changes, and this one has to keep
- * N documents' work alive while releasing exactly the file that left.
- */
 export function useMergeThumbnails(
   items: readonly LoadedPdf[],
   active: boolean,
@@ -66,8 +57,6 @@ export function useMergeThumbnails(
         URL.revokeObjectURL(url);
         liveUrls.current.delete(key);
       }
-      // Also forget it was settled, so a tile scrolled back into view asks
-      // again instead of sitting permanently blank.
       settled.current.delete(key);
       dropped.push(key);
     }
@@ -131,8 +120,6 @@ export function useMergeThumbnails(
         wanted.current = false;
 
         while (queue.current.length > 0) {
-          // Prefer a page whose document is already open: switching files
-          // means re-parsing one, so finish a document before moving on.
           let at = queue.current.findIndex((job) => docs.current.has(job.fileId));
           if (at < 0) at = 0;
           const [job] = queue.current.splice(at, 1);
@@ -169,8 +156,6 @@ export function useMergeThumbnails(
             setUrls((previous) => ({ ...previous, [key]: url }));
             capUrls();
           } catch {
-            // A destroyed document rejects into here too, which is why the
-            // liveness check is repeated rather than captured up front.
             if (alive()) {
               settled.current.add(key);
               setFailed((previous) => ({ ...previous, [key]: true }));
@@ -246,8 +231,6 @@ export function useMergeThumbnails(
     setOutstanding(queue.current.length);
   }, [items, closeDoc]);
 
-  // All three panels stay mounted, so a hidden merge tab must not sit on
-  // parsed documents. The rendered previews are cheap and are kept.
   useEffect(() => {
     if (active) return;
     for (const id of [...docs.current.keys()]) closeDoc(id);

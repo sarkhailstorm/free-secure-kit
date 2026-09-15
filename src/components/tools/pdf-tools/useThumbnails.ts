@@ -11,36 +11,21 @@ const SCALE = 0.3;
 const EAGER_PAGES = 12;
 
 export interface Thumbnails {
-  /** page number (1-based) -> object URL of the rendered preview */
   urls: Record<number, string>;
-  /** page numbers we tried and could not draw */
   failed: Record<number, true>;
-  /** true once the document is open and previews are on their way */
   opened: boolean;
-  /** a load failure that stops previews entirely */
   error: string | null;
-  /** how many previews are still waiting to be drawn */
   outstanding: number;
-  /** ask for one page; cheap and safe to call repeatedly */
   request: (page: number) => void;
 }
 
-/**
- * Render page previews with pdf.js.
- *
- * pdf.js is only ever used to *look* at a PDF here — every edit goes through
- * pdf-lib. The library and its worker are both served from this site, so
- * opening a document makes no third-party request and works offline.
- */
+
 export function useThumbnails(source: LoadedPdf | null): Thumbnails {
   const [urls, setUrls] = useState<Record<number, string>>({});
   const [failed, setFailed] = useState<Record<number, true>>({});
   const [opened, setOpened] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [outstanding, setOutstanding] = useState(0);
-
-  // The render loop lives entirely in refs: it must not be torn down and
-  // restarted every time a preview lands and re-renders the component.
   const generation = useRef(0);
   const docRef = useRef<PDFDocumentProxy | null>(null);
   const queue = useRef<number[]>([]);
@@ -51,10 +36,6 @@ export function useThumbnails(source: LoadedPdf | null): Thumbnails {
   const liveUrls = useRef<string[]>([]);
 
   const drain = useCallback(async () => {
-    // A second caller does not start a second loop — but it must not be lost
-    // either. The loop below re-checks this flag before it gives up, so a
-    // request that lands while the *previous* document was still rendering
-    // still gets picked up once that render settles.
     if (draining.current) {
       wanted.current = true;
       return;
@@ -67,8 +48,6 @@ export function useThumbnails(source: LoadedPdf | null): Thumbnails {
         const mine = generation.current;
 
         while (queue.current.length > 0 && mine === generation.current) {
-          // Check the document *before* taking work off the queue, so requests
-          // made while it is still opening stay queued rather than vanishing.
           const doc = docRef.current;
           if (!doc) break;
           const page = queue.current.shift();
@@ -157,8 +136,6 @@ export function useThumbnails(source: LoadedPdf | null): Thumbnails {
         void drain();
       } catch (err) {
         if (mine !== generation.current) return;
-        // No document means no previews at all. Drop the pending work so the
-        // "still rendering" counter does not sit there forever.
         queue.current = [];
         queued.current = new Set();
         setOutstanding(0);

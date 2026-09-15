@@ -43,14 +43,8 @@ interface MergeResult {
   fileCount: number;
 }
 
-/**
- * The queue and the page order are one state, so a single updater can keep
- * them consistent — two separate ones would drop the second of two rapid
- * clicks on the reorder arrows.
- */
 interface Queue {
   items: LoadedPdf[];
-  /** null means "just follow the file list", which is the default. */
   plan: PageRef[] | null;
 }
 
@@ -122,11 +116,6 @@ export function MergePanel({ active }: { active: boolean }) {
     return items.filter((file) => ids.has(file.id));
   }, [effectivePlan, items]);
 
-  /**
-   * Every mutation funnels through here, so a plan that has drifted back to
-   * plain file order always collapses to null and can never keep claiming to
-   * be custom.
-   */
   const mutate = useCallback((fn: (queue: Queue) => Queue) => {
     setResult(null);
     setQueue((previous) => {
@@ -357,8 +346,8 @@ export function MergePanel({ active }: { active: boolean }) {
 
       {items.length === 0 ? (
         <Note>
-          Nothing queued yet. Once you add a PDF you can drag the files into order, rearrange or
-          leave out individual pages, and merge the result into a single document.
+          No PDFs yet. Add a few and you can drag them into order, rearrange or drop individual
+          pages, then save the lot as one document.
         </Note>
       ) : (
         <Card>
@@ -380,9 +369,6 @@ export function MergePanel({ active }: { active: boolean }) {
                   key={item.id}
                   draggable={!busy}
                   onDragStart={(e) => {
-                    // Let the arrow / remove buttons stay clickable. The test is
-                    // against Element, not HTMLElement, because a drag that
-                    // starts on a lucide icon targets an <svg>.
                     if (e.target instanceof Element && e.target.closest('button')) {
                       e.preventDefault();
                       return;
@@ -613,9 +599,7 @@ export function MergePanel({ active }: { active: boolean }) {
                 </p>
               </div>
             </div>
-            {/* Comparing a subset's output against the whole queue's input
-                would read as compression, so the badge is only honest when
-                every page was kept. */}
+
             {result.pageCount === result.inputPages ? (
               <SizeChange before={result.inputSize} after={result.size} />
             ) : null}

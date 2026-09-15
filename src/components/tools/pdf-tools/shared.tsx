@@ -1,5 +1,4 @@
-'use client';
-
+import { useId } from 'react';
 import { Loader2, TriangleAlert, Info, FileText } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { formatBytes, percentChange, plural } from '@/lib/format';
@@ -26,7 +25,6 @@ export function ErrorNote({
   );
 }
 
-/** A neutral aside — context, not a warning. */
 export function Note({
   children,
   className,
@@ -47,10 +45,7 @@ export function Note({
   );
 }
 
-/**
- * Determinate progress for work that blocks the main thread between ticks.
- * Announced politely so it is not just a moving rectangle.
- */
+
 export function Progress({
   label,
   done,
@@ -156,6 +151,46 @@ export function FileLine({
           {plural(pageCount, 'page')} &middot; {formatBytes(size)}
         </p>
       </div>
+    </div>
+  );
+}
+
+/** Small labelled `<select>` for the conversion settings. */
+export function SelectField<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+  disabled = false,
+  hint,
+}: {
+  label: string;
+  value: T;
+  onChange: (value: T) => void;
+  options: readonly { value: T; label: string }[];
+  disabled?: boolean;
+  hint?: string;
+}) {
+  const id = useId();
+  return (
+    <div className="min-w-0">
+      <label htmlFor={id} className="block text-[13px] font-medium text-ink">
+        {label}
+      </label>
+      <select
+        id={id}
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value as T)}
+        className="mt-1.5 h-9 w-full rounded-lg border border-line bg-bg px-2.5 text-[13px] text-ink outline-none transition-colors focus:border-accent/60 disabled:opacity-50"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+      {hint ? <p className="mt-1 text-[12px] text-faint">{hint}</p> : null}
     </div>
   );
 }

@@ -30,9 +30,12 @@ export interface LoadedPdf {
   bytes: Uint8Array;
 }
 
-export interface NamedPdf {
+export interface NamedFile {
   name: string;
   bytes: Uint8Array;
+}
+
+export interface NamedPdf extends NamedFile {
   pages: number[];
 }
 
@@ -263,7 +266,7 @@ export async function splitIntoFiles(
 /** Bundle several outputs into one archive. PDFs are already compressed, so
  *  the archive is stored rather than deflated — much faster, same size. */
 export async function zipFiles(
-  files: readonly NamedPdf[],
+  files: readonly NamedFile[],
   onProgress: (done: number, total: number) => void,
 ): Promise<Blob> {
   const { default: JSZip } = await import('jszip');
@@ -274,7 +277,8 @@ export async function zipFiles(
     let name = file.name;
     let n = 2;
     while (used.has(name.toLowerCase())) {
-      name = downloadName(`${baseName(file.name)} (${n++})`, 'pdf', `part-${n}.pdf`);
+      const ext = file.name.split('.').pop() || 'bin';
+      name = downloadName(`${baseName(file.name)} (${n++})`, ext, `part-${n}.${ext}`);
     }
     used.add(name.toLowerCase());
     zip.file(name, file.bytes);

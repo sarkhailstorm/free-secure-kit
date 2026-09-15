@@ -35,8 +35,18 @@ import {
   groupsPerPage,
   parsePageRanges,
 } from '@/lib/pdf-tools/ranges';
+import {
+  DEFAULT_EXPORT_OPTIONS,
+  IMAGE_FORMAT_LABELS,
+  IMAGE_QUALITY_LABELS,
+  imageExtension,
+  pagesToImages,
+  type ImageExportOptions,
+  type ImageFormat,
+  type ImageQualityId,
+} from '@/lib/pdf-tools/rasterize';
 import { PageGrid, type PageInteraction } from './PageGrid';
-import { ErrorNote, FileLine, Note, Progress, Stat } from './shared';
+import { ErrorNote, FileLine, Note, Progress, SelectField, Stat } from './shared';
 import { useThumbnails } from './useThumbnails';
 
 type SplitMode = 'extract' | 'each' | 'breaks';
@@ -50,13 +60,13 @@ const MODES: readonly {
   {
     id: 'extract',
     title: 'Extract pages',
-    blurb: 'Pick pages and keep them in one new PDF.',
+    blurb: 'Pick pages, then save them as one PDF, separate PDFs, or pictures.',
     icon: Scissors,
   },
   {
     id: 'each',
     title: 'One file per page',
-    blurb: 'Every page becomes its own PDF, zipped up.',
+    blurb: 'Every page in the document becomes its own PDF, zipped up.',
     icon: Files,
   },
   {
@@ -67,11 +77,42 @@ const MODES: readonly {
   },
 ];
 
+type OutputMode = 'one' | 'separate' | 'images';
+
+const OUTPUTS: readonly { id: OutputMode; title: string; blurb: string }[] = [
+  {
+    id: 'one',
+    title: 'One combined PDF',
+    blurb: 'The chosen pages, in order, as a single document.',
+  },
+  {
+    id: 'separate',
+    title: 'A separate PDF per page',
+    blurb: 'Each chosen page as its own PDF, zipped up.',
+  },
+  {
+    id: 'images',
+    title: 'An image per page',
+    blurb: 'Each chosen page as a picture you can drop into a slide or a chat.',
+  },
+];
+
+const FORMAT_OPTIONS = (Object.keys(IMAGE_FORMAT_LABELS) as ImageFormat[]).map((value) => ({
+  value,
+  label: IMAGE_FORMAT_LABELS[value],
+}));
+
+const QUALITY_OPTIONS = (Object.keys(IMAGE_QUALITY_LABELS) as ImageQualityId[]).map((value) => ({
+  value,
+  label: IMAGE_QUALITY_LABELS[value],
+}));
+
 interface SplitResult {
   name: string;
   size: number;
   fileCount: number;
   pageCount: number;
+  noun: string;
 }
 
 export function SplitPanel() {
@@ -83,6 +124,8 @@ export function SplitPanel() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const [mode, setMode] = useState<SplitMode>('extract');
+  const [output, setOutput] = useState<OutputMode>('one');
+  const [exportOptions, setExportOptions] = useState<ImageExportOptions>(DEFAULT_EXPORT_OPTIONS);
   const [selected, setSelected] = useState<ReadonlySet<number>>(new Set<number>());
   const [rangeText, setRangeText] = useState('');
   const [rangeError, setRangeError] = useState<string | null>(null);
@@ -104,10 +147,13 @@ export function SplitPanel() {
     if (!file) return [];
     if (mode === 'each') return groupsPerPage(file.pageCount);
     if (mode === 'breaks') return groupsFromBreaks(file.pageCount, breaks);
-    return selectedPages.length > 0 ? [selectedPages] : [];
-  }, [file, mode, breaks, selectedPages]);
+    if (selectedPages.length === 0) return [];
+    return output === 'one' ? [selectedPages] : selectedPages.map((page) => [page]);
+  }, [file, mode, breaks, selectedPages, output]);
 
   const outputPages = groups.reduce((sum, group) => sum + group.length, 0);
+  const asImages = mode === 'extract' && output === 'images';
+  const imageLabel = exportOptions.format === 'jpeg' ? 'JPEG' : 'PNG';
 
   const resetChoices = useCallback(() => {
     setSelected(new Set<number>());
@@ -209,6 +255,50 @@ export function SplitPanel() {
     try {
       await tick();
 
+      if (asImages) {
+        const built = await pagesToImages(file, selectedPages, exportOptions, (done, total) => {
+          setStatus({
+            label: `Turning page ${Math.min(done + 1, total)} of ${total} into a picture…`,
+            done,
+            total,
+          });
+        });
+        const mime = exportOptions.format === 'jpeg' ? 'image/jpeg' : 'image/png';
+
+        if (built.length === 1) {
+          downloadBlob(new Blob([built[0].bytes], { type: mime }), built[0].name);
+          setResult({
+            name: built[0].name,
+            size: built[0].bytes.byteLength,
+            fileCount: 1,
+            pageCount: 1,
+            noun: imageLabel,
+          });
+          toast.celebrate(`Saved ${built[0].name}`);
+          return;
+        }
+
+        setStatus({ label: 'Packing the ZIP…', done: 0, total: 100 });
+        const bundle = await zipFiles(built, (done, total) => {
+          setStatus({ label: 'Packing the ZIP…', done, total });
+        });
+        const zipName = downloadName(
+          `${baseName(file.name)} - ${imageExtension(exportOptions.format)} pages`,
+          'zip',
+          'pages.zip',
+        );
+        downloadBlob(bundle, zipName);
+        setResult({
+          name: zipName,
+          size: bundle.size,
+          fileCount: built.length,
+          pageCount: built.length,
+          noun: imageLabel,
+        });
+        toast.celebrate(`Saved ${plural(built.length, 'picture')} as ${zipName}`);
+        return;
+      }
+
       if (groups.length === 1) {
         const pages = groups[0];
         setStatus({ label: 'Building your PDF…', done: 0, total: 0 });
@@ -219,7 +309,7 @@ export function SplitPanel() {
           'extracted.pdf',
         );
         downloadBlob(new Blob([bytes], { type: 'application/pdf' }), name);
-        setResult({ name, size: bytes.byteLength, fileCount: 1, pageCount: pages.length });
+        setResult({ name, size: bytes.byteLength, fileCount: 1, pageCount: pages.length, noun: 'PDF' });
         toast.celebrate(`Saved ${name}`);
         return;
       }
@@ -244,6 +334,7 @@ export function SplitPanel() {
         size: blob.size,
         fileCount: built.length,
         pageCount: outputPages,
+        noun: 'PDF',
       });
       toast.celebrate(`Saved ${plural(built.length, 'PDF')} as ${name}`);
     } catch (err) {
@@ -262,7 +353,7 @@ export function SplitPanel() {
       <Card>
         <CardHeader
           title="PDF to split"
-          description="One document at a time. Every page is previewed below."
+          description="One PDF at a time. Every page is previewed below."
           actions={
             file ? (
               <Button
@@ -306,8 +397,8 @@ export function SplitPanel() {
 
       {!file ? (
         <Note>
-          Once a PDF is loaded you can pull out a handful of pages, break it into one file per
-          page, or cut it at whatever points you choose.
+          Add a PDF and you can pull out just the pages you need, save each page as its own
+          file or a picture, or cut the document wherever you like.
         </Note>
       ) : (
         <Card>
@@ -374,9 +465,6 @@ export function SplitPanel() {
                   <input
                     id={rangeId}
                     type="text"
-                    // Deliberately NOT inputMode="numeric": a phone's numeric
-                    // keypad has no comma and no dash, which are half of what
-                    // this box is for.
                     inputMode="text"
                     autoComplete="off"
                     spellCheck={false}
@@ -433,6 +521,78 @@ export function SplitPanel() {
                     Invert
                   </Button>
                 </div>
+
+                <fieldset disabled={busy} className="min-w-0">
+                  <legend className="text-[13px] font-medium text-ink">What to save</legend>
+                  <div className="mt-1.5 grid gap-2 sm:grid-cols-3">
+                    {OUTPUTS.map((option) => {
+                      const active = output === option.id;
+                      return (
+                        <label
+                          key={option.id}
+                          className={cn(
+                            'flex cursor-pointer gap-2.5 rounded-xl border p-3 transition-colors',
+                            'focus-within:ring-2 focus-within:ring-accent',
+                            active
+                              ? 'border-accent bg-accent-soft'
+                              : 'border-line bg-surface hover:bg-elevated',
+                            busy && 'cursor-not-allowed opacity-60',
+                          )}
+                        >
+                          <input
+                            type="radio"
+                            name="pdf-extract-output"
+                            checked={active}
+                            onChange={() => {
+                              setOutput(option.id);
+                              setActionError(null);
+                              setResult(null);
+                            }}
+                            className="sr-only"
+                          />
+                          <span className="min-w-0">
+                            <span className="block text-[13px] font-medium text-ink">
+                              {option.title}
+                            </span>
+                            <span className="mt-0.5 block text-[13px] leading-snug text-muted">
+                              {option.blurb}
+                            </span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {output === 'images' ? (
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <SelectField
+                        label="Picture format"
+                        value={exportOptions.format}
+                        options={FORMAT_OPTIONS}
+                        onChange={(format) => {
+                          setExportOptions((previous) => ({ ...previous, format }));
+                          setResult(null);
+                        }}
+                      />
+                      <SelectField
+                        label="Detail"
+                        value={exportOptions.quality}
+                        options={QUALITY_OPTIONS}
+                        onChange={(quality) => {
+                          setExportOptions((previous) => ({ ...previous, quality }));
+                          setResult(null);
+                        }}
+                        hint={
+                          exportOptions.quality === 'print'
+                            ? 'Large files — best for printing'
+                            : exportOptions.quality === 'screen'
+                              ? 'Small files — fine on a screen'
+                              : 'A good balance for most uses'
+                        }
+                      />
+                    </div>
+                  ) : null}
+                </fieldset>
               </div>
             ) : null}
 
@@ -450,10 +610,6 @@ export function SplitPanel() {
               </Note>
             ) : null}
 
-            {/*
-              A preview failure is never fatal: the grid stays, numbered and
-              clickable, so pages can still be chosen without the pictures.
-            */}
             <div className="flex flex-col gap-2">
               {thumbs.error ? (
                 <ErrorNote
@@ -484,9 +640,13 @@ export function SplitPanel() {
                   value={
                     groups.length === 0
                       ? 'nothing yet'
-                      : groups.length === 1
-                        ? '1 PDF'
-                        : `${groups.length} PDFs in a ZIP`
+                      : asImages
+                        ? groups.length === 1
+                          ? `1 ${imageLabel}`
+                          : `${groups.length} ${imageLabel}s in a ZIP`
+                        : groups.length === 1
+                          ? '1 PDF'
+                          : `${groups.length} PDFs in a ZIP`
                   }
                 />
               </dl>
@@ -526,11 +686,15 @@ export function SplitPanel() {
                   <Scissors className="h-4 w-4" aria-hidden />
                   {busy
                     ? 'Working…'
-                    : groups.length > 1
-                      ? `Split into ${groups.length} files`
-                      : mode === 'extract'
-                        ? 'Extract to a PDF'
-                        : 'Save as one PDF'}
+                    : asImages
+                      ? `Save ${plural(groups.length, 'page')} as ${imageLabel}`
+                      : mode === 'extract' && output === 'separate' && groups.length > 1
+                        ? `Save ${plural(groups.length, 'page')} separately`
+                        : groups.length > 1
+                          ? `Split into ${groups.length} files`
+                          : mode === 'extract'
+                            ? 'Extract to a PDF'
+                            : 'Save as one PDF'}
                 </Button>
                 {groups.length > 40 ? (
                   <p className="text-[13px] text-warn">
@@ -552,7 +716,7 @@ export function SplitPanel() {
               <p className="mt-0.5 text-[13px] text-muted">
                 {result.fileCount === 1
                   ? `${plural(result.pageCount, 'page')} · ${formatBytes(result.size)}`
-                  : `${plural(result.fileCount, 'PDF')} · ${plural(result.pageCount, 'page')} · ${formatBytes(result.size)}`}
+                  : `${plural(result.fileCount, result.noun)} · ${formatBytes(result.size)}`}
               </p>
             </div>
           </div>
