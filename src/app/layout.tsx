@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     'merge pdf',
     'split pdf',
     'markdown to pdf',
+    'pdf to word',
     'text diff',
     'client-side',
     'private',
@@ -42,22 +43,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#fafaf9' },
-    { media: '(prefers-color-scheme: dark)', color: '#0c0c0e' },
-  ],
+  themeColor: '#0c0c0e',
 };
-
-const themeScript = `
-(function () {
-  try {
-    var saved = localStorage.getItem('securekit:theme');
-    var dark = saved ? saved === 'dark'
-      : window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (dark) document.documentElement.classList.add('dark');
-  } catch (e) {}
-})();
-`;
 
 const isDev = process.env.NODE_ENV === 'development';
 
@@ -80,9 +67,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <head>
         <meta httpEquiv="Content-Security-Policy" content={csp} />
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-screen antialiased">
+        {/* Sets the theme class before anything paints. Kept out of <head>:
+            browser extensions inject scripts there, which shifts React's
+            hydration and reports a mismatch against whatever we put first. */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script src="/theme.js" />
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-accent focus:px-3 focus:py-2 focus:text-sm focus:text-accent-ink"
