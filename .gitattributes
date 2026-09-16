@@ -6,3 +6,5 @@
 *.webp binary
 *.pdf binary
 *.ico binary
+*.onnx binary
+*.wasm binary

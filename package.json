@@ -5,12 +5,12 @@
   "description": "A privacy-first, open-source suite of data and file utility tools that run entirely in your browser.",
   "license": "MIT",
   "scripts": {
-    "dev": "node scripts/copy-pdf-worker.mjs && next dev",
-    "build": "node scripts/copy-pdf-worker.mjs && next build",
+    "dev": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-bg-models.mjs && next dev",
+    "build": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-bg-models.mjs && next build",
     "start": "npx serve out",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "postinstall": "node scripts/copy-pdf-worker.mjs"
+    "postinstall": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-bg-models.mjs"
   },
   "dependencies": {
     "browser-image-compression": "2.0.2",
@@ -24,6 +24,7 @@
     "lucide-react": "0.469.0",
     "marked": "15.0.6",
     "next": "^15.5.25",
+    "onnxruntime-web": "1.30.0",
     "papaparse": "5.4.1",
     "pdf-lib": "1.17.1",
     "pdfjs-dist": "4.8.69",

@@ -17,13 +17,14 @@ all processed locally, with nothing uploaded to a server.
 
 ## What this is
 
-Six everyday file and data utilities, in one place, free and without an account:
+Seven everyday file and data utilities, in one place, free and without an account:
 
 | Tool | What it does |
 | --- | --- |
 | [CSV & Excel Cleaner](src/app/tools/csv-cleaner/page.tsx) | Remove duplicate and blank rows, trim whitespace, standardise headers, normalise inconsistent date formats |
 | [JSON ↔ CSV ↔ YAML](src/app/tools/json-csv-yaml-converter/page.tsx) | Convert between the three formats, flattening nested data to dot-notation columns and back |
 | [Image Compressor](src/app/tools/image-compressor/page.tsx) | Batch compress and resize JPEG, PNG and WebP, download individually or as a ZIP |
+| [Background Remover](src/app/tools/background-remover/page.tsx) | Cut the subject out of a photo and save it as a PNG with a transparent or solid-colour background |
 | [PDF Tools](src/app/tools/pdf-tools/page.tsx) | Merge PDFs and reorder their pages, extract pages as PDFs or PNG/JPEG images, compress, build a PDF from images, convert a PDF to an editable Word document, and turn the tables in a PDF into an Excel spreadsheet |
 | [Markdown Converter](src/app/tools/markdown-converter/page.tsx) | Live Markdown editor, export to standalone HTML or PDF with themes |
 | [Text Utilities](src/app/tools/text-utilities/page.tsx) | Diff checker, case converter, whitespace cleaner, Base64 / URL / JWT encoding |
@@ -86,7 +87,8 @@ ever transmitted.
   [pdf-lib](https://pdf-lib.js.org/), [pdf.js](https://mozilla.github.io/pdf.js/),
   [JSZip](https://stuk.github.io/jszip/), [marked](https://marked.js.org/),
   [highlight.js](https://highlightjs.org/), [DOMPurify](https://github.com/cure53/DOMPurify),
-  [jsdiff](https://github.com/kpdecker/jsdiff)
+  [jsdiff](https://github.com/kpdecker/jsdiff),
+  [onnxruntime-web](https://github.com/microsoft/onnxruntime)
 
 Because the output is a static site with no serverless functions, hosting it costs nothing on
 Vercel, Cloudflare Pages, Netlify or GitHub Pages, and stays free regardless of traffic.
@@ -125,6 +127,21 @@ users supply. The vendor CDN serves the current, patched release.
 `npm install` and `npm run build` copy the pdf.js worker from `node_modules` into `public/` via
 `scripts/copy-pdf-worker.mjs`, so it is served from this site's own origin instead of a CDN. That
 keeps the no-third-party-requests promise intact and lets the PDF tools work offline.
+
+### Models for the background remover
+
+The background remover needs two files that are far too big to put in a JavaScript bundle: the
+cut-out models in `public/models/`, and the browser runtime that runs them in `public/ort/`.
+
+The runtime is copied out of `node_modules` by `scripts/copy-onnx-runtime.mjs`, exactly as the
+pdf.js worker is, and is not committed. The two models **are** committed, because they come from
+other people's servers rather than from npm, and a build should not break the day one of those
+servers goes away. `scripts/fetch-bg-models.mjs` fetches them once, checks the byte count and
+SHA-256 of each, and does nothing when they are already in place. Both are Apache-2.0 — see
+[MODEL-LICENCES.md](MODEL-LICENCES.md).
+
+None of it is fetched when the site loads. A model is downloaded only when someone opens the tool
+and asks for a cut-out, and the browser then keeps it, so it is never downloaded twice.
 
 ## Deploying
 

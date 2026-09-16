@@ -7,6 +7,7 @@ import {
   FileStack,
   Home,
   ImageDown,
+  Scissors,
   Table2,
   Type,
   type LucideIcon,
@@ -25,6 +26,7 @@ const icons: Record<string, LucideIcon> = {
   FileStack,
   FileCode2,
   Type,
+  Scissors,
 };
 
 

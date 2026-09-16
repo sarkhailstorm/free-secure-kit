@@ -6,6 +6,7 @@ import {
   FileStack,
   Github,
   ImageDown,
+  Scissors,
   Table2,
   Type,
   WifiOff,
@@ -22,6 +23,7 @@ const icons: Record<string, LucideIcon> = {
   FileStack,
   FileCode2,
   Type,
+  Scissors,
 };
 
 const promises = [
@@ -92,7 +94,9 @@ export default function HomePage() {
       <section id="tools" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight text-ink">Six tools, no catch</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-ink">
+              {tools.length} tools, no catch
+            </h2>
             <p className="mt-1.5 text-sm text-muted">
               Each one does a single job properly — no limits, no sign-up, nothing uploaded.
             </p>

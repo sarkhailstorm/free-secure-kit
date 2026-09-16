@@ -100,6 +100,7 @@ export function sourceUrl(path: string): string {
 }
 
 export type ToolId =
+  | 'background-remover'
   | 'csv-cleaner'
   | 'json-csv-yaml-converter'
   | 'image-compressor'
@@ -158,6 +159,17 @@ export const tools: readonly Tool[] = [
     icon: 'ImageDown',
     source: 'src/app/tools/image-compressor/page.tsx',
     tags: ['Whole folders at once', 'Quality slider', 'Resize presets', 'ZIP download'],
+  },
+  {
+    id: 'background-remover',
+    name: 'Background Remover',
+    href: '/tools/background-remover',
+    blurb: 'Cut the subject out of a photo and save it with nothing behind it.',
+    description:
+      'Cut the subject out of a photo and get it back on a see-through background, ready to put on a plain colour or another picture. Works on people, products, pets and objects, and your photo never leaves your device.',
+    icon: 'Scissors',
+    source: 'src/app/tools/background-remover/page.tsx',
+    tags: ['People or objects', 'See-through PNG', 'Plain colour background', 'Before and after'],
   },
   {
     id: 'json-csv-yaml-converter',

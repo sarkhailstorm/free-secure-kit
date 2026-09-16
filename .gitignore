@@ -35,5 +35,8 @@ yarn-error.log*
 # generated: pdf.js worker is copied from node_modules by scripts/copy-pdf-worker.mjs
 /public/pdf.worker.min.mjs
 
+# generated: onnxruntime-web artefacts are copied from node_modules by scripts/copy-onnx-runtime.mjs
+/public/ort/
+
 # editor / agent session data
 .claude/
