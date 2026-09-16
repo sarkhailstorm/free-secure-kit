@@ -100,10 +100,9 @@ export function sourceUrl(path: string): string {
 }
 
 export type ToolId =
-  | 'background-remover'
   | 'csv-cleaner'
   | 'json-csv-yaml-converter'
-  | 'image-compressor'
+  | 'image-tools'
   | 'pdf-tools'
   | 'markdown-converter'
   | 'text-utilities';
@@ -150,26 +149,15 @@ export const tools: readonly Tool[] = [
     tags: ['Remove duplicates', 'Fix mixed dates', 'Tidy headings', 'CSV & Excel'],
   },
   {
-    id: 'image-compressor',
-    name: 'Image Compressor',
-    href: '/tools/image-compressor',
-    blurb: 'Make photos smaller without a visible drop in quality.',
+    id: 'image-tools',
+    name: 'Image Tools',
+    href: '/tools/image-tools',
+    blurb: 'Shrink photos, or cut the subject out of one.',
     description:
-      'Shrink and resize JPEG, PNG and WebP — one photo or a whole folder. Pick a quality level, see what you saved, then download them singly or as a ZIP.',
+      'Make photos smaller without a visible drop in quality — one or a whole folder — or cut the subject out of a photo and get it back on a see-through background.',
     icon: 'ImageDown',
-    source: 'src/app/tools/image-compressor/page.tsx',
-    tags: ['Whole folders at once', 'Quality slider', 'Resize presets', 'ZIP download'],
-  },
-  {
-    id: 'background-remover',
-    name: 'Background Remover',
-    href: '/tools/background-remover',
-    blurb: 'Cut the subject out of a photo and save it with nothing behind it.',
-    description:
-      'Cut the subject out of a photo and get it back on a see-through background, ready to put on a plain colour or another picture. Works on people, products, pets and objects, and your photo never leaves your device.',
-    icon: 'Scissors',
-    source: 'src/app/tools/background-remover/page.tsx',
-    tags: ['People or objects', 'See-through PNG', 'Plain colour background', 'Before and after'],
+    source: 'src/app/tools/image-tools/page.tsx',
+    tags: ['Whole folders at once', 'Quality slider', 'Remove background', 'See-through PNG'],
   },
   {
     id: 'json-csv-yaml-converter',

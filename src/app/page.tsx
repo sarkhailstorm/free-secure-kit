@@ -6,7 +6,6 @@ import {
   FileStack,
   Github,
   ImageDown,
-  Scissors,
   Table2,
   Type,
   WifiOff,
@@ -23,8 +22,14 @@ const icons: Record<string, LucideIcon> = {
   FileStack,
   FileCode2,
   Type,
-  Scissors,
 };
+
+
+const COUNT_WORDS = ['no', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+
+function spellCount(n: number): string {
+  return COUNT_WORDS[n] ?? String(n);
+}
 
 const promises = [
   {
@@ -95,7 +100,7 @@ export default function HomePage() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="text-xl font-semibold tracking-tight text-ink">
-              {tools.length} tools, no catch
+              {spellCount(tools.length)} tools, no catch
             </h2>
             <p className="mt-1.5 text-sm text-muted">
               Each one does a single job properly — no limits, no sign-up, nothing uploaded.
