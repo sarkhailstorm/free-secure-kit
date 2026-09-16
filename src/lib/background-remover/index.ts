@@ -149,7 +149,17 @@ export function describeBackgroundError(err: unknown, filename?: string): string
 
   const label = filename ? `“${filename}”` : 'That photo';
   const message = err instanceof Error ? err.message : String(err);
+  const name = err instanceof Error ? err.name : '';
 
+  // A tab left open across a new deploy asks for chunks that no longer exist.
+  if (
+    name === 'ChunkLoadError' ||
+    /loading chunk .*failed|importing a module script failed|dynamically imported module/i.test(
+      message,
+    )
+  ) {
+    return 'This page is out of date, so part of the background remover could not load. Reload the page and try again.';
+  }
   if (/failed to fetch|networkerror|load failed|err_/i.test(message)) {
     return 'The background remover couldn’t be downloaded. Check your connection and try again.';
   }
