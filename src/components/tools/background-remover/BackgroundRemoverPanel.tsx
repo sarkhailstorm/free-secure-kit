@@ -119,7 +119,8 @@ export function BackgroundRemoverPanel() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [backdrop, setBackdrop] = useState<Backdrop>('none');
   const [colour, setColour] = useState('#ffffff');
-  const [split, setSplit] = useState(50);
+  // 0 shows the whole cut-out; dragging wipes the original back in from the left.
+  const [split, setSplit] = useState(0);
   const [showOriginal, setShowOriginal] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -264,7 +265,7 @@ export function BackgroundRemoverPanel() {
 
       setResult(outcome);
       swapResultUrl(keepUrl(URL.createObjectURL(outcome.blob)));
-      setSplit(50);
+      setSplit(0);
       setShowOriginal(false);
       setStored(await refreshStored());
     } catch (err) {
@@ -492,7 +493,7 @@ export function BackgroundRemoverPanel() {
         <Card>
           <CardHeader
             title="Before and after"
-            description="Drag the slider across to see how much came away."
+            description="This is the cut-out. Drag across it to wipe the original back in."
             actions={
               <Button
                 variant="ghost"
