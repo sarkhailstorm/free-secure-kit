@@ -16,11 +16,83 @@ export const author = {
 
 export const support = {
   url: '',
-  label: 'Support this project',
+  label: 'Buy me a coffee',
   emoji: '☕',
 } as const;
 
 export const donationsConfigured: boolean = (support.url as string).length > 0;
+
+/**
+ * Real-world identity behind the site. Razorpay's activation review requires a
+ * legal name, a street address and a working phone number; anything left empty
+ * is omitted from the Contact page rather than shown as a placeholder.
+ */
+export const business = {
+  /** Exactly as printed on the PAN card. */
+  legalName: '',
+  email: '',
+  phone: '',
+  hours: '',
+  address: {
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    postcode: '',
+    country: 'India',
+  },
+  /** Udyam/MSME registration number, if you have one. */
+  udyam: '',
+} as const;
+
+export const contactEmailConfigured: boolean = (business.email as string).length > 0;
+export const contactPhoneConfigured: boolean = (business.phone as string).length > 0;
+export const addressConfigured: boolean = (business.address.line1 as string).length > 0;
+export const legalNameConfigured: boolean = (business.legalName as string).length > 0;
+
+/** Who the site belongs to in policy copy. Falls back to the display name. */
+export function traderName(): string {
+  return legalNameConfigured ? business.legalName : author.name;
+}
+
+export type LegalPageId =
+  | 'about'
+  | 'contact'
+  | 'pricing'
+  | 'terms'
+  | 'privacy'
+  | 'refunds'
+  | 'shipping';
+
+export const legalPages: readonly {
+  id: LegalPageId;
+  href: string;
+  title: string;
+  blurb: string;
+}[] = [
+  { id: 'about', href: '/about', title: 'About', blurb: 'Who makes SecureKit, and why.' },
+  { id: 'contact', href: '/contact', title: 'Contact', blurb: 'How to reach us.' },
+  { id: 'pricing', href: '/pricing', title: 'Pricing', blurb: 'What it costs: nothing.' },
+  { id: 'terms', href: '/terms', title: 'Terms', blurb: 'What you agree to by using the site.' },
+  {
+    id: 'privacy',
+    href: '/privacy',
+    title: 'Privacy',
+    blurb: 'Exactly what happens to your files and your data.',
+  },
+  {
+    id: 'refunds',
+    href: '/refunds',
+    title: 'Refunds',
+    blurb: 'Cancelling or refunding a contribution.',
+  },
+  {
+    id: 'shipping',
+    href: '/shipping',
+    title: 'Delivery',
+    blurb: 'Nothing is posted to you. What that means.',
+  },
+] as const;
 
 export function sourceUrl(path: string): string {
   const clean = path.replace(/^\/+/, '');
@@ -48,17 +120,6 @@ export type Tool = {
 
 export const tools: readonly Tool[] = [
   {
-    id: 'csv-cleaner',
-    name: 'CSV & Excel Cleaner',
-    href: '/tools/csv-cleaner',
-    blurb: 'Tidy up a messy spreadsheet — duplicates, blank rows and stray spaces.',
-    description:
-      'Remove duplicate and empty rows, trim stray spaces, tidy up headings and fix mixed-up date formats. Check the preview, then download as CSV or Excel.',
-    icon: 'Table2',
-    source: 'src/app/tools/csv-cleaner/page.tsx',
-    tags: ['Remove duplicates', 'Fix mixed dates', 'Tidy headings', 'CSV & Excel'],
-  },
-  {
     id: 'pdf-tools',
     name: 'PDF Tools',
     href: '/tools/pdf-tools',
@@ -68,6 +129,17 @@ export const tools: readonly Tool[] = [
     icon: 'FileStack',
     source: 'src/app/tools/pdf-tools/page.tsx',
     tags: ['Merge & reorder', 'Extract pages', 'Pages to images', 'Images to PDF', 'PDF to Word'],
+  },
+  {
+    id: 'csv-cleaner',
+    name: 'CSV & Excel Cleaner',
+    href: '/tools/csv-cleaner',
+    blurb: 'Tidy up a messy spreadsheet — duplicates, blank rows and stray spaces.',
+    description:
+      'Remove duplicate and empty rows, trim stray spaces, tidy up headings and fix mixed-up date formats. Check the preview, then download as CSV or Excel.',
+    icon: 'Table2',
+    source: 'src/app/tools/csv-cleaner/page.tsx',
+    tags: ['Remove duplicates', 'Fix mixed dates', 'Tidy headings', 'CSV & Excel'],
   },
   {
     id: 'image-compressor',

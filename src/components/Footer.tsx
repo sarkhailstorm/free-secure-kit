@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Github, Lock } from 'lucide-react';
-import { site, tools, author, donationsConfigured } from '@/config';
+import { site, tools, author, donationsConfigured, legalPages } from '@/config';
 import { SupportButton } from './SupportButton';
 
 export function Footer() {
@@ -21,7 +21,7 @@ export function Footer() {
           </div>
         ) : null}
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <p className="text-sm font-semibold tracking-tight text-ink">{site.name}</p>
             <p className="mt-1.5 max-w-sm text-[13px] leading-relaxed text-muted">
@@ -43,6 +43,22 @@ export function Footer() {
                     className="text-[13px] text-muted transition-colors hover:text-ink"
                   >
                     {tool.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <nav aria-label="Policies">
+            <p className="text-[13px] font-semibold text-ink">Site</p>
+            <ul className="mt-3 space-y-2">
+              {legalPages.map((page) => (
+                <li key={page.id}>
+                  <Link
+                    href={page.href}
+                    className="text-[13px] text-muted transition-colors hover:text-ink"
+                  >
+                    {page.title}
                   </Link>
                 </li>
               ))}
