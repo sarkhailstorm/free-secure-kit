@@ -23,7 +23,7 @@ Four everyday file and data utilities, in one place, free and without an account
 | --- | --- |
 | [PDF Tools](src/app/tools/pdf-tools/page.tsx) | Merge PDFs and reorder their pages, extract pages as PDFs or PNG/JPEG images, compress, build a PDF from images, convert a PDF to an editable Word document, and turn the tables in a PDF into an Excel spreadsheet |
 | [Image Tools](src/app/tools/image-tools/page.tsx) | Batch compress and resize JPEG, PNG and WebP, or cut the subject out of a photo and save it with a transparent or solid-colour background |
-| [Spreadsheet Tools](src/app/tools/spreadsheet-tools/page.tsx) | Remove duplicate and blank rows, trim whitespace, standardise headers, normalise inconsistent date formats |
+| [Spreadsheet Tools](src/app/tools/spreadsheet-tools/page.tsx) | Detects the text encoding and separator, finds the real header row, removes duplicate and blank rows, strips invisible characters, normalises inconsistent date formats, clusters equivalent spellings for review, reports what cleaning cannot fix, shows every changed cell with per-row rescue, and cleans every sheet of a workbook |
 | [Developer Tools](src/app/tools/developer-tools/page.tsx) | Convert between JSON, CSV and YAML with nesting flattened to dot-notation columns and back; a live Markdown editor exporting to standalone HTML or PDF with themes; diff checker, case converter, whitespace cleaner and Base64 / URL / JWT encoding |
 
 No sign-up, no email wall, no file size caps, no paywalled features. Every tool is complete.

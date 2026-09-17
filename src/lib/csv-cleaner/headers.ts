@@ -1,9 +1,10 @@
 /**
  * Header tidying.
  *
- * The only hard requirement is that no column may be lost: if two headers
- * collapse to the same text we suffix them (`name`, `name_2`, `name_3`) rather
- * than let one quietly overwrite the other.
+ * Two hard rules. No column may be lost: if two headers collapse to the same
+ * text we keep them apart rather than let one quietly overwrite the other. And
+ * with every toggle off nothing is touched at all, except that a nameless
+ * column is given a name, because an empty header breaks the file we write.
  */
 
 export interface HeaderOptions {
@@ -14,15 +15,30 @@ export interface HeaderOptions {
 
 export interface HeaderResult {
   headers: string[];
-  /** Headers whose text changed. */
+  /** Headers whose text the options changed. Blank backfills are not counted. */
   renamed: number;
   /** Headers that needed a `_2` style suffix to stay unique. */
   deduped: number;
+  /** Nameless columns given a `Column N` name. Happens with every toggle off. */
+  namedBlank: number;
+  /**
+   * Columns left unstandardised because tidying them would have made two
+   * different names identical — `Price (£)` and `Price (€)` both becoming
+   * `Price`.
+   */
+  keptToStayDistinct: number;
 }
 
-/** Strip punctuation but keep letters (any script), digits, spaces, _ and -. */
+/**
+ * Strip punctuation, but keep what a column name means by.
+ *
+ * Currency symbols, `%` and `°` are units, not punctuation: they are often the
+ * only thing telling `Price (£)` from `Price (€)`, and stripping them turned
+ * three columns into `Price`, `Price_2`, `Price_3`. Everything else that is
+ * not a letter, digit, space, `_` or `-` becomes a space.
+ */
 function stripSpecial(value: string): string {
-  return value.replace(/[^\p{L}\p{N} _-]+/gu, ' ');
+  return value.replace(/[^\p{L}\p{N}\p{Sc}%° _-]+/gu, ' ');
 }
 
 function toSnakeCase(value: string): string {
@@ -36,7 +52,20 @@ function toSnakeCase(value: string): string {
     .toLowerCase();
 }
 
-function cleanOne(raw: string, index: number, opts: HeaderOptions): string {
+/** A name stripped of everything case and word separators alone can explain. */
+function essence(raw: string): string {
+  return raw
+    .replace(/^﻿/, '')
+    .toLowerCase()
+    .replace(/[\s_-]+/gu, '');
+}
+
+function blankName(index: number, opts: HeaderOptions): string {
+  const fallback = opts.snakeCase ? `column_${index + 1}` : `Column ${index + 1}`;
+  return opts.lowercase && !opts.snakeCase ? fallback.toLowerCase() : fallback;
+}
+
+function cleanOne(raw: string, opts: HeaderOptions): string {
   let value = raw.replace(/^﻿/, '').trim();
 
   if (opts.standardise) {
@@ -47,44 +76,70 @@ function cleanOne(raw: string, index: number, opts: HeaderOptions): string {
   } else if (opts.lowercase) {
     value = value.toLowerCase();
   }
-
-  if (!value) {
-    // A nameless column still needs a name, or CSV/XLSX readers lose it.
-    const fallback = opts.snakeCase ? `column_${index + 1}` : `Column ${index + 1}`;
-    value = opts.lowercase && !opts.snakeCase ? fallback.toLowerCase() : fallback;
-  }
   return value;
 }
 
 export function standardiseHeaders(headers: string[], opts: HeaderOptions): HeaderResult {
   const touching = opts.standardise || opts.lowercase || opts.snakeCase;
-  const used = new Map<string, number>();
+
+  // Names the tidying would merge by destroying the only difference between
+  // them. `First Name` and `firstName` are one name written twice and merging
+  // them is the point of the toggle; `Total #` and `Total &` are two columns.
+  const merged = new Set<string>();
+  if (touching) {
+    const byClean = new Map<string, Set<string>>();
+    for (const raw of headers) {
+      const clean = cleanOne(raw, opts);
+      if (!clean) continue;
+      const group = byClean.get(clean) ?? new Set<string>();
+      group.add(essence(raw));
+      byClean.set(clean, group);
+    }
+    for (const [clean, group] of byClean) if (group.size > 1) merged.add(clean);
+  }
+
+  // Every name the file already carries, so a suffix we invent cannot steal one
+  // a later column is going to need.
+  const bases = headers.map((raw, i) => {
+    const kept = raw.trim() === '' ? blankName(i, opts) : touching ? cleanOne(raw, opts) : raw;
+    return kept === '' ? blankName(i, opts) : kept;
+  });
+  const reserved = new Set(bases);
+
+  const assigned = new Set<string>();
   const out: string[] = [];
   let renamed = 0;
   let deduped = 0;
+  let namedBlank = 0;
+  let keptToStayDistinct = 0;
 
   headers.forEach((raw, i) => {
-    // Even with every toggle off, an empty header would break the output, so
-    // the blank-name backfill always runs.
-    const base = touching ? cleanOne(raw, i, opts) : raw.trim() || `Column ${i + 1}`;
+    let base = bases[i];
+    const isBlank = raw.trim() === '';
 
-    const seen = used.get(base) ?? 0;
-    used.set(base, seen + 1);
-
-    let final = base;
-    if (seen > 0) {
-      let n = seen + 1;
-      // Keep bumping in case `name_2` itself already exists in the file.
-      while (used.has(`${base}_${n}`)) n += 1;
-      final = `${base}_${n}`;
-      used.set(final, 1);
-      deduped += 1;
+    if (isBlank) {
+      namedBlank += 1;
+    } else if (touching && merged.has(base)) {
+      base = raw.trim();
+      keptToStayDistinct += 1;
     }
 
-    // Counted separately from `deduped` so the summary never double-reports.
-    if (base !== raw) renamed += 1;
+    let final = base;
+    // A name the file already uses is only bumped when we would be the ones
+    // duplicating it: a repeat the file itself carries is left as it came,
+    // unless the toggles are on, where the merge is ours to resolve.
+    const mustBeUnique = touching || isBlank;
+    if (assigned.has(final) && mustBeUnique) {
+      let n = 2;
+      while (assigned.has(`${base}_${n}`) || reserved.has(`${base}_${n}`)) n += 1;
+      final = `${base}_${n}`;
+      deduped += 1;
+    }
+    assigned.add(final);
+
+    if (!isBlank && base !== raw) renamed += 1;
     out.push(final);
   });
 
-  return { headers: out, renamed, deduped };
+  return { headers: out, renamed, deduped, namedBlank, keptToStayDistinct };
 }

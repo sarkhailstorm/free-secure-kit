@@ -146,18 +146,22 @@ function ResolvedRow({
   );
 }
 
+export interface DateColumnsPanelProps {
+  /** `analyseDateColumns(grid)` for the sheet on screen. */
+  columns: readonly DateColumnAnalysis[];
+  /** `CleanOptions.columnDecisions`, keyed by ORIGINAL column index. */
+  decisions: Record<number, ColumnDecision>;
+  onDecide: (index: number, choice: ColumnDecision | undefined) => void;
+  /** Hidden entirely when date normalising is switched off. */
+  enabled: boolean;
+}
+
 export function DateColumnsPanel({
   columns,
   decisions,
   onDecide,
   enabled,
-}: {
-  columns: readonly DateColumnAnalysis[];
-  decisions: Record<number, ColumnDecision>;
-  onDecide: (index: number, choice: ColumnDecision | undefined) => void;
-  /** Hidden entirely when date normalising is switched off. */
-  enabled: boolean;
-}) {
+}: DateColumnsPanelProps) {
   if (!enabled || columns.length === 0) return null;
 
   const needAnswer = columns.filter((c) => c.status === 'undecidable');

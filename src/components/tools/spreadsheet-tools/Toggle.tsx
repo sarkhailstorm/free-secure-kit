@@ -6,14 +6,7 @@ import { cn } from '@/lib/cn';
  * A labelled checkbox row. The whole row is the label, so the tap target is
  * comfortably over 36px on a phone.
  */
-export function Toggle({
-  label,
-  hint,
-  checked,
-  onChange,
-  disabled = false,
-  nested = false,
-}: {
+export interface ToggleProps {
   label: string;
   hint?: string;
   checked: boolean;
@@ -21,7 +14,16 @@ export function Toggle({
   disabled?: boolean;
   /** Indent an option that only makes sense under the one above it. */
   nested?: boolean;
-}) {
+}
+
+export function Toggle({
+  label,
+  hint,
+  checked,
+  onChange,
+  disabled = false,
+  nested = false,
+}: ToggleProps) {
   return (
     <label
       className={cn(

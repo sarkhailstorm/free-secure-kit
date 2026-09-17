@@ -11,15 +11,28 @@ const formatTabs = (['iso', 'us', 'eu'] as const).map((id) => ({
   label: dateFormatLabels[id].label,
 }));
 
+/** "N/A, NULL, None and 7 more" — the whole list is too long for a hint. */
+function blankList(values: readonly string[]): string {
+  const shown = values.slice(0, 3).join(', ');
+  const rest = values.length - 3;
+  return rest > 0 ? `${shown} and ${rest} more like them` : shown;
+}
+
+export interface OptionsPanelProps {
+  options: CleanOptions;
+  onChange: (patch: Partial<CleanOptions>) => void;
+  /** Columns in this sheet that look like dates. */
+  dateColumnCount: number;
+  /** True when this sheet has an unnamed row-number column down its side. */
+  hasIndexColumn?: boolean;
+}
+
 export function OptionsPanel({
   options,
   onChange,
   dateColumnCount,
-}: {
-  options: CleanOptions;
-  onChange: (patch: Partial<CleanOptions>) => void;
-  dateColumnCount: number;
-}) {
+  hasIndexColumn = false,
+}: OptionsPanelProps) {
   return (
     <Card>
       <CardHeader
@@ -43,6 +56,16 @@ export function OptionsPanel({
             checked={options.removeBlankRows}
             onChange={(v) => onChange({ removeBlankRows: v })}
           />
+          {hasIndexColumn ? (
+            <Toggle
+              nested
+              label="Ignore the row-number column"
+              hint="This sheet has a column of plain row numbers with no name. With this on, a row holding nothing but its number counts as blank."
+              checked={options.ignoreIndexColumnInBlankRows}
+              disabled={!options.removeBlankRows}
+              onChange={(v) => onChange({ ignoreIndexColumnInBlankRows: v })}
+            />
+          ) : null}
           <Toggle
             label="Remove blank columns"
             hint="Only when the header and every cell in the column are empty."
@@ -54,7 +77,7 @@ export function OptionsPanel({
         <hr className="my-2 border-line" />
 
         <fieldset>
-          <legend className="sr-only">Whitespace</legend>
+          <legend className="sr-only">Tidying the text</legend>
 
           <Toggle
             label="Trim whitespace"
@@ -64,10 +87,29 @@ export function OptionsPanel({
           />
           <Toggle
             nested
-            label="Collapse spaces inside cells"
-            hint="Turns runs of spaces into one. Off by default — it rewrites deliberate formatting such as aligned text."
-            checked={options.collapseWhitespace}
-            onChange={(v) => onChange({ collapseWhitespace: v })}
+            label="Squeeze repeated spaces"
+            hint="Turns runs of spaces inside a cell into one. Off by default — it rewrites deliberate formatting such as lined-up text."
+            checked={options.collapseSpaces}
+            onChange={(v) => onChange({ collapseSpaces: v })}
+          />
+          <Toggle
+            nested
+            label="Put each cell on one line"
+            hint="Turns line breaks inside a cell into a space."
+            checked={options.flattenNewlines}
+            onChange={(v) => onChange({ flattenNewlines: v })}
+          />
+          <Toggle
+            label="Remove invisible characters"
+            hint="Characters that take up no space on screen but stop values matching when you search, sort or join on them."
+            checked={options.removeInvisibleCharacters}
+            onChange={(v) => onChange({ removeInvisibleCharacters: v })}
+          />
+          <Toggle
+            label="Empty out blanks like N/A"
+            hint={`Cells that only say ${blankList(options.defaultBlankSentinels)} are left empty. Off by default — the words themselves are lost.`}
+            checked={options.blankSentinels}
+            onChange={(v) => onChange({ blankSentinels: v })}
           />
         </fieldset>
 
@@ -109,7 +151,7 @@ export function OptionsPanel({
             hint={
               dateColumnCount === 0
                 ? 'No date-like columns were found in this sheet.'
-                : `${dateColumnCount} column${dateColumnCount === 1 ? '' : 's'} in this sheet look like dates.`
+                : `${dateColumnCount} column${dateColumnCount === 1 ? ' in this sheet looks' : 's in this sheet look'} like dates.`
             }
             checked={options.normaliseDates}
             onChange={(v) => onChange({ normaliseDates: v })}

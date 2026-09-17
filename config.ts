@@ -150,12 +150,12 @@ export const tools: readonly Tool[] = [
     id: 'spreadsheet-tools',
     name: 'Spreadsheet Tools',
     href: '/tools/spreadsheet-tools',
-    blurb: 'Tidy up a messy spreadsheet — duplicates, blank rows and stray spaces.',
+    blurb: 'Tidy up a messy spreadsheet, and see exactly what changed.',
     description:
-      'Remove duplicate and empty rows, trim stray spaces, tidy up headings and fix mixed-up date formats. Check the preview, then download as CSV or Excel.',
+      'Finds where your table really starts, reads accented names and pound signs properly, and drops duplicate and empty rows. Merges spellings that mean the same thing, tells you what looks wrong that it cannot fix, and shows you every cell it changed so you can put any row back. Works across every sheet in a workbook.',
     icon: 'Table2',
     source: 'src/app/tools/spreadsheet-tools/page.tsx',
-    tags: ['Remove duplicates', 'Fix mixed dates', 'Tidy headings', 'CSV & Excel'],
+    tags: ['Finds the real headings', 'Shows what changed', 'Merges spellings', 'Every sheet at once'],
   },
   {
     id: 'developer-tools',
