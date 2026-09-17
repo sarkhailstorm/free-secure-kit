@@ -100,7 +100,7 @@ export function sourceUrl(path: string): string {
 }
 
 export type ToolId =
-  | 'csv-cleaner'
+  | 'spreadsheet-tools'
   | 'image-tools'
   | 'pdf-tools'
   | 'developer-tools';
@@ -147,14 +147,14 @@ export const tools: readonly Tool[] = [
     tags: ['Whole folders at once', 'Quality slider', 'Remove background', 'See-through PNG'],
   },
   {
-    id: 'csv-cleaner',
-    name: 'CSV & Excel Cleaner',
-    href: '/tools/csv-cleaner',
+    id: 'spreadsheet-tools',
+    name: 'Spreadsheet Tools',
+    href: '/tools/spreadsheet-tools',
     blurb: 'Tidy up a messy spreadsheet — duplicates, blank rows and stray spaces.',
     description:
       'Remove duplicate and empty rows, trim stray spaces, tidy up headings and fix mixed-up date formats. Check the preview, then download as CSV or Excel.',
     icon: 'Table2',
-    source: 'src/app/tools/csv-cleaner/page.tsx',
+    source: 'src/app/tools/spreadsheet-tools/page.tsx',
     tags: ['Remove duplicates', 'Fix mixed dates', 'Tidy headings', 'CSV & Excel'],
   },
   {

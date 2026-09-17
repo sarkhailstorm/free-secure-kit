@@ -41,7 +41,11 @@ const viewTabs = [
 
 const emptyGrid: Grid = { header: [], rows: [] };
 
-export function CsvCleaner() {
+function formatLabel(kind: 'csv' | 'xlsx'): string {
+  return kind === 'csv' ? 'CSV' : 'Excel';
+}
+
+export function SpreadsheetTools() {
   const toast = useToast();
 
   const [parsed, setParsed] = useState<ParsedFile | null>(null);
@@ -155,7 +159,7 @@ export function CsvCleaner() {
         downloadBlob(blob, name);
         toast.celebrate(`${name} saved to your downloads.`);
       } catch {
-        toast.error(`Something went wrong writing the ${kind.toUpperCase()}. Try the other format?`);
+        toast.error(`Something went wrong writing the ${formatLabel(kind)} file. Try the other format?`);
       } finally {
         setWriting(null);
       }
@@ -312,7 +316,7 @@ export function CsvCleaner() {
                     ) : (
                       <Download className="h-3.5 w-3.5" aria-hidden />
                     )}
-                    XLSX
+                    Excel
                   </Button>
                 </div>
               }
