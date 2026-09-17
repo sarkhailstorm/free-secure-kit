@@ -1,14 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {
-  ArrowLeftRight,
   ArrowRight,
-  FileCode2,
+  Code2,
   FileStack,
   Home,
   ImageDown,
   Table2,
-  Type,
   type LucideIcon,
 } from 'lucide-react';
 import { tools } from '@/config';
@@ -20,11 +18,9 @@ export const metadata: Metadata = {
 
 const icons: Record<string, LucideIcon> = {
   Table2,
-  ArrowLeftRight,
   ImageDown,
   FileStack,
-  FileCode2,
-  Type,
+  Code2,
 };
 
 

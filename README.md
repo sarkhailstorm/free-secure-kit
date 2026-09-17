@@ -17,16 +17,14 @@ all processed locally, with nothing uploaded to a server.
 
 ## What this is
 
-Seven everyday file and data utilities, in one place, free and without an account:
+Four everyday file and data utilities, in one place, free and without an account:
 
 | Tool | What it does |
 | --- | --- |
-| [CSV & Excel Cleaner](src/app/tools/csv-cleaner/page.tsx) | Remove duplicate and blank rows, trim whitespace, standardise headers, normalise inconsistent date formats |
-| [JSON ↔ CSV ↔ YAML](src/app/tools/json-csv-yaml-converter/page.tsx) | Convert between the three formats, flattening nested data to dot-notation columns and back |
-| [Image Tools](src/app/tools/image-tools/page.tsx) | Batch compress and resize JPEG, PNG and WebP, or cut the subject out of a photo and save it with a transparent or solid-colour background |
 | [PDF Tools](src/app/tools/pdf-tools/page.tsx) | Merge PDFs and reorder their pages, extract pages as PDFs or PNG/JPEG images, compress, build a PDF from images, convert a PDF to an editable Word document, and turn the tables in a PDF into an Excel spreadsheet |
-| [Markdown Converter](src/app/tools/markdown-converter/page.tsx) | Live Markdown editor, export to standalone HTML or PDF with themes |
-| [Text Utilities](src/app/tools/text-utilities/page.tsx) | Diff checker, case converter, whitespace cleaner, Base64 / URL / JWT encoding |
+| [Image Tools](src/app/tools/image-tools/page.tsx) | Batch compress and resize JPEG, PNG and WebP, or cut the subject out of a photo and save it with a transparent or solid-colour background |
+| [CSV & Excel Cleaner](src/app/tools/csv-cleaner/page.tsx) | Remove duplicate and blank rows, trim whitespace, standardise headers, normalise inconsistent date formats |
+| [Developer Tools](src/app/tools/developer-tools/page.tsx) | Convert between JSON, CSV and YAML with nesting flattened to dot-notation columns and back; a live Markdown editor exporting to standalone HTML or PDF with themes; diff checker, case converter, whitespace cleaner and Base64 / URL / JWT encoding |
 
 No sign-up, no email wall, no file size caps, no paywalled features. Every tool is complete.
 

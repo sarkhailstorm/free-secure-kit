@@ -101,11 +101,9 @@ export function sourceUrl(path: string): string {
 
 export type ToolId =
   | 'csv-cleaner'
-  | 'json-csv-yaml-converter'
   | 'image-tools'
   | 'pdf-tools'
-  | 'markdown-converter'
-  | 'text-utilities';
+  | 'developer-tools';
 
 export type Tool = {
   id: ToolId;
@@ -138,17 +136,6 @@ export const tools: readonly Tool[] = [
     ],
   },
   {
-    id: 'csv-cleaner',
-    name: 'CSV & Excel Cleaner',
-    href: '/tools/csv-cleaner',
-    blurb: 'Tidy up a messy spreadsheet — duplicates, blank rows and stray spaces.',
-    description:
-      'Remove duplicate and empty rows, trim stray spaces, tidy up headings and fix mixed-up date formats. Check the preview, then download as CSV or Excel.',
-    icon: 'Table2',
-    source: 'src/app/tools/csv-cleaner/page.tsx',
-    tags: ['Remove duplicates', 'Fix mixed dates', 'Tidy headings', 'CSV & Excel'],
-  },
-  {
     id: 'image-tools',
     name: 'Image Tools',
     href: '/tools/image-tools',
@@ -160,37 +147,26 @@ export const tools: readonly Tool[] = [
     tags: ['Whole folders at once', 'Quality slider', 'Remove background', 'See-through PNG'],
   },
   {
-    id: 'json-csv-yaml-converter',
-    name: 'JSON ↔ CSV ↔ YAML',
-    href: '/tools/json-csv-yaml-converter',
-    blurb: 'Switch data between JSON, CSV and YAML — nesting handled for you.',
+    id: 'csv-cleaner',
+    name: 'CSV & Excel Cleaner',
+    href: '/tools/csv-cleaner',
+    blurb: 'Tidy up a messy spreadsheet — duplicates, blank rows and stray spaces.',
     description:
-      'Drop in JSON, CSV or YAML and get either of the other two back. Nested data flattens into readable columns and rebuilds properly on the way back.',
-    icon: 'ArrowLeftRight',
-    source: 'src/app/tools/json-csv-yaml-converter/page.tsx',
-    tags: ['Spots the format', 'Handles nesting', 'Converts both ways', 'Copy or download'],
+      'Remove duplicate and empty rows, trim stray spaces, tidy up headings and fix mixed-up date formats. Check the preview, then download as CSV or Excel.',
+    icon: 'Table2',
+    source: 'src/app/tools/csv-cleaner/page.tsx',
+    tags: ['Remove duplicates', 'Fix mixed dates', 'Tidy headings', 'CSV & Excel'],
   },
   {
-    id: 'markdown-converter',
-    name: 'Markdown Converter',
-    href: '/tools/markdown-converter',
-    blurb: 'Write Markdown, watch it render, save it as a page or PDF.',
+    id: 'developer-tools',
+    name: 'Developer Tools',
+    href: '/tools/developer-tools',
+    blurb: 'Convert data formats, write Markdown, and work on text.',
     description:
-      'Type Markdown on the left and watch the finished page appear on the right. Save it as a self-contained web page or a PDF, in the theme you like.',
-    icon: 'FileCode2',
-    source: 'src/app/tools/markdown-converter/page.tsx',
-    tags: ['Live preview', 'Code highlighting', 'Choose a theme', 'Web page or PDF'],
-  },
-  {
-    id: 'text-utilities',
-    name: 'Text Utilities',
-    href: '/tools/text-utilities',
-    blurb: 'Compare, re-case, clean up and encode any piece of text.',
-    description:
-      'See what changed between two versions, switch capitalisation, clean up messy spacing, and encode or decode Base64, URLs and JWTs.',
-    icon: 'Type',
-    source: 'src/app/tools/text-utilities/page.tsx',
-    tags: ['Spot the changes', 'Change the case', 'Clean up spacing', 'Base64 & JWT'],
+      'Convert between JSON, CSV and YAML with nesting handled for you. Write Markdown and save it as a page or PDF. Compare two versions of some text, change its case, clean up its spacing, and encode or decode Base64, URLs and JWTs.',
+    icon: 'Code2',
+    source: 'src/app/tools/developer-tools/page.tsx',
+    tags: ['JSON, CSV & YAML', 'Markdown to PDF', 'Diff & case', 'Base64 & JWT'],
   },
 ] as const;
 

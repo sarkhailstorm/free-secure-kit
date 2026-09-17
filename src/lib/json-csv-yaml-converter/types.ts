@@ -2,7 +2,7 @@
  * Shared vocabulary for the JSON ↔ CSV ↔ YAML converter.
  *
  * Everything in this directory is pure: no DOM, no network, no side effects.
- * The React layer in `src/components/tools/json-csv-yaml-converter/` calls into
+ * The React layer in `src/components/tools/developer-tools/json-csv-yaml-converter/` calls into
  * it from event handlers and effects only.
  */
 

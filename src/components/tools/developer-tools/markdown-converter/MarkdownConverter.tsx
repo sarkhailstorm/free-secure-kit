@@ -90,7 +90,7 @@ function isQuotaError(err: unknown): boolean {
   return err instanceof DOMException && err.code === 22;
 }
 
-export function MarkdownConverter() {
+export function MarkdownConverter({ active = true }: { active?: boolean }) {
   const toast = useToast();
   const themeSelectId = useId();
 
@@ -523,7 +523,7 @@ export function MarkdownConverter() {
           </p>
         </Card>
 
-        <PrintSurface html={html} themeId={themeId} />
+        {active ? <PrintSurface html={html} themeId={themeId} /> : null}
       </div>
     </>
   );

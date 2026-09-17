@@ -1,13 +1,11 @@
 import Link from 'next/link';
 import {
-  ArrowLeftRight,
   ArrowRight,
-  FileCode2,
+  Code2,
   FileStack,
   Github,
   ImageDown,
   Table2,
-  Type,
   WifiOff,
   Zap,
   UserX,
@@ -17,11 +15,9 @@ import { site, tools } from '@/config';
 
 const icons: Record<string, LucideIcon> = {
   Table2,
-  ArrowLeftRight,
   ImageDown,
   FileStack,
-  FileCode2,
-  Type,
+  Code2,
 };
 
 

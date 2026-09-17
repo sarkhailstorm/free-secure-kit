@@ -2,7 +2,18 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "redirects": [
     { "source": "/tools/image-compressor", "destination": "/tools/image-tools", "permanent": true },
-    { "source": "/tools/background-remover", "destination": "/tools/image-tools", "permanent": true }
+    { "source": "/tools/background-remover", "destination": "/tools/image-tools", "permanent": true },
+    {
+      "source": "/tools/json-csv-yaml-converter",
+      "destination": "/tools/developer-tools",
+      "permanent": true
+    },
+    {
+      "source": "/tools/markdown-converter",
+      "destination": "/tools/developer-tools",
+      "permanent": true
+    },
+    { "source": "/tools/text-utilities", "destination": "/tools/developer-tools", "permanent": true }
   ],
   "headers": [
     {
