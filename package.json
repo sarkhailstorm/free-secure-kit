@@ -5,12 +5,12 @@
   "description": "A privacy-first, open-source suite of data and file utility tools that run entirely in your browser.",
   "license": "MIT",
   "scripts": {
-    "dev": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-bg-models.mjs && next dev",
-    "build": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-bg-models.mjs && next build",
+    "dev": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-models.mjs && next dev",
+    "build": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-models.mjs && next build",
     "start": "npx serve out",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "postinstall": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-bg-models.mjs"
+    "postinstall": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-models.mjs"
   },
   "dependencies": {
     "browser-image-compression": "2.0.2",

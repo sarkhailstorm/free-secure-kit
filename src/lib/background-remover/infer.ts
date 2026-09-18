@@ -1,4 +1,5 @@
 import type { InferenceSession } from 'onnxruntime-web';
+import { getSession as openSession, loadOrt, releaseSessions } from '@/lib/onnx/runtime';
 import type { DownloadedAssets } from './model';
 import { BackgroundRemoverError, type ModelChoice } from './types';
 
@@ -13,53 +14,25 @@ const ANYTHING_EDGE = 320;
 const ANYTHING_MEAN = [0.485, 0.456, 0.406];
 const ANYTHING_STD = [0.229, 0.224, 0.225];
 
-type OrtModule = typeof import('onnxruntime-web');
-
-let ort: OrtModule | null = null;
-let held: { choice: ModelChoice; session: InferenceSession } | null = null;
-
-async function loadOrt(): Promise<OrtModule> {
-  if (ort) return ort;
-  // The /wasm subpath only: the bare package drags in the WebGPU build for nothing.
-  const loaded = await import('onnxruntime-web/wasm');
-  loaded.env.wasm.wasmPaths = '/ort/';
-  // A static export can't be cross-origin isolated, so one thread is the only
-  // option. Saying so explicitly keeps the console quiet about it.
-  loaded.env.wasm.numThreads = 1;
-  ort = loaded;
-  return loaded;
+/** A cut-out before it is applied to anything: white, with coverage in the alpha channel. */
+export interface Stencil {
+  image: ImageData;
+  width: number;
+  height: number;
 }
 
-/** Only one choice is kept alive at a time — each holds several megabytes. */
+/** Only one cutter is kept alive at a time — each holds several megabytes. */
 export async function getSession(
   choice: ModelChoice,
   assets: DownloadedAssets,
 ): Promise<InferenceSession> {
-  if (held?.choice === choice) return held.session;
-  await releaseSession();
-
-  const runtime = await loadOrt();
-  if (assets.engine) runtime.env.wasm.wasmBinary = assets.engine;
-
-  const session = await runtime.InferenceSession.create(assets.cutter, {
-    executionProviders: ['wasm'],
-    graphOptimizationLevel: 'all',
-  });
-  // Only read once, and holding it would pin 14 MB for the life of the page.
-  runtime.env.wasm.wasmBinary = undefined;
-  held = { choice, session };
-  return session;
+  const key = `cutter:${choice}`;
+  await releaseSessions([key]);
+  return openSession(key, assets.cutter, assets.engine ?? undefined);
 }
 
 export async function releaseSession(): Promise<void> {
-  const previous = held;
-  held = null;
-  if (!previous) return;
-  try {
-    await previous.session.release();
-  } catch {
-    // Already gone; nothing useful to do about it.
-  }
+  await releaseSessions();
 }
 
 function floorTo32(value: number): number {
@@ -165,23 +138,19 @@ function throwIfAborted(signal?: AbortSignal): void {
 }
 
 /**
- * Cut the subject out of `source` and return it as a PNG.
+ * Run the cutter and hand back the raw coverage, at the size the network saw.
  *
- * The result is composited onto the original full-resolution pixels, not onto
- * the small copy the network saw, so nothing is resampled twice. The stencil is
- * scaled up smoothly on the way — at 320 wide against a 4000-wide photo, a
- * nearest-neighbour edge would come out as visible steps.
+ * Callers that only want to measure the subject use this directly; `cutOut`
+ * scales the same stencil up and composites with it.
  */
-export async function cutOut(
+export async function segment(
   session: InferenceSession,
   choice: ModelChoice,
   source: ImageBitmap,
   signal?: AbortSignal,
-): Promise<Blob> {
+): Promise<Stencil> {
   const size = workingSize(choice, source.width, source.height);
   const small = document.createElement('canvas');
-  const stencil = document.createElement('canvas');
-  const full = document.createElement('canvas');
 
   try {
     small.width = size.width;
@@ -209,9 +178,38 @@ export async function cutOut(
       throw new BackgroundRemoverError('The background remover returned something unreadable.');
     }
 
-    stencil.width = size.width;
-    stencil.height = size.height;
-    context2d(stencil).putImageData(toStencil(raw, size.width, size.height, choice), 0, 0);
+    return {
+      image: toStencil(raw, size.width, size.height, choice),
+      width: size.width,
+      height: size.height,
+    };
+  } finally {
+    release(small);
+  }
+}
+
+/**
+ * Cut the subject out of `source` and return it as a PNG.
+ *
+ * The result is composited onto the original full-resolution pixels, not onto
+ * the small copy the network saw, so nothing is resampled twice. The stencil is
+ * scaled up smoothly on the way — at 320 wide against a 4000-wide photo, a
+ * nearest-neighbour edge would come out as visible steps.
+ */
+export async function cutOut(
+  session: InferenceSession,
+  choice: ModelChoice,
+  source: ImageBitmap,
+  signal?: AbortSignal,
+): Promise<Blob> {
+  const mask = await segment(session, choice, source, signal);
+  const stencil = document.createElement('canvas');
+  const full = document.createElement('canvas');
+
+  try {
+    stencil.width = mask.width;
+    stencil.height = mask.height;
+    context2d(stencil).putImageData(mask.image, 0, 0);
 
     full.width = source.width;
     full.height = source.height;
@@ -227,7 +225,6 @@ export async function cutOut(
     if (!blob) throw new BackgroundRemoverError('The cut-out couldn’t be saved as a PNG.');
     return blob;
   } finally {
-    release(small);
     release(stencil);
     release(full);
   }

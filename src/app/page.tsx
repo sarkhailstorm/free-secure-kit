@@ -5,6 +5,7 @@ import {
   FileStack,
   Github,
   ImageDown,
+  ScanFace,
   Table2,
   WifiOff,
   Zap,
@@ -18,6 +19,7 @@ const icons: Record<string, LucideIcon> = {
   ImageDown,
   FileStack,
   Code2,
+  ScanFace,
 };
 
 
@@ -66,8 +68,8 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted">
-              Tidy spreadsheets, convert data, shrink photos, sort out PDFs. Free — and nothing
-              is ever uploaded, because it all runs inside this page.
+              Make a passport photo, tidy a spreadsheet, shrink photos, sort out PDFs. Free — and
+              nothing is ever uploaded, because it all runs inside this page.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">

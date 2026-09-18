@@ -1,13 +1,16 @@
 # Model licences
 
-The background remover ships two pre-trained models. Both are licensed under the
-**Apache License, Version 2.0** — <https://www.apache.org/licenses/LICENSE-2.0>.
+This site ships three pre-trained models: two cut-out models used by the background
+remover and by Passport Photos, and one face detector used by Passport Photos.
 
-Neither upstream project distributes a `NOTICE` file, so clause 4(d) of the licence
-does not apply to either model.
+The two cut-out models are licensed under the **Apache License, Version 2.0** —
+<https://www.apache.org/licenses/LICENSE-2.0>. The face detector is **MIT**.
 
-SecureKit itself remains [MIT](LICENSE). Apache-2.0 permits commercial use and
-redistribution, and does not require this project to change its own licence.
+None of the three upstream projects distributes a `NOTICE` file, so clause 4(d) of
+the Apache licence does not apply to any of them.
+
+SecureKit itself remains [MIT](LICENSE). Both licences permit commercial use and
+redistribution, and neither requires this project to change its own licence.
 
 ## MODNet (portrait cut-outs)
 
@@ -40,6 +43,28 @@ demos. The file served here is a quantised export of that model, published in th
 `u2netp` is the small variant of U²-Net. The file served here is the export
 redistributed by the `rembg` project.
 
+## YuNet (finding the face, for Passport Photos)
+
+| | |
+| --- | --- |
+| Served as | `public/models/yunet-8f2383e4.onnx` |
+| Size | 232,589 bytes |
+| SHA-256 | `8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4` |
+| Downloaded from | <https://huggingface.co/opencv/opencv_zoo/resolve/d4938dfc9d4ec5d098bfa33e98b3f3345a236586/models/face_detection_yunet/face_detection_yunet_2023mar.onnx> |
+| Original project | <https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet> |
+| Licence | MIT |
+| Authors | Wei Wu, Wenbin Peng, Hanyang Peng and Shiqi Yu |
+
+The OpenCV Zoo states that all files in that model's directory are under the MIT
+licence. The file served here is the `2023mar` export, redistributed byte-for-byte,
+pinned to the commit in the URL above. It takes a fixed 640 × 640 image and returns
+a box and five landmarks per face. It never runs until someone picks a photo, and
+it runs on the device — no photo, and nothing derived from one, is sent anywhere.
+
+The MIT licence requires the copyright notice to travel with the file. The
+[upstream licence](https://github.com/opencv/opencv_zoo/blob/main/models/face_detection_yunet/LICENSE)
+is reproduced by this entry and its link.
+
 ## What Apache-2.0 asks of this repository
 
 Clause 4 of the licence applies to anyone redistributing these files. In full, a
@@ -63,12 +88,16 @@ project ships a `NOTICE` file, so (d) does not apply.
   incompatible with this project.
 - **`@imgly/background-removal`** — AGPL-3.0, which would force this repository to
   relicense.
+- **InsightFace models (SCRFD, ArcFace)** — published for non-commercial research
+  use, which is incompatible with this project.
 
-Neither may be added, and neither may be pulled in as a transitive dependency.
+None of these may be added, and none may be pulled in as a transitive dependency.
 
 ## Runtime
 
-Both models are run by [onnxruntime-web](https://github.com/microsoft/onnxruntime),
+All three models are run by [onnxruntime-web](https://github.com/microsoft/onnxruntime),
 which is MIT-licensed. Its runtime files are copied out of `node_modules` into
 `public/ort/` at build time by `scripts/copy-onnx-runtime.mjs`, so nothing is ever
-fetched from a CDN.
+fetched from a CDN. The model files themselves are fetched once, at install time,
+by `scripts/fetch-models.mjs`, which refuses to write a file whose SHA-256 does not
+match.
