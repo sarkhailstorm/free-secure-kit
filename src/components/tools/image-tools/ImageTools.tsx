@@ -1,15 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { ImageDown, Scissors } from 'lucide-react';
+import { ImageDown, ScanFace, Scissors } from 'lucide-react';
 import { Tabs, type TabItem } from '@/components/ui/Tabs';
 import { cn } from '@/lib/cn';
 import { BackgroundRemoverPanel } from './BackgroundRemoverPanel';
 import { ImageCompressor } from './ImageCompressor';
+import { PassportPhoto } from './passport-photo/PassportPhoto';
 
-type Mode = 'compress' | 'background';
+type Mode = 'passport' | 'compress' | 'background';
 
 const TABS: readonly TabItem<Mode>[] = [
+  {
+    id: 'passport',
+    label: 'Passport photo',
+    icon: <ScanFace className="h-3.5 w-3.5" aria-hidden />,
+  },
   { id: 'compress', label: 'Compress', icon: <ImageDown className="h-3.5 w-3.5" aria-hidden /> },
   {
     id: 'background',
@@ -19,7 +25,7 @@ const TABS: readonly TabItem<Mode>[] = [
 ];
 
 export function ImageTools() {
-  const [mode, setMode] = useState<Mode>('compress');
+  const [mode, setMode] = useState<Mode>('passport');
 
   return (
     <div
@@ -29,6 +35,14 @@ export function ImageTools() {
     >
       <Tabs tabs={TABS} active={mode} onChange={setMode} label="Image tools" />
 
+      <div
+        role="tabpanel"
+        aria-label="Passport photo"
+        hidden={mode !== 'passport'}
+        className={cn(mode !== 'passport' && 'hidden')}
+      >
+        <PassportPhoto />
+      </div>
       <div
         role="tabpanel"
         aria-label="Compress"

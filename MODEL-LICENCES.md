@@ -1,7 +1,8 @@
 # Model licences
 
 This site ships three pre-trained models: two cut-out models used by the background
-remover and by Passport Photos, and one face detector used by Passport Photos.
+remover and by the passport photo maker, and one face detector used by the passport
+photo maker.
 
 The two cut-out models are licensed under the **Apache License, Version 2.0** —
 <https://www.apache.org/licenses/LICENSE-2.0>. The face detector is **MIT**.
@@ -43,7 +44,7 @@ demos. The file served here is a quantised export of that model, published in th
 `u2netp` is the small variant of U²-Net. The file served here is the export
 redistributed by the `rembg` project.
 
-## YuNet (finding the face, for Passport Photos)
+## YuNet (finding the face, for passport photos)
 
 | | |
 | --- | --- |

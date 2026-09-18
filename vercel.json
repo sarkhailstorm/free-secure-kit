@@ -4,6 +4,7 @@
     { "source": "/tools/csv-cleaner", "destination": "/tools/spreadsheet-tools", "permanent": true },
     { "source": "/tools/image-compressor", "destination": "/tools/image-tools", "permanent": true },
     { "source": "/tools/background-remover", "destination": "/tools/image-tools", "permanent": true },
+    { "source": "/tools/passport-photo", "destination": "/tools/image-tools", "permanent": true },
     {
       "source": "/tools/json-csv-yaml-converter",
       "destination": "/tools/developer-tools",

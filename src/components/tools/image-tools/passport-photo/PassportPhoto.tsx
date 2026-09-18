@@ -24,7 +24,7 @@ import {
   type SpecId,
 } from '@/lib/passport-photo';
 import { DEFAULT_SPEC } from '@/lib/passport-photo';
-import { ErrorNote, Note, Progress } from '../pdf-tools/shared';
+import { ErrorNote, Note, Progress } from '../../pdf-tools/shared';
 import { ChecksPanel } from './ChecksPanel';
 import { DEFAULT_CUSTOM, DocumentPicker, type CustomSize } from './DocumentPicker';
 import { OutputPanel } from './OutputPanel';

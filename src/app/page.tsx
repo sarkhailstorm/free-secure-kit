@@ -5,7 +5,6 @@ import {
   FileStack,
   Github,
   ImageDown,
-  ScanFace,
   Table2,
   WifiOff,
   Zap,
@@ -19,7 +18,6 @@ const icons: Record<string, LucideIcon> = {
   ImageDown,
   FileStack,
   Code2,
-  ScanFace,
 };
 
 

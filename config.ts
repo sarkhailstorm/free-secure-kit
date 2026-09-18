@@ -100,7 +100,6 @@ export function sourceUrl(path: string): string {
 }
 
 export type ToolId =
-  | 'passport-photo'
   | 'spreadsheet-tools'
   | 'image-tools'
   | 'pdf-tools'
@@ -118,17 +117,6 @@ export type Tool = {
 };
 
 export const tools: readonly Tool[] = [
-  {
-    id: 'passport-photo',
-    name: 'Passport Photos',
-    href: '/tools/passport-photo',
-    blurb: 'Turn a photo from your phone into a passport photo that fits the rules.',
-    description:
-      'Finds your face, measures your head the way a passport office does, and crops the photo to the exact size your country asks for. Tells you what would get it turned down before you send it. Lays the copies out on an ordinary 6 × 4 print, so any shop can print them for pennies.',
-    icon: 'ScanFace',
-    source: 'src/app/tools/passport-photo/page.tsx',
-    tags: ['UK, US, Schengen and more', 'Warns before you send it', '6 × 4 print sheet', 'Exact head height'],
-  },
   {
     id: 'pdf-tools',
     name: 'PDF Tools',
@@ -151,12 +139,12 @@ export const tools: readonly Tool[] = [
     id: 'image-tools',
     name: 'Image Tools',
     href: '/tools/image-tools',
-    blurb: 'Shrink photos, or cut the subject out of one.',
+    blurb: 'Make a passport photo, shrink photos, or cut the subject out of one.',
     description:
-      'Make photos smaller without a visible drop in quality — one or a whole folder — or cut the subject out of a photo and get it back on a see-through background.',
+      'Turn a photo from your phone into a passport photo at the exact size your country asks for, and hear what would get it turned down before you send it. Make photos smaller without a visible drop in quality — one or a whole folder. Or cut the subject out of a photo and get it back on a see-through background.',
     icon: 'ImageDown',
     source: 'src/app/tools/image-tools/page.tsx',
-    tags: ['Whole folders at once', 'Quality slider', 'Remove background', 'See-through PNG'],
+    tags: ['Passport photos', 'Whole folders at once', 'Remove background', '6 × 4 print sheet'],
   },
   {
     id: 'spreadsheet-tools',
