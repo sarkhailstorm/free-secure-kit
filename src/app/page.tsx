@@ -73,8 +73,8 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-relaxed text-muted">
-              Make a passport photo, tidy a spreadsheet, shrink photos, sort out PDFs. Free — and
-              nothing is ever uploaded, because it all runs inside this page.
+              Join PDFs and drag the pages into order. Tidy a messy spreadsheet. Then turn a phone
+              snap into a passport photo at the right size. All free.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
