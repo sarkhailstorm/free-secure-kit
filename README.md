@@ -1,4 +1,4 @@
-undefined<div align="center">
+<div align="center">
 
 # SecureKit
 
@@ -7,7 +7,7 @@ undefined<div align="center">
 Clean spreadsheets, convert data formats, compress images and edit PDFs —
 all processed locally, with nothing uploaded to a server.
 
-[Live site](https://securekit.vercel.app) · [Report an issue](https://github.com/sarkhailstorm/securekit/issues)
+[Live site](https://freesecurekit.vercel.app) · [Report an issue](https://github.com/sarkhailstorm/securekit/issues)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 

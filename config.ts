@@ -3,7 +3,7 @@ export const site = {
   tagline: 'Free file tools that never upload your files',
   description:
     'Free, open-source tools for spreadsheets, images, PDFs and text. Everything runs in your browser — your files are never uploaded.',
-  url: 'https://securekit.vercel.app',
+  url: 'https://freesecurekit.vercel.app',
   repo: 'https://github.com/sarkhailstorm/securekit',
   repoBranch: 'main',
 } as const;
