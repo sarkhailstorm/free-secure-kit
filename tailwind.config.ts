@@ -46,10 +46,17 @@ const config: Config = {
           from: { opacity: '0', transform: 'translateY(12px) scale(0.98)' },
           to: { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
+        // One wisp of steam: grows out of the cup, then thins away above it.
+        steam: {
+          '0%': { opacity: '0', transform: 'translateY(2px) scaleY(0.5)' },
+          '30%': { opacity: '1', transform: 'translateY(0.5px) scaleY(1)' },
+          '100%': { opacity: '0', transform: 'translateY(-2.5px) scaleY(1.3)' },
+        },
       },
       animation: {
         'fade-in': 'fade-in 0.2s ease-out both',
         'slide-up': 'slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) both',
+        steam: 'steam 3s ease-out infinite',
       },
     },
   },

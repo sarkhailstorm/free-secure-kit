@@ -47,7 +47,9 @@ export function Header() {
             <Github className="h-4 w-4" aria-hidden />
           </a>
           <ThemeToggle />
-          <SupportButton size="sm" compact />
+          <div className="hidden sm:block">
+            <SupportButton size="sm" />
+          </div>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
