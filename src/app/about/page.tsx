@@ -14,7 +14,7 @@ import {
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'SecureKit is a free, open-source suite of file tools that run entirely in your browser, built by one developer in India.',
+    'SecureKit is a free, open-source suite of file tools that run entirely in your browser, built by one developer.',
 };
 
 export default function AboutPage() {
@@ -57,14 +57,13 @@ export default function AboutPage() {
 
       <h2>Who runs it</h2>
       <p>
-        SecureKit is built and maintained by {author.name}, an independent software developer based
-        in India, and has been online since {author.since}. It is a one-person project: there is no
-        team, no investors and no company behind it.
+        SecureKit is built and maintained by {author.name}, an independent software developer, and
+        has been online since {author.since}. It is a one-person project: there is no team, no
+        investors and no company behind it.
       </p>
       {legalNameConfigured ? (
         <p>
-          The business behind the site is <strong>{business.legalName}</strong>, a sole
-          proprietorship registered in India.
+          The business behind the site is <strong>{business.legalName}</strong>.
         </p>
       ) : null}
 

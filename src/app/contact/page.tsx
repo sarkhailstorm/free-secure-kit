@@ -32,9 +32,8 @@ export default function ContactPage() {
     <LegalPage id="contact" updated="16 September 2026">
       <h2>Who you are contacting</h2>
       <p>
-        SecureKit is built and maintained by {author.name}, an independent software developer in
-        India. It is a one-person project, so every message is read by the same person who writes
-        the code.
+        SecureKit is built and maintained by {author.name}, an independent software developer. It
+        is a one-person project, so every message is read by the same person who writes the code.
       </p>
       {legalNameConfigured ? (
         <p>

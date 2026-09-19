@@ -20,7 +20,7 @@ export default function Page() {
     <LegalPage id="terms" updated="16 September 2026">
       <h2>Who runs this site</h2>
       <p>
-        SecureKit is run by {traderName()}, an individual based in India, from{' '}
+        SecureKit is run by {traderName()}, an individual, from{' '}
         <a href={site.url}>{site.url}</a>. In these terms &ldquo;we&rdquo; and &ldquo;us&rdquo; mean
         the person who runs SecureKit, and &ldquo;you&rdquo; means anyone using the site.
       </p>
@@ -149,8 +149,9 @@ export default function Page() {
 
       <h2>Governing law</h2>
       <p>
-        These terms are governed by the laws of India, and the courts of India have jurisdiction
-        over any dispute arising from them or from your use of the site.
+        These terms are governed by the law of the country in which SecureKit is operated, and the
+        courts of that country have jurisdiction over any dispute arising from them or from your use
+        of the site.
       </p>
     </LegalPage>
   );

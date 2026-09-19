@@ -30,8 +30,6 @@ export const support = {
   // Replace with your own page, e.g. https://ko-fi.com/yourname.
   url: 'https://ko-fi.com',
   label: 'Buy me a coffee',
-  /** Used where the full label will not fit, such as a narrow phone header. */
-  shortLabel: 'Coffee',
   emoji: '☕',
   /** The page a contributor lands on. */
   platform: 'Ko-fi',
@@ -60,7 +58,7 @@ export const business = {
     city: '',
     state: '',
     postcode: '',
-    country: 'India',
+    country: '',
   },
 } as const;
 

@@ -143,7 +143,7 @@ export default function Page() {
         which tool was opened and when.
       </p>
       <p>
-        An IP address counts as personal data in India and in many other places. The logs are held
+        An IP address counts as personal data in many places. The logs are held
         by Vercel under its own privacy policy. We do not use them to build a profile of anyone.
       </p>
 
