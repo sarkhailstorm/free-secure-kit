@@ -42,13 +42,7 @@ function altOf(node: StructTreeNode): string | null {
   return typeof alt === 'string' && alt !== '' ? alt : null;
 }
 
-/**
- * Walk the page's struct tree into blocks in reading order.
- *
- * `tagOf` maps an mcid to its producer BDC tag, which lives in the content stream rather than the
- * tree — LibreOffice puts its real paragraph style name there, Word puts 'Span'. Omit it and every
- * `producerTag` is null, which only costs the tag-first heading rule.
- */
+/** Walks the page's struct tree into blocks in reading order; `tagOf` maps an mcid to its producer BDC tag. */
 export function indexStruct(
   tree: StructTreeNode | null,
   tagOf?: ReadonlyMap<string, string>,
@@ -161,12 +155,7 @@ export function indexStruct(
   return { present: true, blockOf, blocks, tables };
 }
 
-/**
- * The completeness guard. False means the whole page falls to geometry — never half a struct page.
- *
- * Synthetic spaces are pdf.js inventions with no glyph behind them, so they are not characters the
- * tree could have tagged.
- */
+/** The completeness guard: false means the whole page falls to geometry, never half a struct page. */
 export function structCovers(index: StructIndex, spans: readonly Span[]): boolean {
   if (!index.present) return false;
   for (const span of spans) {

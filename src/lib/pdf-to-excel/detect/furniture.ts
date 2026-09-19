@@ -16,12 +16,7 @@ function deviation(values: readonly Pt[]): Pt {
   return Math.sqrt(values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length);
 }
 
-/**
- * Lines repeated at the same height on most pages: the running head and foot.
- *
- * Both guards are load-bearing. Without the page-count floor a 2-page statement kept 2 of its 41
- * lines, and without the height test "TESCO STORES" on every page of a real statement is deleted.
- */
+/** Lines repeated at the same height on most pages: the running head and foot. */
 export function pageFurniture(pages: readonly PageRead[]): ReadonlySet<string> {
   if (pages.length < FURNITURE_MIN_PAGES) return new Set<string>();
 

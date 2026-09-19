@@ -55,7 +55,6 @@ function exhausted(note: never): string {
   return 'Part of this PDF couldn’t be carried over into Word.';
 }
 
-/** Stands in for a page no picture could be made of, so the reader is told what is missing. */
 export function placeholderLine(pageNumber: number, reason: DegradeReason | undefined): string {
   return reason === 'no-text' || reason === 'invisible-text-only'
     ? `Page ${pageNumber} was a scan, so it isn’t included.`

@@ -1,22 +1,3 @@
-/**
- * Things to check — what is wrong that cleaning cannot fix.
- *
- * The hard part of this file is restraint. Forty warnings on an ordinary file
- * teaches people to ignore warnings, which makes the tool less safe than
- * saying nothing. So every check here has to clear the same bar: something is
- * lost, changed or hidden, the user can act on it, and it stays silent on a
- * file that is fine. One kind of trouble is also one card, however many
- * columns it turns up in — twenty cards saying the same sentence is the same
- * failure as twenty warnings.
- *
- * Pure: a sheet in, a report out. Memoise it on (sheet, headerRowIndex,
- * indexColumn) — nothing here depends on the cleaning options, so it must not
- * be re-run when a toggle moves. That is also why the wording below states
- * what an option does rather than telling the reader to go and switch it on:
- * advice phrased as an instruction is wrong the moment they follow it, and
- * this report is deliberately not recomputed to notice.
- */
-
 import { plural } from '@/lib/format';
 import { findInvisible } from '@/lib/text-utilities/whitespace';
 import {
@@ -34,52 +15,31 @@ import {
 /** Data rows read before we stop looking. Beyond this the report is a sample. */
 export const MAX_SCAN_ROWS = 200_000;
 
-/** Offending values carried with a finding, for the UI to show. */
 const MAX_SAMPLES = 4;
 
-/** Columns named inside one card. The rest are counted, not listed. */
 const MAX_NAMED_COLUMNS = 3;
 
-/**
- * A single odd value in a 50,000-row free-text column is not worth a warning.
- * A single odd value in a 10-row file is. Hence a count floor OR a share floor.
- */
+// A count floor OR a share floor: one odd value matters in a 10-row file, not in 50,000.
 const MANGLE_MIN_COUNT = 3;
 const MANGLE_MIN_SHARE = 0.01;
-
-// ─────────────────────────────────────────────────────────────────────────
-//  Patterns
-// ─────────────────────────────────────────────────────────────────────────
 
 /** Spreadsheet error values. `#N/A` is the one without a trailing mark. */
 const EXCEL_ERROR_PATTERN =
   /^#(?:N\/A|REF!|DIV\/0!|VALUE!|NAME\?|NULL!|NUM!|SPILL!|CALC!|FIELD!|BLOCKED!|CONNECT!|UNKNOWN!|GETTING_DATA)$/;
 
-/**
- * Values Excel rewrites the moment the file is reopened. Checked against
- * Excel 16.0: `00123`→`123`, `SEPT2`→`Sep-02`, `2310009E13`→`2.31E+19`,
- * `1-2`→`01-Feb`. Sixteen digits is where a whole number loses its last digit.
- */
+// Excel rewrites these on reopen; 16 digits is where a whole number loses its last digit.
 const LEADING_ZERO_PATTERN = /^0\d+$/;
 const LONG_DIGITS_PATTERN = /^\d{16,}$/;
 const DIGITS_WITH_E_PATTERN = /^\d+[eE]\d+$/;
 const MONTH_CODE_PATTERN = /^(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)\d{1,2}$/i;
 const SHORT_PAIR_PATTERN = /^(\d{1,2})[-/](\d{1,2})$/;
 
-/**
- * One cheap non-global test for characters that survive a trim and still break
- * matching — JS `\s` covers none of the zero-width ones.
- *
- * Exactly the two patterns `removeInvisibleCharacters` uses in clean.ts, and
- * nothing wider: the wording on this finding names that option, so anything
- * flagged here has to be something that option actually takes out.
- */
+// Exactly the two patterns removeInvisibleCharacters uses, so the wording cannot overpromise.
 const INVISIBLE_GATE = new RegExp(
   `${INVISIBLE_CHARACTER_PATTERN.source}|${ODD_SPACE_PATTERN.source}`,
   'u',
 );
 
-/** True when reopening this value in Excel would silently rewrite it. */
 export function wouldExcelChange(value: string): boolean {
   if (value.length < 2) return false;
   if (LEADING_ZERO_PATTERN.test(value)) return true;
@@ -95,12 +55,7 @@ export function wouldExcelChange(value: string): boolean {
   return a >= 1 && b >= 1 && a <= 31 && b <= 31 && (a <= 12 || b <= 12);
 }
 
-/**
- * Names of the invisible characters in one value, for the UI to quote.
- *
- * Driven by the same gate as the check, so it can never name a character the
- * check ignored or stay silent about one the check flagged.
- */
+/** Names of the invisible characters in one value, for the UI to quote. */
 export function describeInvisible(value: string): string[] {
   const names: string[] = [];
   for (const char of value) {
@@ -111,10 +66,6 @@ export function describeInvisible(value: string): string[] {
   }
   return names;
 }
-
-// ─────────────────────────────────────────────────────────────────────────
-//  Tallies
-// ─────────────────────────────────────────────────────────────────────────
 
 class Tally {
   count = 0;
@@ -143,21 +94,13 @@ function tallyFor(map: Map<number, Tally>, column: number): Tally {
   return tally;
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Input
-// ─────────────────────────────────────────────────────────────────────────
-
 export interface CheckInput {
   sheet: ParsedSheet;
   /** ORIGINAL row index of the header row; `null` when the sheet has none. */
   headerRowIndex: number | null;
   /** `StructureReport.indexColumn`. Without it the index-only check is skipped. */
   indexColumn?: number | null;
-  /**
-   * `ParsedFile.issues`. A delimited file's read problems are recorded against
-   * the file rather than the sheet, and an unclosed quote — the one finding
-   * here that means rows were silently lost — arrives that way.
-   */
+  /** `ParsedFile.issues`; an unclosed quote arrives here rather than on the sheet. */
   fileIssues?: readonly ReadIssue[];
 }
 
@@ -176,15 +119,6 @@ function listed(parts: readonly string[]): string {
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }
 
-/**
- * Where a finding sits, ready to sit in the middle of a sentence.
- *
- * One column keeps its position as well as its heading: header tidying may
- * have renamed it by the time this is read, and the position is the part that
- * cannot go stale. A card covering several columns leans on the headings
- * alone — a run of bracketed numbers reads like a puzzle, and with the names
- * side by side the reader can find the columns anyway.
- */
 function columnPhrase(columns: readonly number[], headers: readonly string[]): string {
   const first = columns[0] ?? 0;
   if (columns.length === 1) {
@@ -198,14 +132,6 @@ function columnPhrase(columns: readonly number[], headers: readonly string[]): s
   return `${plural(columns.length, 'column')} (${listed(rest > 0 ? [...named, `${rest} more`] : named)})`;
 }
 
-/**
- * Every column with this kind of trouble, as ONE finding.
- *
- * `columnName` carries the finished wording for all of them, which is what the
- * field is for — nothing outside this file reads it, and `describeCheck` is the
- * only thing that does. `columnIndex` stays the worst-affected column so the UI
- * still has something to key and link on.
- */
 function columnCard(
   kind: CheckKind,
   severity: Severity,
@@ -254,18 +180,6 @@ function columnCard(
   };
 }
 
-/**
- * A ragged-row report with the title block taken out of it.
- *
- * Rows above the chosen header row are the preamble — already set aside and
- * labelled as left out — so their width is not a fault, and a file whose only
- * complaint is its own title block must say nothing. Rows swallowed by an
- * unclosed quote come out too: that is the same damage, reported once already
- * and far more plainly, by the quote finding.
- *
- * Taking the dropped rows off the count is exact: the row list is only ever
- * cut short at its tail, so every row above the header is in it.
- */
 function raggedBelowHeader(
   issue: ReadIssue,
   start: number,
@@ -280,23 +194,14 @@ function raggedBelowHeader(
 
   return {
     kind: 'ragged-rows',
-    // Carried across unchanged: the same fact must not read as more serious
-    // here than it does in the list of read problems it came from.
     severity: issue.severity,
     count,
     rowIndexes: rowIndexes.slice(0, MAX_LINKED_ROWS),
     truncated: count > Math.min(rowIndexes.length, MAX_LINKED_ROWS),
-    // Samples are collected in row order, so the row a sample really came from
-    // is never earlier than the one it lines up with here. Lining them up can
-    // therefore drop an example we could have kept, but it can never put a row
-    // from the title block on screen.
+    // Samples are collected in row order, so this can drop an example but never show a preamble row.
     samples: issue.samples.filter((_, i) => wanted(issue.rowIndexes[i])).slice(0, MAX_SAMPLES),
   };
 }
-
-// ─────────────────────────────────────────────────────────────────────────
-//  The pass
-// ─────────────────────────────────────────────────────────────────────────
 
 export function runChecks({ sheet, headerRowIndex, indexColumn, fileIssues }: CheckInput): ChecksReport {
   const headers = headerTexts(sheet, headerRowIndex);
@@ -307,7 +212,6 @@ export function runChecks({ sheet, headerRowIndex, indexColumn, fileIssues }: Ch
   const dataRows = sheet.rows.length - start;
   const end = Math.min(sheet.rows.length, start + MAX_SCAN_ROWS);
 
-  // Rows were lost or shuffled while reading, and no later step can tell.
   // Promoted rather than recomputed: the parser's own errors are gone by now.
   const readIssues = [...sheet.issues, ...(fileIssues ?? [])];
   const swallowed = new Set<number>();
@@ -336,9 +240,7 @@ export function runChecks({ sheet, headerRowIndex, indexColumn, fileIssues }: Ch
     if (ragged) findings.push(ragged);
   }
 
-  // Workbooks get error cells from the reader, cell by cell, so scanning the
-  // text again would put one fact in two lists. A delimited file gets nothing
-  // from the reader, and there this scan is the only report there is.
+  // Workbooks already get error cells from the reader; scanning again would double-count.
   const readerHasErrors = sheet.issues.some((i) => i.kind === 'excel-error-cells' && i.count > 0);
 
   const errors = new Map<number, Tally>();
@@ -347,8 +249,7 @@ export function runChecks({ sheet, headerRowIndex, indexColumn, fileIssues }: Ch
   const indexOnly = new Tally();
   const filled = new Int32Array(sheet.columnCount);
 
-  // The header row is data too as far as invisible characters go — a
-  // zero-width space in a column name breaks every lookup against it.
+  // The header row is data too here: a zero-width space in a name breaks every lookup.
   if (headerRowIndex !== null) {
     const row = sheet.rows[headerRowIndex] ?? [];
     for (let c = 0; c < sheet.columnCount; c += 1) {
@@ -426,15 +327,6 @@ export function runChecks({ sheet, headerRowIndex, indexColumn, fileIssues }: Ch
   return { findings, rowsScanned: end - start, sampled: dataRows > MAX_SCAN_ROWS };
 }
 
-/**
- * Columns whose names are the same name written twice.
- *
- * Only case and the space/underscore/hyphen between words are ignored —
- * `Price (£)` and `Price (€)` are two different names and must stay apart.
- * This is about the file, not about our own tidying, which is why the wording
- * promises nothing: whether a suffix is added here depends on options this
- * file is deliberately not given.
- */
 function sameName(raw: string): string {
   return raw.toLowerCase().replace(/[\s_-]+/gu, '');
 }
@@ -461,37 +353,22 @@ function headerCollisions(headers: readonly string[]): CheckFinding | null {
     rowIndexes: [],
     truncated: false,
     columnIndex: repeated[0][0],
-    // The names themselves go on the chips below the card, so the sentence
-    // does not repeat them.
     samples: repeated.slice(0, MAX_SAMPLES).map((columns) => headers[columns[0]]),
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Wording
-// ─────────────────────────────────────────────────────────────────────────
-
 export interface CheckCopy {
-  /** Short label for the row in the list. */
   title: string;
   /** A finished sentence or two, with the numbers already in it. */
   detail: string;
 }
 
-/** The columns a finding covers, worded when the finding was raised. */
 function where(finding: CheckFinding): string {
   if (finding.columnName) return finding.columnName;
   if (finding.columnIndex === undefined) return 'this sheet';
   return `column ${finding.columnIndex + 1}`;
 }
 
-/**
- * Plain-English wording for one finding. Kept beside the logic that raised it.
- *
- * Counts and verbs are picked together — a card that says "1 value … contain"
- * reads as carelessness, and carelessness is not what you want on the one
- * panel telling someone their figures may be wrong.
- */
 export function describeCheck(finding: CheckFinding): CheckCopy {
   const place = where(finding);
   const one = finding.count === 1;

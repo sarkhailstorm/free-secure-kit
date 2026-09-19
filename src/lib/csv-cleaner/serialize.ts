@@ -1,10 +1,3 @@
-/**
- * Turning cleaned grids back into a file.
- *
- * Everything is built as an in-memory Blob and handed to the browser's own
- * download machinery — nothing is posted anywhere.
- */
-
 import { baseName } from '@/lib/format';
 import { safeFilename } from '@/lib/download';
 import {
@@ -21,24 +14,14 @@ export const XLSX_MIME =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 export const ZIP_MIME = 'application/zip';
 
-/** An `OutputSheet` that still knows which `ParsedSheet` it came from. */
 export interface WritableSheet extends OutputSheet {
   /** `ParsedSheet.index`, so `WriteOptions.sheets` can select it. */
   index: number;
 }
 
-/**
- * Settings that go with `WriteOptions` but come from the file that was read
- * rather than from anything the user picked.
- */
+/** Settings that come from the file that was read, not from anything the user picked. */
 export interface SourceWriteOptions {
-  /**
-   * True when the file arrived with a `sep=` line of its own. Excel puts that
-   * line at the top when it saves, and needs it back to open the file the same
-   * way, so it is written again — naming whatever separator is being used now.
-   *
-   * Pass `parsed.delimiter?.sepLine !== null`.
-   */
+  /** Pass `parsed.delimiter?.sepLine !== null`; Excel needs its own `sep=` line back. */
   declaredSeparator?: boolean;
 }
 
@@ -49,16 +32,12 @@ export interface WriteResult {
   sheets: number[];
   /** Names as they were written — Excel's own rules shorten and de-clash them. */
   sheetNames: string[];
-  /**
-   * Values given a leading apostrophe. The apostrophe is visible in the file.
-   * Always 0 for an Excel file — see `formulaEscapingApplies`.
-   */
+  /** Values given a visible leading apostrophe; always 0 for an Excel file. */
   formulasEscaped: number;
   /** Characters the chosen encoding has no byte for. Each was written as `?`. */
   unmappableCharacters: number;
 }
 
-/** Thrown instead of writing a file the user's spreadsheet would call corrupt. */
 export class OutputTooLargeError extends Error {
   readonly limits: OutputLimits;
 
@@ -69,11 +48,7 @@ export class OutputTooLargeError extends Error {
   }
 }
 
-// ── Formula escaping ─────────────────────────────────────────────────────
-
-// `=` and `@` always; `+` and `-` only when the whole value is not a plain
-// number, so `-42` in an accounts file keeps its own shape. Derived from
-// PLAIN_NUMBER_PATTERN rather than restated, so the two cannot drift.
+// = and @ always; + and - only when the value is not a plain number, so -42 keeps its shape.
 const NUMBER_BODY = PLAIN_NUMBER_PATTERN.source.replace(/^\^|\$$/g, '');
 
 export const FORMULA_ESCAPE_PATTERN = new RegExp(`^(?:[=@]|(?!${NUMBER_BODY}$)[+-])`);
@@ -82,26 +57,12 @@ export function needsFormulaEscape(value: string): boolean {
   return FORMULA_ESCAPE_PATTERN.test(value);
 }
 
-/**
- * Whether an apostrophe is added at all, for the format being saved.
- *
- * CSV only. A CSV has no cell types, so a spreadsheet opening one decides what
- * each value is from its first character, and `=SUM(A1:A2)` becomes a live sum.
- * In an Excel file every value written here is a text cell with no formula
- * attached to it, which Excel shows as it stands and never runs, so there is
- * nothing to guard against — and an apostrophe added anyway would not be a
- * hint to Excel, it would become part of the value and stay there for good.
- */
+/** CSV only: an Excel text cell never runs, and an apostrophe there would stay in the value. */
 export function formulaEscapingApplies(format: OutputFormat): boolean {
   return format === 'csv';
 }
 
-/**
- * How many values would gain an apostrophe, so the UI can say so before writing.
- *
- * Pass the format the user has chosen. Without it the answer is the CSV one,
- * which overstates an Excel save — nothing gains an apostrophe there.
- */
+/** Pass the format the user chose; the default overstates an Excel save. */
 export function countFormulaRisks(sheets: readonly OutputSheet[], format: OutputFormat = 'csv'): number {
   if (!formulaEscapingApplies(format)) return 0;
   let count = 0;
@@ -114,21 +75,13 @@ export function countFormulaRisks(sheets: readonly OutputSheet[], format: Output
   return count;
 }
 
-// ── Size ─────────────────────────────────────────────────────────────────
-
 function widthOf(grid: Grid): number {
   let width = grid.header.length;
   for (const row of grid.rows) if (row.length > width) width = row.length;
   return width;
 }
 
-/**
- * The largest sheet measured against Excel's limits.
- *
- * A CSV has no limits of its own, so this is a warning there and a refusal for
- * xlsx: `aoa_to_sheet` on 17,000 columns writes a file without complaint that
- * Excel then refuses to open.
- */
+/** The largest sheet measured against Excel's limits; a CSV has no limits of its own. */
 export function measureOutput(sheets: readonly OutputSheet[]): OutputLimits {
   const limits: OutputLimits = {
     rows: 0,
@@ -170,8 +123,6 @@ function refusalMessage(limits: OutputLimits): string {
   return `This has ${has.join(' and ')}, and an Excel file can only hold ${allows.join(' and ')}. Save it as a CSV instead — a CSV has no limit.`;
 }
 
-// ── Text encoding on the way out ─────────────────────────────────────────
-
 /** The only part of windows-1252 that is not the first 256 code points. */
 const CP1252_HIGH = '€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
 
@@ -180,10 +131,7 @@ for (let i = 0; i < CP1252_HIGH.length; i += 1) {
   CP1252_REVERSE.set(CP1252_HIGH.codePointAt(i)!, 0x80 + i);
 }
 
-/**
- * TextEncoder is UTF-8 only — its constructor argument is ignored by spec — so
- * the reverse table is hand-rolled. Anything with no byte becomes `?`.
- */
+// TextEncoder is UTF-8 only by spec, so the reverse table is hand-rolled; anything with no byte becomes ?.
 function encodeWindows1252(text: string): { bytes: Uint8Array; unmappable: number } {
   const bytes = new Uint8Array(text.length);
   let length = 0;
@@ -232,14 +180,10 @@ function concat(parts: readonly Uint8Array[]): Uint8Array {
   return out;
 }
 
-// ── Names ────────────────────────────────────────────────────────────────
-
 /** sales.csv -> sales-cleaned.csv (and sales-cleaned.csv stays that, not -cleaned-cleaned). */
 export function cleanedFilename(original: string, ext: 'csv' | 'xlsx' | 'zip'): string {
   const stem = baseName(original).replace(/[-_\s]*clean(ed)?$/i, '') || 'data';
-  // `safeFilename` truncates at 180 characters, which would eat the extension
-  // off a very long name and hand the user a file their OS cannot open. Cap
-  // the stem instead so "-cleaned.xlsx" always survives.
+  // safeFilename truncates at 180, which would eat the extension, so cap the stem instead.
   const capped = stem.slice(0, 120).trim() || 'data';
   return safeFilename(`${capped}-cleaned.${ext}`, `cleaned.${ext}`);
 }
@@ -270,8 +214,6 @@ function uniqueEntryName(name: string, used: Set<string>): string {
   return candidate;
 }
 
-// ── Writing ──────────────────────────────────────────────────────────────
-
 function selectSheets(
   available: readonly WritableSheet[],
   wanted: readonly number[],
@@ -286,20 +228,17 @@ function selectSheets(
   return picked.length > 0 ? picked : [...available];
 }
 
-/** `WriteOptions` once the reader's own settings are folded in. */
 type CsvSettings = WriteOptions & SourceWriteOptions;
 
 async function csvText(grid: Grid, options: CsvSettings): Promise<string> {
   const Papa = await import('papaparse');
   const delimiter = options.delimiter || ',';
-  // papaparse 5.4.1 treats `escapeFormulae: false` exactly like `true`, so the
-  // key has to be left out entirely when escaping is off.
+  // papaparse 5.4.1 treats escapeFormulae: false like true, so the key must be left out entirely.
   const body = Papa.unparse([grid.header, ...grid.rows], {
     delimiter,
     newline: options.newline,
     ...(options.escapeFormulas ? { escapeFormulae: FORMULA_ESCAPE_PATTERN } : {}),
   });
-  // The file told us which separator it used; it gets to keep saying so.
   return options.declaredSeparator ? `sep=${delimiter}${options.newline}${body}` : body;
 }
 
@@ -323,7 +262,6 @@ async function writeCsv(
     };
   }
 
-  // One CSV holds one sheet, so several sheets go out as a zip of one each.
   const JSZip = (await import('jszip')).default;
   const zip = new JSZip();
   const usedNames = new Set<string>();
@@ -360,10 +298,7 @@ async function writeXlsx(
   const names: string[] = [];
 
   for (const sheet of sheets) {
-    // Every value is written as text on purpose: it is the only way leading
-    // zeros, long IDs and phone numbers survive a round trip through Excel.
-    // Text cells are also inert, so no apostrophe is added — see
-    // `formulaEscapingApplies` for why, and for what the UI must not claim.
+    // Every value is written as text on purpose, so leading zeros and long IDs survive Excel.
     const ws = XLSX.utils.aoa_to_sheet([sheet.grid.header, ...sheet.grid.rows]);
     const name = uniqueSheetName(sheet.name, used);
     names.push(name);
@@ -381,12 +316,7 @@ async function writeXlsx(
   };
 }
 
-/**
- * Write the chosen sheets.
- *
- * Throws `OutputTooLargeError` for an Excel file that would break Excel's own
- * limits, rather than handing back something it calls corrupt.
- */
+/** Throws `OutputTooLargeError` for an xlsx that would break Excel's own limits. */
 export async function writeOutput(
   available: readonly WritableSheet[],
   options: Partial<WriteOptions> & SourceWriteOptions = {},
@@ -406,13 +336,7 @@ export async function writeOutput(
   return writeCsv(sheets, settings, cleanedFilename(originalFilename, 'csv'));
 }
 
-/**
- * Whether `writeOutput` would refuse this format.
- *
- * `reason` is set only when this format is the one being refused. A CSV has no
- * limit, so a sheet too big for Excel is still a perfectly good CSV and there
- * is nothing to warn about — the UI shows `reason` and stops the save.
- */
+/** `reason` is non-null only when this format is the one being refused. */
 export function canWrite(
   sheets: readonly OutputSheet[],
   format: OutputFormat,
@@ -421,8 +345,6 @@ export function canWrite(
   const ok = format === 'csv' || !(limits.rowsExceeded || limits.columnsExceeded);
   return { ok, reason: ok ? null : refusalMessage(limits), limits };
 }
-
-// ── The two older helpers, kept so single-sheet callers need not change ───
 
 export async function gridToCsvBlob(
   grid: Grid,

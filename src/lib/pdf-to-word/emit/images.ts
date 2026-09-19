@@ -1,9 +1,3 @@
-/**
- * Turning a pdf.js image object into bytes docx can embed. Path A lifts the
- * untouched JPEG stream with pdf-lib when the source really is a plain
- * DCTDecode; everything else falls through to Path B, a canvas re-encode.
- */
-
 import type { PDFDocument } from 'pdf-lib';
 import type { ImagePlacement } from '../types';
 

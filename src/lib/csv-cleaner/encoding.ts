@@ -1,11 +1,3 @@
-/**
- * Bytes in, text out — and the two guesses a delimited file needs before it can
- * be parsed at all: what it was saved in, and what separates the fields.
- *
- * Every decoder used here is the browser's own `TextDecoder`, so none of this
- * adds a byte to the bundle. Nothing touches the network.
- */
-
 import type {
   BomKind,
   Confidence,
@@ -33,15 +25,7 @@ export const ENCODING_LABELS: Record<EncodingId, string> = {
   'euc-kr': 'Korean (EUC-KR)',
 };
 
-/**
- * windows-1252's own 0x80–0x9F block. Every other byte is the same code point,
- * which is why this is the whole table.
- *
- * It is written out rather than read back from a TextDecoder because Node's
- * decoder for this label is really Latin-1, and because a windows-1252 ENCODER
- * cannot be built any other way: `TextEncoder` is UTF-8 only by specification
- * and silently ignores its argument.
- */
+// Written out because Node's windows-1252 decoder is really Latin-1, and TextEncoder is UTF-8 only.
 const CP1252_HIGH =
   '\u20AC\u0081\u201A\u0192\u201E\u2026\u2020\u2021\u02C6\u2030\u0160\u2039\u0152\u008D\u017D\u008F' +
   '\u0090\u2018\u2019\u201C\u201D\u2022\u2013\u2014\u02DC\u2122\u0161\u203A\u0153\u009D\u017E\u0178';
@@ -68,8 +52,7 @@ export function sniffBom(bytes: Uint8Array): BomMatch | null {
 
 function decodeWith(id: EncodingId, bytes: Uint8Array): string {
   const text = new TextDecoder(id).decode(bytes);
-  // Repair the one label browsers and Node disagree about, so a 0x80 byte is
-  // always € and never an invisible control character.
+  // Browsers and Node disagree about this label, so a 0x80 byte is always the euro sign.
   if (id === 'windows-1252' && C1_RANGE.test(text)) {
     return text.replace(C1_RANGE_ALL, (c) => CP1252_HIGH[c.charCodeAt(0) - 0x80]);
   }
@@ -78,13 +61,7 @@ function decodeWith(id: EncodingId, bytes: Uint8Array): string {
 
 let reverse1252: Map<string, number> | null = null;
 
-/**
- * Text back to windows-1252 bytes. Anything the table cannot hold becomes `?`,
- * which is what Excel itself writes.
- *
- * `strict` makes an unmappable character throw instead, which is what the
- * mojibake check relies on.
- */
+/** Unmappable characters become `?`; `strict` throws instead. */
 export function encodeWindows1252(text: string, strict = false): Uint8Array {
   if (!reverse1252) {
     reverse1252 = new Map();
@@ -104,8 +81,6 @@ export function encodeWindows1252(text: string, strict = false): Uint8Array {
   }
   return out;
 }
-
-// ── Scoring one reading of the same bytes ──────────────────────────────────
 
 const ASCII_LETTER = /[A-Za-z]/;
 const LETTER = /\p{L}/u;
@@ -144,14 +119,6 @@ interface Reading {
   replacements: number;
 }
 
-/**
- * Judge a reading by how much of it could not be real writing.
- *
- * The signals are all things a wrong byte table produces and real text does
- * not: replacement characters, invisible controls, a currency sign wedged
- * inside a word, a Cyrillic letter in the middle of an English one, nothing but
- * accented letters, or a run of letters with no vowels in it.
- */
 function scoreReading(text: string, prior: number): Reading {
   let replacements = 0;
   let controls = 0;
@@ -270,15 +237,7 @@ function sniffUtf16(bytes: Uint8Array): EncodingId | null {
   return oddZeros > evenZeros * 3 ? 'utf-16le' : evenZeros > oddZeros * 3 ? 'utf-16be' : null;
 }
 
-// ── Mojibake ───────────────────────────────────────────────────────────────
-
-/**
- * UTF-8 bytes that were read as windows-1252 once already, so `Café` arrived
- * as `CafÃ©`.
- *
- * The inverse trip is its own safety net: text that merely happens to contain
- * `Ã` sequences fails the strict UTF-8 re-read and the repair refuses itself.
- */
+// Undoes a UTF-8 file read once as windows-1252; the strict re-read is its own safety net.
 function undoMojibake(text: string): string | null {
   try {
     const repaired = new TextDecoder('utf-8', { fatal: true }).decode(encodeWindows1252(text, true));
@@ -311,8 +270,6 @@ function mojibakeExamples(before: string, after: string): Array<{ before: string
   return examples;
 }
 
-// ── Decoding ───────────────────────────────────────────────────────────────
-
 export interface DecodeResult {
   text: string;
   report: DecodeReport;
@@ -330,8 +287,7 @@ export function decodeBytes(bytes: Uint8Array, options: DecodeOptions = {}): Dec
   const body = bom ? bytes.subarray(bom.length) : bytes;
   const sniff = body.subarray(0, SNIFF_BYTES);
 
-  // Every reading is scored every time, even when the answer is obvious, so the
-  // "that looks wrong" picker always has something to show.
+  // Every reading is scored even when the answer is obvious, so the picker always has options.
   const readings = new Map<EncodingId, string>();
   const scored = PRIORS.map(([id, prior]) => {
     const reading = decodeWith(id, sniff);
@@ -364,9 +320,7 @@ export function decodeBytes(bytes: Uint8Array, options: DecodeOptions = {}): Dec
   } else {
     encoding = scored[0].id;
     source = 'detected';
-    // Only a reading that would actually give different text counts as a rival.
-    // Plenty of files use no byte the runners-up disagree about, and there is
-    // nothing uncertain about a choice that changes nothing.
+    // Only a reading that would give different text counts as a rival.
     const winner = readings.get(encoding);
     const rival = scored.find((c) => c.id !== encoding && readings.get(c.id) !== winner);
     confidence = !rival
@@ -385,8 +339,6 @@ export function decodeBytes(bytes: Uint8Array, options: DecodeOptions = {}): Dec
     ...scored.filter((c) => c.id !== encoding),
   ];
 
-  // The probe ends on a whole line: half a damaged character at the edge would
-  // fail the strict re-read, and the repair would refuse a file that needed it.
   const probe = mojibakeProbe(text);
   const repaired = undoMojibake(probe);
   const mojibake: MojibakeReport = {
@@ -408,20 +360,13 @@ export function decodeBytes(bytes: Uint8Array, options: DecodeOptions = {}): Dec
   };
 }
 
-/**
- * A strict UTF-8 read either succeeds or throws, which makes it an exact test
- * rather than a guess. The sniff is checked first so a 60 MB file is not
- * decoded twice when it is plainly not UTF-8.
- */
 function isValidUtf8(sniff: Uint8Array, body: Uint8Array): boolean {
   try {
     if (body.length <= SNIFF_BYTES) {
       new TextDecoder('utf-8', { fatal: true }).decode(body);
       return true;
     }
-    // The sniff can cut a character in half, so the decoder is left open for
-    // the bytes that would have followed. A large file that survives the sniff
-    // is then checked in full.
+    // The sniff can cut a character in half, so the decoder is left open with stream: true.
     new TextDecoder('utf-8', { fatal: true }).decode(sniff, { stream: true });
     new TextDecoder('utf-8', { fatal: true }).decode(body);
     return true;
@@ -429,8 +374,6 @@ function isValidUtf8(sniff: Uint8Array, body: Uint8Array): boolean {
     return false;
   }
 }
-
-// ── Delimiters ─────────────────────────────────────────────────────────────
 
 const DELIMITERS: ReadonlyArray<{ delimiter: string; label: string }> = [
   { delimiter: ',', label: 'Comma' },
@@ -444,13 +387,9 @@ export function delimiterLabel(delimiter: string): string {
   return DELIMITERS.find((d) => d.delimiter === delimiter)?.label ?? `"${delimiter}"`;
 }
 
-/** Lines read before the delimiter is decided. */
 const DELIMITER_SCAN_LINES = 200;
 
-/**
- * Excel writes `sep=;` above the data in several locales. Left in place it
- * parses as a one-column row and takes the real header with it.
- */
+/** Excel writes `sep=;` above the data in some locales; left in, it eats the real header. */
 export function stripSepLine(text: string): { text: string; sepLine: string | null; delimiter: string | null } {
   const match = /^sep=(.)\r?\n/i.exec(text);
   if (!match) return { text, sepLine: null, delimiter: null };
@@ -568,23 +507,16 @@ export function detectDelimiter(text: string, options: DelimiterOptions = {}): D
   }
 
   if (scored.length === 0 || scored[0].score === 0) {
-    // One column per line, or nothing recognisable. Papaparse calls this an
-    // undetectable delimiter; it is reported rather than swallowed.
     return { delimiter: ',', source: 'assumed', confidence: 'low', candidates, sepLine };
   }
 
-  // Several candidates can split a file equally well — `Name;Town` where every
-  // town holds one comma splits cleanly either way. A delimiter followed by a
-  // space is punctuation inside a sentence, not a separator, so that settles it
-  // first; the file extension only gets a say after that.
+  // A delimiter followed by a space is sentence punctuation, so that breaks ties before the extension.
   const tied = scored.filter((c) => scored[0].score - c.score <= 0.02);
   const quietest = Math.min(...tied.map((c) => c.spaceRate));
   const shortlist = tied.filter((c) => c.spaceRate <= quietest + 0.2);
   const best = shortlist.find((c) => c.delimiter === options.preferred) ?? shortlist[0];
 
-  // Confidence reads the agreement between rows, not the score: the digit
-  // penalty is there to rank candidates against each other and would otherwise
-  // make a perfectly clean `1|2|3` file look doubtful.
+  // Confidence reads row agreement, not score: the digit penalty would make a clean 1|2|3 look doubtful.
   const margin = best.score - (scored.find((c) => c.delimiter !== best.delimiter)?.score ?? 0);
   const confidence: Confidence =
     best.consistency >= 0.95 && margin >= 0.15 ? 'high' : best.consistency >= 0.8 ? 'medium' : 'low';

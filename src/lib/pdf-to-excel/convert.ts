@@ -1,9 +1,3 @@
-/**
- * The run: open the PDF, read every page, take the first rung of the ladder that fits,
- * type the columns, check the running balance, and hand back a workbook to look at.
- * Writing the file is a second call, so nothing is saved before the user has seen it.
- */
-
 import { PdfToolsError } from '@/lib/pdf-tools/errors';
 import { baseName } from '@/lib/format';
 import { tick, type LoadedPdf } from '@/lib/pdf-tools/pdf';

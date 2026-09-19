@@ -35,7 +35,6 @@ function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) throw new DOMException('Cancelled.', 'AbortError');
 }
 
-/** Decode the photo, shrinking it first if it is past what a canvas will hold. */
 async function decode(file: File): Promise<{ bitmap: ImageBitmap; resized: boolean }> {
   let bitmap: ImageBitmap;
   try {
@@ -69,13 +68,7 @@ async function decode(file: File): Promise<{ bitmap: ImageBitmap; resized: boole
   }
 }
 
-/**
- * Remove the background from one photo and hand back a transparent PNG.
- *
- * The first call for a given choice downloads the remover itself. That never
- * happens before this function is called, and it never happens twice on the
- * same device once the download has been kept.
- */
+/** The first call for a given choice downloads the remover; later calls reuse it. */
 export async function removeBackground(
   file: File,
   options: RemoveBackgroundOptions = {},
@@ -142,7 +135,6 @@ export async function removeBackground(
   }
 }
 
-/** Turn whatever was thrown into one sentence a person can act on. */
 export function describeBackgroundError(err: unknown, filename?: string): string {
   if (err instanceof Error && err.name === 'BackgroundRemoverError') return err.message;
   if (err instanceof Error && err.name === 'AbortError') return 'Cancelled.';
@@ -151,7 +143,6 @@ export function describeBackgroundError(err: unknown, filename?: string): string
   const message = err instanceof Error ? err.message : String(err);
   const name = err instanceof Error ? err.name : '';
 
-  // A tab left open across a new deploy asks for chunks that no longer exist.
   if (
     name === 'ChunkLoadError' ||
     /loading chunk .*failed|importing a module script failed|dynamically imported module/i.test(

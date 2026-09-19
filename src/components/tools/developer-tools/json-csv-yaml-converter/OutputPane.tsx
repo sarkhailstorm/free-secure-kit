@@ -103,7 +103,6 @@ export function OutputPane({
         if (!cancelled) setHtml(markup);
       })
       .catch(() => {
-        // Highlighting is decoration; the plain text below is already correct.
         if (!cancelled) setHtml(null);
       });
 
@@ -249,7 +248,6 @@ function OutputSurface({
   const shell =
     'relative flex min-h-[260px] flex-1 flex-col rounded-xl border border-line bg-bg sm:min-h-[340px] lg:min-h-[400px]';
 
-  // Nothing has been converted yet and nothing is running.
   if (!busy && (!outcome || outcome.status === 'empty')) {
     return (
       <div className={cn(shell, 'items-center justify-center gap-2 px-6 text-center')}>
@@ -294,7 +292,6 @@ function OutputSurface({
     );
   }
 
-  // Busy with nothing to keep on screen yet.
   if (busy && output === '') {
     return (
       <div className={cn(shell, 'items-center justify-center gap-2')}>

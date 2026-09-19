@@ -1,21 +1,3 @@
-/**
- * Reading the uploaded file.
- *
- * papaparse and SheetJS are both large, so they are imported dynamically inside
- * these functions and never at module scope — the tool page stays small until
- * someone actually drops a file on it.
- *
- * Nothing here touches the network. `File.arrayBuffer()` reads the bytes the
- * browser already has; no request is made and no copy leaves the page. The
- * bytes are let go as soon as the text exists; the caller keeps the `File` and
- * re-reads it if the user disagrees with a guess.
- *
- * Two rules the rest of the tool leans on:
- *   • `ParsedSheet.rows` holds EVERY row, including whatever sits above the
- *     real header. Nothing here decides where the header is.
- *   • Row indexes everywhere else are positions in that array.
- */
-
 import { extension } from '@/lib/format';
 import { decodeBytes, detectDelimiter, stripSepLine } from './encoding';
 import {
@@ -29,19 +11,8 @@ import {
   type SheetVisibility,
 } from './types';
 
-/** Files above this size are refused rather than freezing the tab. */
 export const MAX_BYTES = 60 * 1024 * 1024;
 
-/*
- * Nothing here is capped at Excel's ceilings. The reader used to stop at
- * 16,384 columns and 1,048,576 rows and drop the rest — after the whole file
- * had already been read, so it saved nothing and only cost the user data. It
- * also left every file sitting exactly on the limit, which made the refusal in
- * serialize.ts unreachable. A file too big for Excel is still a good CSV, so
- * the file is read whole and it is the save that refuses, not the read.
- */
-
-/** Text files whose fields are separated by a character, and what to expect. */
 const DELIMITED_EXTENSIONS: Record<string, string | undefined> = {
   csv: ',',
   tsv: '\t',
@@ -50,7 +21,6 @@ const DELIMITED_EXTENSIONS: Record<string, string | undefined> = {
   txt: undefined,
 };
 
-/** Everything SheetJS 0.20.3 can open for us. */
 const WORKBOOK_EXTENSIONS: readonly string[] = [
   'xlsx',
   'xlsm',
@@ -73,11 +43,8 @@ export const ACCEPT_ATTRIBUTE = ACCEPTED_EXTENSIONS.map((e) => `.${e}`).join(','
 
 export class ParseFailure extends Error {}
 
-// ── Issues ─────────────────────────────────────────────────────────────────
-
 const MAX_SAMPLES = 5;
 
-/** Collects one kind of finding, keeping the row and sample lists bounded. */
 class IssueBuilder {
   private count = 0;
   private readonly rows: number[] = [];
@@ -105,15 +72,6 @@ function note(kind: ReadIssueKind, severity: Severity, count: number, extra: Par
   return { kind, severity, count, rowIndexes: [], samples: [], ...extra };
 }
 
-// ── Shaping ────────────────────────────────────────────────────────────────
-
-/**
- * Square off a ragged table so every row has the same number of cells, and keep
- * the indexes of the rows that were the wrong length.
- *
- * Papaparse only reports that in header mode, which this tool cannot use — a
- * messy file is exactly the case where the header row is not yet trustworthy.
- */
 function pad(
   rows: string[][],
   separator: string,
@@ -163,14 +121,6 @@ function makeSheet(
   };
 }
 
-// ── Delimited text ─────────────────────────────────────────────────────────
-
-/**
- * How many source lines an unclosed quote swallowed into one cell.
- *
- * This is the honest number: the rows did not "run together", they are gone,
- * and that is what the UI has to be able to say.
- */
 function linesSwallowed(row: readonly string[]): number {
   let breaks = 0;
   let endsWithBreak = false;
@@ -209,11 +159,7 @@ async function parseDelimited(file: File, ext: string, options: ReadOptions): Pr
 
   const rows = result.data.filter(Array.isArray);
 
-  // Almost every CSV ends with a newline, and papaparse turns that final line
-  // terminator into one extra row holding a single empty string. It is an
-  // artefact of the file ending, not a blank row the user typed, so drop it —
-  // otherwise every well-formed file would be reported as ragged and as having
-  // had "1 blank row removed", and a clean file could never say it was clean.
+  // papaparse turns a file's final line terminator into one extra empty row.
   const last = rows[rows.length - 1];
   if (rows.length > 1 && last.length === 1 && last[0] === '' && /[\r\n]$/.test(stripped.text)) {
     rows.pop();
@@ -232,8 +178,7 @@ async function parseDelimited(file: File, ext: string, options: ReadOptions): Pr
     if (error.code !== 'MissingQuotes' && error.code !== 'InvalidQuotes') continue;
     const index = error.row ?? 0;
     const row = rows[index];
-    // papaparse raises a second error for the same row when the quote reopens
-    // further down the file. That is still one damaged row.
+    // papaparse raises a second error for the same row when the quote reopens later.
     if (!row || counted.has(index)) continue;
     counted.add(index);
     rowsLost += linesSwallowed(row);
@@ -242,8 +187,6 @@ async function parseDelimited(file: File, ext: string, options: ReadOptions): Pr
       quoteSamples.push(row.join(delimiter.delimiter).slice(0, 80));
     }
   }
-  // A quote left open on the last line of the file costs nothing, and nobody
-  // needs to be told in red that no rows were lost.
   if (rowsLost > 0) {
     issues.push({
       kind: 'unclosed-quote',
@@ -272,8 +215,6 @@ async function parseDelimited(file: File, ext: string, options: ReadOptions): Pr
   };
 }
 
-// ── Workbooks ──────────────────────────────────────────────────────────────
-
 type CellObject = import('xlsx').CellObject;
 
 interface DateParts {
@@ -286,11 +227,7 @@ interface DateParts {
 }
 type ParseDateCode = (serial: number) => DateParts | null | undefined;
 
-/**
- * A number format with its literals taken out, so the tokens that are left
- * really are tokens. `[h]` is elapsed hours and has to survive; `[$-409]` and
- * `[Red]` do not.
- */
+// Literals out, so the tokens left really are tokens; [h] is elapsed hours and must survive.
 function formatTokens(z: string): string {
   return z
     .replace(/\\./g, '')
@@ -305,8 +242,7 @@ function numberKind(z: string | undefined, w: string | undefined): NumberKind {
   if (z !== undefined && z !== 'General') {
     const tokens = formatTokens(z);
     if (tokens.includes('%')) return 'percent';
-    // mmm and dddd render a month or day NAME. Nothing rebuilt from the serial
-    // can reproduce it, so Excel's own text is the only faithful reading.
+    // mmm and dddd render a month or day NAME, which nothing rebuilt from the serial can reproduce.
     if (/m{3,}|d{3,}/i.test(tokens)) return 'named';
     const hasDate = /[yd]/i.test(tokens);
     if (/[hs]/i.test(tokens) && !hasDate) return 'time';
@@ -318,14 +254,7 @@ function numberKind(z: string | undefined, w: string | undefined): NumberKind {
   return /^\d{1,2}:\d{2}(:\d{2})?(\.\d+)?(\s*[AaPp]\.?[Mm]\.?)?$/.test(w.trim()) ? 'time' : 'plain';
 }
 
-/**
- * A number written as a percentage.
- *
- * The decimal point is moved rather than the number multiplied by 100, because
- * 0.123 * 100 is 12.299999999999999. Reading Excel's displayed text instead
- * would be worse: its Percent Style button shows 0.123456789 as "12%", and the
- * digits it drops are the user's, not ours to throw away.
- */
+// The point is moved rather than multiplying by 100, because 0.123 * 100 is 12.299999999999999.
 function percentText(value: number): string {
   if (value === 0) return '0';
   const parts = /^(-?)(\d)(?:\.(\d+))?e([+-]\d+)$/.exec(value.toExponential());
@@ -361,14 +290,6 @@ interface SheetTallies {
   formulas: IssueBuilder;
 }
 
-/**
- * One cell as text.
- *
- * Three things a plain read gets wrong, and that this fixes: an error cell is
- * its own text and not a blank, a clock time stays a time instead of becoming a
- * date in 1899, and a percentage keeps its sign instead of arriving as the
- * decimal underneath it.
- */
 function cellToText(cell: CellObject, row: number, tallies: SheetTallies, parseDateCode: ParseDateCode): string {
   if (cell.f !== undefined) tallies.formulas.add(row, cell.f);
 
@@ -413,9 +334,7 @@ async function parseWorkbook(file: File, ext: string): Promise<ParsedFile> {
 
   let workbook: import('xlsx').WorkBook;
   try {
-    // `cellNF` is what lets a percentage tell itself apart from a clock time.
-    // `cellDates` is deliberately off: it is the option that turns 12:30 into
-    // the 31st of December 1899.
+    // cellNF tells a percentage from a clock time; cellDates is off or 12:30 becomes 31 Dec 1899.
     workbook = XLSX.read(bytes, { type: 'array', cellNF: true, cellText: true, cellDates: false });
   } catch {
     throw new ParseFailure(
@@ -440,8 +359,7 @@ async function parseWorkbook(file: File, ext: string): Promise<ParsedFile> {
     const issues: ReadIssue[] = [];
     const rows: string[][] = [];
 
-    // Walking the cells that exist, rather than the stated rectangle, keeps a
-    // sheet whose range overshoots from costing anything.
+    // Walking the cells that exist, not the stated rectangle, so an overshooting range costs nothing.
     for (const key in worksheet) {
       if (key.charCodeAt(0) === 33) continue; // '!ref', '!merges', …
       const at = XLSX.utils.decode_cell(key);
@@ -480,12 +398,6 @@ async function parseWorkbook(file: File, ext: string): Promise<ParsedFile> {
   return { filename: file.name, kind: 'workbook', extension: ext, sheets, decode: null, delimiter: null, issues: [] };
 }
 
-// ── Dispatch ───────────────────────────────────────────────────────────────
-
-/**
- * What a file is when its name does not say — an iOS or WhatsApp share often
- * arrives with no extension at all.
- */
 function looksLikeAWorkbook(bytes: Uint8Array): boolean {
   const [b0, b1, b2, b3] = bytes;
   if (b0 === 0x50 && b1 === 0x4b) return true; // zip: xlsx, xlsb, ods, numbers
@@ -498,7 +410,6 @@ function looksLikeAWorkbook(bytes: Uint8Array): boolean {
   return dbase.includes(b0) && b2 >= 1 && b2 <= 12 && b3 >= 1 && b3 <= 31;
 }
 
-/** Read a dropped file into one or more sheets of strings. */
 export async function parseFile(file: File, options: ReadOptions = {}): Promise<ParsedFile> {
   if (file.size > MAX_BYTES) {
     throw new ParseFailure(
@@ -509,8 +420,6 @@ export async function parseFile(file: File, options: ReadOptions = {}): Promise<
 
   const ext = extension(file.name);
   if (ext === 'prn') {
-    // A .prn lines its columns up with spaces and never records where one
-    // ends, so any split is a guess dressed up as a table.
     throw new ParseFailure(
       'A .prn file lines its columns up with spaces, so there is no way to tell where one column ends and the next begins. Open it in Excel and save it as a .csv file instead.',
     );

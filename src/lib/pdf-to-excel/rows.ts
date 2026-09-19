@@ -15,7 +15,6 @@ export interface BandLine {
   page: number;
 }
 
-/** One tree or grid row, so the tagged and ruled paths group by the same rule. */
 export interface CellRow {
   cells: string[];
   page: number;
@@ -35,12 +34,7 @@ function finish(row: RawRow): RawRow {
   return row;
 }
 
-/**
- * A new record starts when the leftmost column is non-empty OR any money column is.
- *
- * Either half alone fails: the date anchor loses every row where a bank omits the repeated date,
- * and the money test loses a grid with no numbers in it.
- */
+/** A new record starts when the leftmost column is non-empty OR any money column is. */
 export function groupCellRows(rows: readonly CellRow[], moneyCols: readonly number[]): RawRow[] {
   const out: RawRow[] = [];
   for (const row of rows) {
@@ -99,7 +93,6 @@ const keyOf = (row: RawRow): string =>
     .filter((cell) => cell !== '')
     .join('');
 
-/** A header repeated on later pages is one row, not many. */
 export function dropRepeatedHeader(rows: readonly RawRow[]): { rows: RawRow[]; dropped: number } {
   if (rows.length === 0) return { rows: [], dropped: 0 };
   const header = keyOf(rows[0]);

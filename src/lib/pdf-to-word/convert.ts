@@ -1,9 +1,3 @@
-/**
- * The conversion run: one page read at a time, one model built from all of
- * them, one Word file written. A page that throws becomes a note rather than a
- * failed document, and every page boundary is a chance to stop.
- */
-
 import type { ISectionOptions } from 'docx';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { PdfToolsError } from '@/lib/pdf-tools/errors';
@@ -51,7 +45,6 @@ interface PageRead {
   pictures: Picture[];
 }
 
-/** How many pictures were shrunk, and how many would not fit the budget at all. */
 interface ImageTally {
   downscaled: number;
   dropped: number;
@@ -68,8 +61,7 @@ async function encodePictures(
   pdfBytes: Uint8Array,
   tally: ImageTally,
 ): Promise<Picture[]> {
-  // A picture of the whole page already contains every image on it, and §6 keeps a scan's
-  // bitmap out of Editable mode entirely — text sitting on a picture cannot be edited.
+  // A picture of the whole page already holds every image on it, and a scan's bitmap stays out of Editable mode.
   if (facts.raster || facts.cls !== 'text' || facts.images.length === 0) return [];
 
   const page = await doc.getPage(facts.pageNumber);
@@ -173,7 +165,6 @@ async function packOrExplain(sections: ISectionOptions[], model: DocModel): Prom
   }
 }
 
-/** The open recipe, shared with the panel's single-page pre-check. */
 export async function openDocument(source: LoadedPdf): Promise<PDFDocumentProxy> {
   const pdfjs = await import('pdfjs-dist');
   pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';

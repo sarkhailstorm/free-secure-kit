@@ -1,12 +1,3 @@
-/**
- * The conversion pipeline: text in, text out, nothing else.
- *
- * Nothing in this file touches the network, the DOM or storage — the whole
- * point of the site is that your data never leaves the tab it was pasted into.
- * papaparse, js-yaml and highlight.js are imported lazily so they stay out of
- * the initial page bundle.
- */
-
 import {
   cellToText,
   coerceCell,
@@ -31,8 +22,6 @@ type YamlModule = typeof import('js-yaml');
 /** Papaparse puts the overflow of a too-long row under this key. */
 const EXTRA_FIELD = '__parsed_extra';
 
-/* --------------------------------------------------------- lazy module load */
-
 async function loadPapa(): Promise<PapaModule> {
   const mod = await import('papaparse');
   const bundled = (mod as unknown as { default?: PapaModule }).default;
@@ -45,19 +34,12 @@ async function loadYaml(): Promise<YamlModule> {
   return bundled && typeof bundled.load === 'function' ? bundled : (mod as unknown as YamlModule);
 }
 
-/* ------------------------------------------------------------- normalising */
-
 interface NormaliseState {
   truncated: boolean;
   cyclic: boolean;
 }
 
-/**
- * Reduce whatever a parser handed back to the subset all three formats share.
- * YAML in particular can produce Dates, Infinity, Maps and — via anchors —
- * genuinely circular structures, any of which would otherwise crash
- * `JSON.stringify` or spin the flattener forever.
- */
+/** Flattens the Dates, Maps and YAML-anchor cycles that would break `JSON.stringify`. */
 function normalise(input: unknown, depth: number, onPath: Set<object>, state: NormaliseState): DataValue {
   if (input === null || input === undefined) return null;
 
@@ -109,8 +91,6 @@ function normalise(input: unknown, depth: number, onPath: Set<object>, state: No
   return result;
 }
 
-/* ----------------------------------------------------------------- parsing */
-
 interface ParsedInput {
   value: DataValue;
   notes: string[];
@@ -118,7 +98,6 @@ interface ParsedInput {
   table: { fields: string[]; rows: string[][] } | null;
 }
 
-/** Thrown for input we cannot parse; carries a message fit for the screen. */
 class InputError extends Error {
   readonly line: number | null;
   readonly column: number | null;
@@ -175,8 +154,7 @@ function parseYaml(text: string, yaml: YamlModule): ParsedInput {
 }
 
 function parseCsv(text: string, papa: PapaModule, coerce: boolean): ParsedInput {
-  // papaparse renames a repeated header (`a`, `a_1`) rather than dropping it;
-  // keeping the originals is the only way to notice that it happened.
+  // papaparse renames a repeated header (`a`, `a_1`); keep the originals to notice.
   const headers: string[] = [];
   const result = papa.parse<Record<string, string>>(text, {
     header: true,
@@ -200,9 +178,7 @@ function parseCsv(text: string, papa: PapaModule, coerce: boolean): ParsedInput 
     notes.push('Two columns shared a name, so the later one was renamed to keep both.');
   }
 
-  // A column with no name in the header row still holds data. Give it one
-  // rather than dropping the values on the floor — and make sure the name we
-  // invent cannot collide with a column that is genuinely called `column_2`.
+  // An unnamed column still holds data; the generated name must not collide.
   const taken = new Set(fields);
   const pathFor = new Map<string, string>();
   fields.forEach((field, index) => {
@@ -252,8 +228,7 @@ function parseCsv(text: string, papa: PapaModule, coerce: boolean): ParsedInput 
       const raw = row[field];
       // Absent (the row was short) — leave the key out entirely.
       if (typeof raw !== 'string') continue;
-      // An empty cell under an array index is a gap, not an empty string, so
-      // ragged arrays such as tags.0 / tags.1 survive the round trip.
+      // An empty cell under an array index is a gap, not an empty string.
       if (coerce && raw === '' && indexColumn.get(field)) continue;
       cells[pathFor.get(field) ?? field] = coerceCell(raw, coerce);
     }
@@ -269,8 +244,6 @@ function parseCsv(text: string, papa: PapaModule, coerce: boolean): ParsedInput 
 
   return finish(records, notes, table);
 }
-
-/* ------------------------------------------------------------- serialising */
 
 interface Serialised {
   output: string;
@@ -310,22 +283,15 @@ function toCsvText(value: DataValue, papa: PapaModule, delimiter: string): Seria
   return { output, columns: fields.length, notes };
 }
 
-/* ---------------------------------------------------------------- pipeline */
-
 function countRecords(value: DataValue): number {
   return Array.isArray(value) ? value.length : 1;
 }
 
-/** The same caveat can arise while both reading and writing; say it once. */
 function mergeNotes(...groups: string[][]): string[] {
   return Array.from(new Set(groups.flat()));
 }
 
-/**
- * Read `text` in one format and write it out in another. Converting to the
- * same format is a pretty-printer, and for csv → csv that means tidying the
- * quoting and delimiter without reinterpreting a single cell.
- */
+/** Converting to the same format is a pretty-print; csv → csv never reinterprets a cell. */
 export async function convertText(request: ConvertRequest): Promise<ConvertOutcome> {
   const { text, source, target } = request;
   const explicit: DataFormat | null = source === 'auto' ? null : source;
@@ -351,9 +317,6 @@ export async function convertText(request: ConvertRequest): Promise<ConvertOutco
   try {
     [papa, yaml] = await Promise.all([loadPapa(), loadYaml()]);
   } catch {
-    // The parsers are code-split, so a half-loaded page (a flaky first visit,
-    // or a tab left open across a redeploy) can fail here. Webpack's own words
-    // are meaningless to the reader, so say what actually happened.
     return {
       ...base,
       status: 'error',

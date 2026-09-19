@@ -54,11 +54,8 @@ export function ImageCompressor() {
   const [activeRuns, setActiveRuns] = useState(0);
   const [zipping, setZipping] = useState(false);
 
-  /** Every object URL we have handed to an <img>, so none can be orphaned. */
   const urlsRef = useRef<Set<string>>(new Set());
-  /** Controllers for batch runs currently in flight. */
   const runsRef = useRef<Set<AbortController>>(new Set());
-  /** Ids the user removed — a worker that finishes late must drop its result. */
   const removedRef = useRef<Set<string>>(new Set());
   const itemsRef = useRef<ImageItem[]>([]);
   const settingsRef = useRef<CompressSettings>(settings);
@@ -73,8 +70,6 @@ export function ImageCompressor() {
 
   const processing = activeRuns > 0;
 
-  /* ------------------------------------------------------ object URLs -- */
-
   const releaseUrl = useCallback((url: string | null | undefined) => {
     if (!url) return;
     // Guarded by the set, so calling this twice for the same URL is harmless.
@@ -86,8 +81,6 @@ export function ImageCompressor() {
     runsRef.current.clear();
   }, []);
 
-  // Unmount: stop any work and release every preview. A batch of 50 photos
-  // would otherwise pin hundreds of megabytes for the life of the tab.
   useEffect(() => {
     const urls = urlsRef.current;
     const runs = runsRef.current;
@@ -99,8 +92,6 @@ export function ImageCompressor() {
     };
   }, []);
 
-  /* ---------------------------------------------------------- the work -- */
-
   const startRun = useCallback(async (targets: readonly ImageItem[]) => {
     if (targets.length === 0) return;
 
@@ -110,7 +101,6 @@ export function ImageCompressor() {
     runSequence += 1;
     const runId = runSequence;
 
-    // Snapshot the settings so a mid-run slider nudge can't half-apply.
     const runSettings = settingsRef.current;
     const key = settingsKey(runSettings);
 
@@ -127,8 +117,6 @@ export function ImageCompressor() {
     setActiveRuns((n) => n + 1);
 
     try {
-      // Yield once so the queued/compressing states paint before the first
-      // encode takes over the main thread.
       await new Promise((resolve) => setTimeout(resolve, 0));
 
       await runWithConcurrency(targets, CONCURRENCY, async (target) => {
@@ -140,11 +128,6 @@ export function ImageCompressor() {
           ),
         );
 
-        // The encoder runs on this thread (see the worker note in
-        // compressImage), and a large PNG can hold it for seconds. Hand the
-        // browser a turn first so the card's spinner and the batch progress
-        // bar actually paint. A timer rather than rAF, so a long batch keeps
-        // running when the tab is in the background.
         await new Promise((resolve) => setTimeout(resolve, 0));
         if (removedRef.current.has(target.id)) return;
         if (signal.aborted) {
@@ -185,7 +168,6 @@ export function ImageCompressor() {
             revertToQueued(target.id);
             return;
           }
-          // One bad image never stops the batch — it just reports itself.
           const message = readableError(err);
           setItems((prev) =>
             prev.map<ImageItem>((i) =>
@@ -199,8 +181,6 @@ export function ImageCompressor() {
       setActiveRuns((n) => Math.max(0, n - 1));
     }
   }, []);
-
-  /* ----------------------------------------------------------- actions -- */
 
   const addFiles = useCallback(
     (incoming: File[]) => {
@@ -220,9 +200,6 @@ export function ImageCompressor() {
           .map((r) => `“${r.name}”`)
           .join(', ');
         const rest = rejected.length - 2;
-        // Reasons can differ within one drop (a PDF and an SVG are turned away
-        // for different reasons), so only state a reason when they all share
-        // one — otherwise just name the files.
         const reasons = new Set(rejected.map((r) => r.why));
         const why = reasons.size === 1 ? ` — ${[...reasons][0]}` : '';
         toast.error(
@@ -232,7 +209,6 @@ export function ImageCompressor() {
 
       if (accepted.length === 0) return;
 
-      // Appends — dropping a second batch never replaces the first.
       const fresh = accepted.map(makeItem);
       setItems((prev) => [...prev, ...fresh]);
       void startRun(fresh);
@@ -268,8 +244,6 @@ export function ImageCompressor() {
       .map((i) => i.result?.previewUrl)
       .filter((url): url is string => Boolean(url));
 
-    // Results are dropped, but `file` and `source` are kept: every re-run
-    // compresses the ORIGINAL again, so quality loss never compounds.
     const reset = current.map<ImageItem>((i) => ({
       ...i,
       status: 'queued',
@@ -303,7 +277,6 @@ export function ImageCompressor() {
 
     setZipping(true);
     try {
-      // Let the button repaint as "Zipping…" before the archive is built.
       await new Promise((resolve) => setTimeout(resolve, 0));
       const names = uniqueNames(readyNow.map((i) => i.result.filename));
       const blob = await buildZip(
@@ -317,8 +290,6 @@ export function ImageCompressor() {
       setZipping(false);
     }
   }, [toast]);
-
-  /* ---------------------------------------------------------- derived -- */
 
   const currentKey = settingsKey(settings);
   const ready = useMemo(() => items.filter(isReady), [items]);
@@ -335,8 +306,6 @@ export function ImageCompressor() {
   const settled = items.filter((i) => i.status === 'done' || i.status === 'failed').length;
   const progress = items.length > 0 ? Math.round((settled / items.length) * 100) : 0;
 
-  // Stopping a batch leaves images sitting at "Queued"; say so rather than
-  // letting the cards look stuck for no stated reason.
   const notes: string[] = [];
   if (stale) notes.push('Settings changed since the last run — re-compress to apply them.');
   if (!processing && pendingCount > 0) {
@@ -350,8 +319,6 @@ export function ImageCompressor() {
     );
   }
   if (notes.length === 0) notes.push('Totals cover the images that have finished compressing.');
-
-  /* ------------------------------------------------------------- render -- */
 
   return (
     <div className="flex flex-col gap-5">

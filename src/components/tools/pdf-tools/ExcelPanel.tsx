@@ -38,7 +38,6 @@ function progressLabel({ stage, done, total, page }: ExcelProgress): string {
   return 'Writing your spreadsheet…';
 }
 
-/** "4", "4 and 7", "1, 3 and 5" */
 function listOf(numbers: readonly number[]): string {
   if (numbers.length <= 1) return numbers.map(String).join('');
   return `${numbers.slice(0, -1).join(', ')} and ${numbers[numbers.length - 1]}`;
@@ -84,7 +83,6 @@ function flaggedRows(sheet: Sheet): number {
   return sheet.rows.filter((row) => !row.ok).length;
 }
 
-/** The one line that says how much of this table to trust. */
 function Honesty({ sheet }: { sheet: Sheet }) {
   const flagged = flaggedRows(sheet);
   const checked = sheet.columns.some((column) => column.balance);

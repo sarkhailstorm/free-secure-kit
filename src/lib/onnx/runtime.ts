@@ -10,19 +10,13 @@ export async function loadOrt(): Promise<OrtModule> {
   // The /wasm subpath only: the bare package drags in the WebGPU build for nothing.
   const loaded = await import('onnxruntime-web/wasm');
   loaded.env.wasm.wasmPaths = '/ort/';
-  // A static export can't be cross-origin isolated, so one thread is the only
-  // option. Saying so explicitly keeps the console quiet about it.
+  // A static export can't be cross-origin isolated, so one thread is the only option.
   loaded.env.wasm.numThreads = 1;
   ort = loaded;
   return loaded;
 }
 
-/**
- * Build a session, or hand back the one already running under `key`.
- *
- * Each session pins its weights for as long as it lives, so callers that hold
- * several megabytes release what they are done with rather than relying on this.
- */
+/** Hands back the session already running under `key`; each one pins its weights until released. */
 export async function getSession(
   key: string,
   model: Uint8Array,
@@ -46,7 +40,6 @@ export async function getSession(
   }
 }
 
-/** Release every running session except those named. */
 export async function releaseSessions(keep: readonly string[] = []): Promise<void> {
   const kept = new Set(keep);
   for (const [key, session] of [...held]) {

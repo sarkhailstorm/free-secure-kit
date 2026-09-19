@@ -37,21 +37,12 @@ import { EditorPane } from './EditorPane';
 import { PreviewPane } from './PreviewPane';
 import { PrintSurface } from './PrintSurface';
 
-/** Drafts live in this browser only — never on a server, because there isn't one. */
 const DOC_KEY = 'securekit:markdown-converter:doc';
 const THEME_KEY = 'securekit:markdown-converter:theme';
 
-/** How long after the last keystroke the preview re-renders. */
 const RENDER_DEBOUNCE_MS = 150;
-/**
- * Parsing, highlighting and sanitising all happen on the main thread. That is
- * imperceptible for a normal document and janky for a book, so past this size
- * the preview waits longer between keystrokes rather than re-rendering a
- * megabyte 6 times a second.
- */
 const LARGE_DOC_CHARS = 120_000;
 const LARGE_DOC_DEBOUNCE_MS = 600;
-/** How long after the last keystroke the draft is written to localStorage. */
 const SAVE_DEBOUNCE_MS = 500;
 
 const MIN_SPLIT = 25;
@@ -77,11 +68,6 @@ function messageOf(err: unknown, fallback: string): string {
   return raw.trim() ? raw : fallback;
 }
 
-/**
- * A full quota is a different problem from a blocked store: the browser is
- * willing, the draft is simply too big. Saying "blocked" there would send the
- * user hunting through their privacy settings for nothing.
- */
 function isQuotaError(err: unknown): boolean {
   if (!(err instanceof Error)) return false;
   if (err.name === 'QuotaExceededError' || err.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
@@ -117,7 +103,6 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
   const themeCss = useMemo(() => previewStylesheet(themeId), [themeId]);
   const hasSource = source.trim().length > 0;
 
-  /* ------------------------------------------------- restore the saved draft */
   useEffect(() => {
     try {
       const saved = localStorage.getItem(DOC_KEY);
@@ -125,14 +110,11 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
       const savedTheme = localStorage.getItem(THEME_KEY);
       if (isThemeId(savedTheme)) setThemeId(savedTheme);
     } catch {
-      // Private mode, or storage disabled. The seeded document still works;
-      // we just cannot persist it.
       setSaveState('blocked');
     }
     setRestored(true);
   }, []);
 
-  /* ------------------------------------------------------- persist the draft */
   useEffect(() => {
     if (!restored) return;
     setSaveState((state) => (state === 'blocked' ? state : 'saving'));
@@ -147,7 +129,6 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
     return () => clearTimeout(timer);
   }, [source, restored]);
 
-  /* --------------------------------------------------- render, lightly debounced */
   useEffect(() => {
     if (!source.trim()) {
       setHtml('');
@@ -164,8 +145,6 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
           if (!result.error) setHtml(result.html);
         })
         .catch(() => {
-          // renderMarkdown already swallows parse failures; this only guards
-          // against a failed chunk load, which must not strand the spinner.
           if (!cancelled) setRenderError('The Markdown renderer could not be loaded.');
         });
     }, delay);
@@ -180,8 +159,6 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
       if (clearTimer.current) clearTimeout(clearTimer.current);
     };
   }, []);
-
-  /* ------------------------------------------------------------------ actions */
 
   const changeTheme = useCallback((value: string) => {
     if (!isThemeId(value)) return;
@@ -217,7 +194,6 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
     toast.info('Editor cleared.');
   }, [confirmClear, toast]);
 
-  /** Re-render straight from the source so an export is never a stale copy. */
   const freshHtml = useCallback(async (): Promise<string> => {
     const result = await renderMarkdown(source);
     if (result.error) throw new Error(result.error);
@@ -228,17 +204,12 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
     if (busy || !hasSource) return;
     setBusy('html');
     try {
-      // Let the disabled state paint before the (synchronous) work starts.
       await new Promise((resolve) => setTimeout(resolve, 0));
       const rendered = await freshHtml();
-      // Sanitised once on the way out of the renderer, and again here: the
-      // file is about to leave this page, so it gets the belt and the braces.
       const safe = await sanitizeForExport(rendered);
       const title = documentTitle(source);
       const file = buildStandaloneHtml({ title, bodyHtml: safe, themeId });
-      // Trim the *stem* before adding the extension: safeFilename caps the
-      // whole string at 180 characters, so a long H1 would otherwise have its
-      // ".html" sliced off and land as an unopenable file.
+      // Trim the stem first: safeFilename caps at 180 chars and would eat the ".html".
       const stem = safeFilename(title, 'document').slice(0, 120).trim().replace(/\.+$/, '');
       downloadText(file, `${stem || 'document'}.html`, 'text/html');
       toast.celebrate('Downloaded a self-contained HTML file.');
@@ -273,8 +244,7 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
       const rendered = await freshHtml();
       setHtml(rendered);
       setRenderError(null);
-      // Give React a frame to commit the print surface before the browser
-      // freezes the page for the dialog.
+      // A frame for React to commit the print surface before the dialog freezes the page.
       await new Promise((resolve) => setTimeout(resolve, 60));
       window.print();
       toast.celebrate('Print dialog open — choose “Save as PDF” as the destination.');
@@ -284,8 +254,6 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
       setBusy(null);
     }
   }, [busy, hasSource, freshHtml, toast]);
-
-  /* ----------------------------------------------------------- split handling */
 
   const moveSplit = useCallback((clientX: number) => {
     const rect = containerRef.current?.getBoundingClientRect();
@@ -309,8 +277,6 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
 
   return (
     <>
-      {/* Document styles for the live preview. Scoped to .md-doc, with a dark
-          treatment that only applies under the site's .dark root. */}
       <style dangerouslySetInnerHTML={{ __html: themeCss }} />
 
       <div className="space-y-4">
@@ -348,9 +314,7 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
               }}
               onPointerMove={(e) => {
                 if (!dragging.current) return;
-                // Capture can be lost without a pointerup (a native drag, a
-                // context menu, the window losing focus). Without this the flag
-                // stays set and a later hover would silently resize the panes.
+                // Pointer capture can be lost without a pointerup, leaving the flag set.
                 if (e.buttons === 0) {
                   dragging.current = false;
                   return;
@@ -379,10 +343,6 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
 
             <PreviewPane
               html={html}
-              // There is nothing to show and nothing has gone wrong, so work is
-              // still in flight: the debounce, or the first chunk load. Derived
-              // rather than tracked, so clearing the editor and typing again
-              // cannot leave the pane blank with no explanation.
               loading={!html && !renderError}
               error={renderError}
               themeName={theme.name}
@@ -508,8 +468,7 @@ export function MarkdownConverter({ active = true }: { active?: boolean }) {
             <Button
               variant={confirmClear ? 'danger' : 'ghost'}
               onClick={handleClear}
-              // Not `hasSource`: a document of pure whitespace still has to be
-              // clearable, otherwise the saved draft cannot be got rid of.
+              // Not `hasSource`: a whitespace-only draft still has to be clearable.
               disabled={working || source.length === 0}
               className="ml-auto"
             >

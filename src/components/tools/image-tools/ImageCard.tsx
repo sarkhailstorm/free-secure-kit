@@ -7,7 +7,6 @@ import { formatBytes, percentChange } from '@/lib/format';
 import { formatLabel } from '@/lib/image-compressor/settings';
 import type { ImageItem } from '@/lib/image-compressor/types';
 
-/** Savings pill. Growth is reported plainly — PNGs really do get bigger. */
 function SavingsBadge({ before, after }: { before: number; after: number }) {
   const delta = percentChange(before, after);
 

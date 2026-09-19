@@ -16,11 +16,7 @@ const formatTabs = [
 
 const SEPARATORS = [',', ';', '\t', '|'];
 
-/**
- * Must match `needsFormulaEscape`: = and @ always, + and - only when what
- * follows is not a plain number. An Excel file is written with every value as
- * text, so it never needs the apostrophe a CSV does.
- */
+/** Must match `needsFormulaEscape`. */
 function formulaHint(format: OutputFormat, risks: number): string {
   if (format === 'xlsx') {
     return 'An Excel file keeps every value as text, so nothing in it is run as a sum and nothing is changed.';
@@ -39,12 +35,10 @@ function formulaHint(format: OutputFormat, risks: number): string {
 export interface OutputPanelProps {
   format: OutputFormat;
   onFormatChange: (format: OutputFormat) => void;
-  /** The separator the file arrived with, kept unless it is changed here. */
   delimiter: string;
   onDelimiterChange: (delimiter: string) => void;
   escapeFormulas: boolean;
   onEscapeFormulasChange: (escape: boolean) => void;
-  /** `countFormulaRisks(sheets)` — values that would gain an apostrophe. */
   formulaRisks: number;
   /** `canWrite(sheets, format).reason` — shown instead of letting them save. */
   refusal?: string | null;

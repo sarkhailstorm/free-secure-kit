@@ -1,9 +1,3 @@
-/**
- * PageFacts[] -> DocModel. Chooses the struct or geometry path per page, cuts
- * sections only where the geometry genuinely changes, and collects every note
- * the conversion owes the user.
- */
-
 import { GRID_CLOSED_MIN, LINE_TOL, SEG_TOL } from '../constants';
 import { structCovers } from '../extract/struct';
 import { isSubstituted } from '../fonts';
@@ -34,7 +28,6 @@ import { deriveMargins, detectRunning, noRunning, type RunningContent } from './
 import { components } from './rules';
 import { scoreGrid, tablesFromRules, tablesFromStruct, type GridScore } from './tables';
 
-/** What layout/blocks.ts needs that PageFacts does not carry. */
 export interface LayoutContext {
   pageIndex: number;
   pageNumber: number;
@@ -67,8 +60,6 @@ const RTL_RE = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
 const isInk = (span: Span): boolean => span.text.trim().length > 0;
 const isBody = (facts: PageFacts): boolean =>
   facts.cls === 'text' || facts.cls === 'searchableScan';
-
-/* ---------- per page ---------- */
 
 interface Prepared {
   facts: PageFacts;
@@ -152,8 +143,6 @@ function prepare(facts: PageFacts, running: RunningContent, options: WordOptions
   return { facts, spans, lines, ...columnPlan(facts, spans, options) };
 }
 
-/* ---------- document metrics ---------- */
-
 function modal(weights: ReadonlyMap<number, number>): Pt {
   let best = 0;
   let top = -1;
@@ -217,8 +206,6 @@ function bodyMetrics(
   return { family, sizePt, leadingPt };
 }
 
-/* ---------- sections ---------- */
-
 interface Segment {
   page: Prepared;
   spans: Span[];
@@ -279,8 +266,6 @@ function realBreak(page: Prepared, margins: Section['margins'], leading: Pt): bo
   return slack > BREAK_LEADINGS * Math.max(1, leading);
 }
 
-/* ---------- blocks ---------- */
-
 function para(text: string, ctx: LayoutContext, align: ParaBlock['align']): ParaBlock {
   return {
     kind: 'paragraph',
@@ -337,9 +322,6 @@ function pagePicture(facts: PageFacts, ctx: LayoutContext): Block | null {
   };
 }
 
-/* ---------- tables: blocks.ts skips them, so they are spliced back here ---------- */
-
-/** §4.6b, restated because tables.ts keeps its own copy private. */
 function insideGrid(grid: GridScore, x: Pt, y: Pt): boolean {
   return (
     x + 2 >= grid.xs[0] - SEG_TOL &&
@@ -360,11 +342,6 @@ function tableGrids(rules: readonly RuleSeg[], lines: readonly Line[]): GridScor
   return out;
 }
 
-/**
- * tables.ts measures the grid but leaves every cell empty — only here are the page's own spans to
- * hand, so this is where a cell gets its paragraphs. Without it a table arrives in Word as a
- * correct but blank grid.
- */
 function cellBlocks(
   spans: readonly Span[],
   scoped: PageFacts,
@@ -538,8 +515,6 @@ function segmentBlocks(segment: Segment, ctx: LayoutContext, untagged: Set<numbe
   return geometryBlocks(scoped, ctx);
 }
 
-/* ---------- notes ---------- */
-
 interface Tally {
   scanned: number[];
   /** Scanned pages no picture was made of, which come out blank. */
@@ -622,8 +597,6 @@ function scanBlocks(
     }
   }
 }
-
-/* ---------- assembly ---------- */
 
 export function buildModel(
   pages: readonly PageFacts[],

@@ -2,10 +2,6 @@
 
 import { cn } from '@/lib/cn';
 
-/**
- * A labelled checkbox row. The whole row is the label, so the tap target is
- * comfortably over 36px on a phone.
- */
 export interface ToggleProps {
   label: string;
   hint?: string;

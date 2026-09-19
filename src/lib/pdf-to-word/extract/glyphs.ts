@@ -322,13 +322,7 @@ const isStroke = (fn: number): boolean =>
   fn === OP.closeFillStroke ||
   fn === OP.closeEOFillStroke;
 
-/**
- * Walk the operator list once for everything the text stream cannot carry.
- *
- * The CTM starts at the viewport transform, so every rectangle comes out in device
- * space with y running down from the top-left. Clip paths (`clip`/`eoClip`/`endPath`)
- * are the majority of all paths and are discarded, not painted.
- */
+/** Walks the operator list once; every rectangle comes out in device space, and clip paths are discarded. */
 export function scanOperators(ol: PDFOperatorList, vp: PageViewport): OpScan {
   const base = matrixFrom(vp.transform) ?? [1, 0, 0, -1, 0, vp.height];
   const page: Rect = { x: 0, y: 0, w: vp.width, h: vp.height };
@@ -507,13 +501,7 @@ function piece(span: Span, start: number, end: number, colour: string | null, mo
   };
 }
 
-/**
- * Attach colour and render mode to spans by walking the glyph stream alongside their text.
- *
- * `getTextContent` silently drops glyphs whose origin falls outside the viewBox, so the two
- * sequences resync within ALIGN_RESYNC_WINDOW; anything past that is reported rather than
- * guessed. Colour is a nice-to-have — losing it must never lose text.
- */
+/** Attaches colour and render mode by walking the glyph stream alongside the spans; losing colour never loses text. */
 export function attachColours(
   spans: Span[],
   glyphs: OpScan['glyphs'],
@@ -594,12 +582,7 @@ export function attachColours(
   return { spans: out, dropped };
 }
 
-/**
- * Resolve a decoded image.
- *
- * The callback form is mandatory: `objs.has(id)` is deterministically false on some pages
- * right after `getOperatorList` resolves.
- */
+/** The callback form is mandatory: `objs.has(id)` is false on some pages right after getOperatorList resolves. */
 export async function loadImageObject(page: PDFPageProxy, objId: string): Promise<PdfImage> {
   const store = objId.startsWith('g_') ? page.commonObjs : page.objs;
   return new Promise<PdfImage>((resolve, reject) => {

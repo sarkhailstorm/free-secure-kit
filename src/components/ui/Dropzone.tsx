@@ -4,12 +4,6 @@ import { useCallback, useId, useRef, useState } from 'react';
 import { UploadCloud } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
-/**
- * Drag-and-drop + click-to-browse file input.
- *
- * Files are handed straight to `onFiles` as File objects; nothing is read or
- * transmitted here. The caller decides what to do with them, always locally.
- */
 export function Dropzone({
   onFiles,
   accept,
@@ -22,7 +16,6 @@ export function Dropzone({
   disabled = false,
 }: {
   onFiles: (files: File[]) => void;
-  /** `accept` attribute, e.g. '.csv,.xlsx' or 'image/*'. */
   accept?: string;
   multiple?: boolean;
   title?: string;

@@ -38,7 +38,6 @@ export function OutputPanel({
   layout: Layout;
   background: BackgroundChoice;
   onBackground: (next: BackgroundChoice) => void;
-  /** True when a check says this photo cannot be used as it is. */
   blocked: boolean;
 }) {
   const toast = useToast();

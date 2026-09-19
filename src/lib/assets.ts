@@ -1,17 +1,6 @@
-/**
- * The one-time downloads, and the Cache Storage copy that stops them happening
- * twice.
- *
- * Nothing here runs until a tool actually needs a model. The site is on a fixed
- * monthly transfer allowance and is paused rather than billed when it runs out,
- * so a second download of the same bytes is not a small waste — it is the thing
- * most likely to take the whole site offline.
- */
-
-/** A big file this site serves from its own origin and only fetches once. */
 export type AssetId = 'engine' | 'modnet' | 'u2netp' | 'yunet' | 'qpdf';
 
-/** Something we needed could not be fetched. The message is fit to show. */
+/** The message is already fit to show the user. */
 export class DownloadError extends Error {
   constructor(message: string) {
     super(message);
@@ -19,8 +8,7 @@ export class DownloadError extends Error {
   }
 }
 
-// Named for the background remover because that is what first filled it.
-// Renaming it would make every existing visitor download everything again.
+// Renaming these would make every existing visitor download everything again.
 const CACHE_NAME = 'securekit-background-remover-v1';
 const CACHE_PREFIX = 'securekit-background-remover-';
 
@@ -30,17 +18,13 @@ export interface Asset {
   bytes: number;
 }
 
-/**
- * Every big file this site serves. `prune` deletes anything not listed here, so
- * a file that is renamed rather than removed still frees its old copy.
- */
+/** Every big file this site serves; `prune` deletes any cached copy not listed here. */
 export const ASSETS: Record<AssetId, Asset> = {
   engine: { url: '/ort/ort-wasm-simd-threaded.wasm', bytes: 14_239_897 },
   modnet: { url: '/models/modnet-7bad6522.onnx', bytes: 6_627_048 },
   u2netp: { url: '/models/u2netp-309c8469.onnx', bytes: 4_574_861 },
   yunet: { url: '/models/yunet-8f2383e4.onnx', bytes: 232_589 },
-  // Kept in step with scripts/copy-qpdf.mjs, which refuses to write a file
-  // whose hash does not match the name.
+  // Kept in step with scripts/copy-qpdf.mjs, which checks the hash in the name.
   qpdf: { url: '/qpdf/qpdf-cbd81a24.wasm', bytes: 1_274_647 },
 };
 
@@ -118,8 +102,7 @@ async function download(
   onChunk: (bytes: number) => void,
   signal?: AbortSignal,
 ): Promise<Uint8Array> {
-  // These names carry a content hash and are served immutable, so the browser's
-  // own cache is allowed to answer without asking the server first.
+  // These names carry a content hash and are served immutable, so force-cache is safe.
   const response = await fetch(asset.url, { signal, cache: 'force-cache' });
   if (!response.ok || !response.body) {
     throw new DownloadError(
@@ -152,7 +135,6 @@ async function download(
   return bytes;
 }
 
-/** True when every one of these is already on the device and costs nothing to use. */
 export async function areAssetsReady(ids: readonly AssetId[]): Promise<boolean> {
   const cache = await openCache();
   if (!cache) return false;
@@ -170,13 +152,7 @@ export async function bytesOutstanding(ids: readonly AssetId[]): Promise<number>
   return total;
 }
 
-/**
- * Fetch what these ids need, reading from Cache Storage where possible.
- *
- * `onProgress` is called with uncompressed byte counts covering only what is
- * actually being fetched, so a returning visitor sees a total of zero rather
- * than a bar that fills instantly.
- */
+/** `onProgress` counts only what is actually fetched, so a returning visitor gets a total of zero. */
 export async function loadAssets(
   ids: readonly AssetId[],
   onProgress: (received: number, total: number) => void,
@@ -217,7 +193,6 @@ export async function loadAssets(
   return loaded;
 }
 
-/** Give the space back. Everything downloads again the next time it is needed. */
 export async function clearDownloads(): Promise<void> {
   try {
     if (typeof caches === 'undefined') return;

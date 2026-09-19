@@ -10,7 +10,6 @@ export interface Option<T extends string> {
   label: string;
 }
 
-/** Compact labelled `<select>`, sized to stay a comfortable tap target. */
 export function SelectControl<T extends string>({
   label,
   value,
@@ -46,7 +45,6 @@ export function SelectControl<T extends string>({
   );
 }
 
-/** Checkbox with a real label and optional explanatory line. */
 export function ToggleControl({
   label,
   hint,
@@ -76,10 +74,6 @@ export function ToggleControl({
   );
 }
 
-/**
- * What the detector decided. The wording carries the meaning — colour is never
- * the only signal — and it says plainly when the guess was overruled by hand.
- */
 export function DetectBadge({
   format,
   confidence,

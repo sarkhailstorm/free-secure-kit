@@ -46,8 +46,6 @@ export interface GridScore {
   closed: number;
 }
 
-/* ---------- geometry ---------- */
-
 const boxOf = (rect: Rect): Box => ({
   x0: rect.x,
   y0: rect.y,
@@ -69,8 +67,6 @@ const wraps = (outer: Box, inner: Box, slack: Pt): boolean =>
   outer.y0 <= inner.y0 + slack &&
   outer.x1 >= inner.x1 - slack &&
   outer.y1 >= inner.y1 - slack;
-
-/* ---------- rules ---------- */
 
 /** Cluster one axis's rules into the distinct grid positions they draw. */
 function axisPositions(rules: readonly RuleSeg[], axis: 'h' | 'v'): Pt[] {
@@ -123,11 +119,7 @@ export function scoreGrid(component: readonly RuleSeg[]): GridScore | null {
   return { xs, ys, rows, cols, closed: total > 0 ? painted / total : 0 };
 }
 
-/**
- * §4.6b: a 1x1 component is a bordered paragraph, not a table.
- *
- * Returned here so layout/blocks.ts need not re-run the component walk for forms-like's ten boxes.
- */
+/** §4.6b: a 1x1 component is a bordered paragraph, not a table. */
 export function singleCellBoxes(
   rules: readonly RuleSeg[],
 ): { rect: Rect; colour: string | null; thicknessPt: Pt }[] {
@@ -150,8 +142,6 @@ export function singleCellBoxes(
   return out;
 }
 
-/* ---------- shading ---------- */
-
 function shadeFor(cell: Box, shades: readonly FillBox[], maxArea: number): string | null {
   let best: FillBox | null = null;
   for (const fill of shades) {
@@ -166,8 +156,6 @@ function shadeFor(cell: Box, shades: readonly FillBox[], maxArea: number): strin
 
 const shadedHeader = (cells: readonly TableCellBlock[]): number =>
   cells.length > 0 && cells.filter((cell) => cell.shade !== null).length * 2 >= cells.length ? 1 : 0;
-
-/* ---------- (b) ruled tables ---------- */
 
 export function tablesFromRules(
   rules: readonly RuleSeg[],
@@ -253,8 +241,6 @@ function ruledTable(
     source: 'rules',
   };
 }
-
-/* ---------- (a) struct tables ---------- */
 
 export function tablesFromStruct(facts: PageFacts): TableBlock[] {
   const index = facts.struct;
@@ -376,8 +362,7 @@ function structTable(
   let gridPt = columnGrid(cells, rows, cols, rules, bands[0], bands[rows]);
   let span: Box = { x0: gridPt[0], y0: bands[0], x1: gridPt[cols], y1: bands[rows] };
 
-  // §4.6a measures the grid off the text, which sits a cell margin inside the ink. Where the ink is
-  // there and agrees on the count it is the true boundary, which §7.3's inset and row height need.
+  // §4.6a measures the grid off the text, which sits a cell margin inside the ink; the ink is the true boundary.
   const frame = frameFor(frames, extent ?? span, span);
   if (frame) {
     if (frame.xs.length === cols + 1) gridPt = frame.xs.slice();
@@ -447,12 +432,7 @@ const spansColumn = (frame: Box, span: Box): boolean =>
   frame.x0 >= span.x0 - CELL_SLACK &&
   frame.x1 <= span.x1 + CELL_SLACK;
 
-/**
- * §4.6a: aggregate per column index, never per row — a column's cells do not share an x0.
- *
- * A column whose every cell is empty has no text to measure, so its edge comes from the rules drawn
- * across the table's own band instead.
- */
+/** §4.6a: aggregate per column index, never per row — a column's cells do not share an x0. */
 function columnGrid(
   cells: ReadonlyMap<string, Box>,
   rows: number,
@@ -531,12 +511,7 @@ function rowBands(cells: ReadonlyMap<string, Box>, rows: number, count: readonly
 const midway = (bottom: Pt, top: Pt): Pt =>
   Number.isFinite(bottom) && Number.isFinite(top) ? (bottom + top) / 2 : top;
 
-/**
- * V7 gives no /RowSpan, so a cell only merges down when its own text physically fills the next band.
- *
- * Restricted to a row's last cell: the continuation then sits in the trailing columns, where the
- * short rows below already leave a gap.
- */
+/** V7 gives no /RowSpan, so a cell merges down only when its own text fills the next band. */
 function rowSpans(
   cells: ReadonlyMap<string, Box>,
   count: readonly number[],
@@ -567,12 +542,7 @@ function rowSpans(
   return { span, covered };
 }
 
-/**
- * Which cell of a short row carries the missing columns.
- *
- * §4.6a puts them on the last cell. Geometry overrides only when exactly one cell straddles enough
- * interior boundaries to be unambiguous, which is the only evidence V7 leaves behind.
- */
+/** Which cell of a short row carries the missing columns; §4.6a puts them on the last cell. */
 function deficitCell(
   cells: ReadonlyMap<string, Box>,
   row: number,
@@ -592,8 +562,6 @@ function deficitCell(
   }
   return straddlers.length === 1 ? straddlers[0] : n - 1;
 }
-
-/* ---------- (c) unruled tables — tab stops, never a <w:tbl> ---------- */
 
 interface TabRun {
   lines: Line[];

@@ -4,7 +4,6 @@ import { forwardRef } from 'react';
 import { SquarePen } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
-/** The left-hand (or "Write" tab) pane: a plain, fast textarea. */
 export const EditorPane = forwardRef<HTMLTextAreaElement, {
   value: string;
   onChange: (value: string) => void;

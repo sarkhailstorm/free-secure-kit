@@ -24,19 +24,13 @@ function previewText(cells: readonly string[]): string {
 }
 
 export interface StructurePanelProps {
-  /** `analyseStructure(sheet)` for the sheet on screen. */
   structure: StructureReport;
   /** The row the column names are being taken from now; null means none. */
   headerRowIndex: number | null;
-  /** ORIGINAL row index, or null for “no column names”. Never applied on its own. */
   onHeaderRowChange: (index: number | null) => void;
   dropFooterRows: boolean;
-  /**
-   * Switching this on also raises `onFooterRowIndexesChange` with every row
-   * found, so turning it on is enough to make it do something.
-   */
+  /** Switching this on also raises `onFooterRowIndexesChange` with every row found. */
   onDropFooterRowsChange: (drop: boolean) => void;
-  /** `CleanOptions.footerRowIndexes` — the rows actually being dropped. */
   footerRowIndexes: readonly number[];
   onFooterRowIndexesChange: (indexes: readonly number[]) => void;
 }

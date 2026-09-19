@@ -8,9 +8,6 @@ import {
 } from './constants';
 import type { FontInfo, Generic } from './types';
 
-/* Everything here is driven by the PostScript name: font.bold and font.italic are
-   undefined on every embedded subset, so the flags are never consulted. */
-
 const SUBSET_RE = /^[A-Z]{6}\+/;
 const PS_SUFFIX_RE = /(PSMT|PS|MT)$/;
 const BOLD_RE = /bold|black|heavy|semibold|demi/i;

@@ -15,13 +15,6 @@ import {
   type RenderOptions,
 } from '@/lib/passport-photo';
 
-/**
- * The finished photo, exactly as it will be saved, with the rules drawn on it.
- *
- * Redrawing happens on an animation frame rather than on every pointer move:
- * a UK photo at 600 dpi is 827 x 1063, and repainting that on every pixel of a
- * drag makes the line feel stuck to treacle.
- */
 export function ResultPanel({
   bitmap,
   mask,
@@ -48,8 +41,7 @@ export function ResultPanel({
       try {
         drawPhoto(target, bitmap, options, mask);
       } catch {
-        // A canvas the browser refuses to size leaves the last good frame up,
-        // which is better than tearing the panel down mid-drag.
+        // A canvas the browser refuses to size leaves the last good frame up.
       }
     });
     return () => cancelAnimationFrame(queued.current);

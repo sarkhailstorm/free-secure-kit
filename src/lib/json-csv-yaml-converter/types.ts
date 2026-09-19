@@ -1,25 +1,13 @@
-/**
- * Shared vocabulary for the JSON ↔ CSV ↔ YAML converter.
- *
- * Everything in this directory is pure: no DOM, no network, no side effects.
- * The React layer in `src/components/tools/developer-tools/json-csv-yaml-converter/` calls into
- * it from event handlers and effects only.
- */
-
 export type DataFormat = 'json' | 'csv' | 'yaml';
 
-/** What the user picked in the "read input as" control. */
 export type SourceChoice = DataFormat | 'auto';
 
-/** JSON pretty-printing choices. */
 export type JsonIndent = '2' | '4' | 'tab' | 'min';
 
-/** How sure the detector is about its guess. */
 export type Confidence = 'high' | 'medium' | 'low';
 
 export type Primitive = string | number | boolean | null;
 
-/** A parsed document, normalised to things all three formats can express. */
 export type DataValue = Primitive | DataValue[] | { [key: string]: DataValue };
 
 export const FORMAT_LABEL: Record<DataFormat, string> = {
@@ -28,7 +16,6 @@ export const FORMAT_LABEL: Record<DataFormat, string> = {
   yaml: 'YAML',
 };
 
-/** Delimiters offered for CSV output, and recognised on the way in. */
 export const CSV_DELIMITERS = [',', '\t', ';', '|'] as const;
 export type CsvDelimiter = (typeof CSV_DELIMITERS)[number];
 
@@ -42,7 +29,6 @@ export const DELIMITER_LABEL: Record<CsvDelimiter, string> = {
 /** Column name used when a record has no keys of its own (a bare scalar row). */
 export const SCALAR_COLUMN = 'value';
 
-/** Guard rails so a hostile or silly document cannot hang the tab. */
 export const MAX_DEPTH = 64;
 export const MAX_ARRAY_INDEX = 100_000;
 
@@ -51,11 +37,7 @@ export interface ConvertError {
   message: string;
   line: number | null;
   column: number | null;
-  /**
-   * 'parse' (the default) means the input was rejected, so pointing at the
-   * "read as" control helps. 'internal' means the tool itself faltered, where
-   * that advice would only send the reader down the wrong path.
-   */
+  /** 'parse' (the default) means the input was rejected; 'internal' means the tool faltered. */
   kind?: 'parse' | 'internal';
 }
 
@@ -72,7 +54,6 @@ export interface ConvertOutcome {
   /** Distinct flattened columns — only filled in when the target is CSV. */
   columns: number;
   outputBytes: number;
-  /** Non-fatal things worth telling the user about. */
   notes: string[];
   error: ConvertError | null;
 }
@@ -89,7 +70,6 @@ export interface ConvertRequest {
   hint?: string;
 }
 
-/** Byte length of a string once encoded as UTF-8, without touching any global. */
 export function utf8Bytes(str: string): number {
   let bytes = 0;
   for (let i = 0; i < str.length; i += 1) {

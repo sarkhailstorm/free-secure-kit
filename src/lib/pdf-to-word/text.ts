@@ -18,10 +18,7 @@ const RANK: Record<Repair, number> = { ligature: 1, pua: 2, 'symbolic-dropped': 
 
 const worse = (a: Repair | undefined, b: Repair): Repair => (a && RANK[a] > RANK[b] ? a : b);
 
-/**
- * isLeadingRun means the span starts its line, is narrower than 1.5 × its size and
- * has a gap after it — the three conditions that turn an unreadable glyph into a bullet.
- */
+/** `isLeadingRun`: the span starts its line, is narrower than 1.5x its size and has a gap after it. */
 export function repairUnicode(
   text: string,
   font: FontInfo,

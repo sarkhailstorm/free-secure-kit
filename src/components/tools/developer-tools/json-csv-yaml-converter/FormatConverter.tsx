@@ -18,13 +18,10 @@ import { HowItWorks } from './HowItWorks';
 import { InputPane } from './InputPane';
 import { OutputPane } from './OutputPane';
 
-/** Big enough for any hand-made data file; small enough to stay responsive. */
 const MAX_FILE_BYTES = 25 * 1024 * 1024;
 
-/** Wait this long after the last keystroke before converting. */
 const DEBOUNCE_MS = 250;
 const SLOW_DEBOUNCE_MS = 700;
-/** Past this many characters, wait longer before re-running the conversion. */
 const SLOW_INPUT_CHARS = 500_000;
 
 function outputFileMeta(target: DataFormat, delimiter: CsvDelimiter): { ext: string; mime: string } {
@@ -67,8 +64,6 @@ export function FormatConverter() {
   const inputBytes = useMemo(() => utf8Bytes(text), [text]);
   const lines = useMemo(() => countLines(text), [text]);
 
-  /* ------------------------------------------------------------ conversion */
-
   useEffect(() => {
     if (text.trim() === '') {
       setOutcome(null);
@@ -82,8 +77,6 @@ export function FormatConverter() {
     const timer = setTimeout(() => {
       setBusy(true);
       void (async () => {
-        // Give the browser one frame to paint the busy state before the
-        // parsing work blocks the main thread.
         await new Promise((resolve) => {
           setTimeout(resolve, 0);
         });
@@ -101,8 +94,6 @@ export function FormatConverter() {
           });
           if (!cancelled) setOutcome(next);
         } catch (error) {
-          // convertText handles its own failures; this is the last safety net
-          // so a surprise can never leave the page stuck on "Converting…".
           if (!cancelled) {
             setOutcome({
               status: 'error',
@@ -144,11 +135,8 @@ export function FormatConverter() {
     [],
   );
 
-  /* --------------------------------------------------------------- actions */
-
   const handleTextChange = useCallback((value: string) => {
     setText(value);
-    // Once it has been edited by hand it is no longer "that file".
     setFileName(null);
     setHint(undefined);
   }, []);
@@ -181,7 +169,6 @@ export function FormatConverter() {
   const handleLoadExample = useCallback((format: DataFormat) => {
     setText(EXAMPLES[format]);
     setFileName(null);
-    // No extension hint: the example is there to show detection working.
     setHint(undefined);
     setSource('auto');
   }, []);
@@ -215,21 +202,14 @@ export function FormatConverter() {
     if (output === '') return;
     const stem = safeFilename(baseName(fileName ?? 'converted'), 'converted');
     const name = `${stem}.${ext}`;
-    // Save first, celebrate second — the nudge never stands between the user
-    // and their file.
     downloadText(output, name, mime);
     toast.celebrate(`Saved ${name}`);
   }, [output, fileName, ext, mime, toast]);
-
-  /* ----------------------------------------------------------------- view */
 
   const isEmpty = text.trim() === '';
   const overridden = source !== 'auto';
   const badgeFormat: DataFormat = overridden ? source : (outcome?.detected ?? 'json');
   const badgeConfidence = overridden ? 'high' : (outcome?.confidence ?? 'low');
-  // Until the first result arrives there is nothing to report, and claiming a
-  // format we have not looked at yet reads as a wrong answer rather than a wait.
-  // An internal failure never got as far as detecting anything either.
   const detectPending =
     !overridden &&
     !isEmpty &&

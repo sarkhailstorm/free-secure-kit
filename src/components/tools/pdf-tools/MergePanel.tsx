@@ -52,7 +52,6 @@ function samePlan(a: readonly PageRef[], b: readonly PageRef[]): boolean {
   return a.length === b.length && a.every((ref, i) => ref.fileId === b[i].fileId && ref.page === b[i].page);
 }
 
-/** Stable partition: keeps each file's pages in their order, regroups by file. */
 function regroup(plan: readonly PageRef[], items: readonly LoadedPdf[]): PageRef[] {
   return items.flatMap((file) => plan.filter((ref) => ref.fileId === file.id));
 }

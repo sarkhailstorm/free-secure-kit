@@ -76,7 +76,6 @@ export function ImagesPanel() {
   const [dragId, setDragId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
 
-  // Previews are object URLs, so they have to be released by hand.
   const live = useRef<Set<string>>(new Set());
   useEffect(() => {
     const urls = live.current;

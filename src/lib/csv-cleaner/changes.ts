@@ -1,12 +1,3 @@
-/**
- * What the clean pass changed, and what it removed.
- *
- * A before/after record per CELL measures 627 MB on a 60 MB file, so the pass
- * keeps one byte per row plus the removed row indexes. Every cell transform is
- * a pure function of the original cell, so the detail is recomputed on demand
- * for the hundred rows actually on screen — see `rowDiffs`.
- */
-
 import type { CleanOutcome } from './clean';
 import {
   MAX_LINKED_ROWS,
@@ -19,7 +10,6 @@ import {
   type RowDiff,
 } from './types';
 
-/** A growable Int32Array, so a million removals cost four bytes each. */
 class IntBuffer {
   private data: Int32Array;
   private used = 0;
@@ -57,12 +47,7 @@ function zeroCounts(): Record<RemovalReason, number> {
   return counts;
 }
 
-/**
- * Collects removed rows during a pass.
- *
- * Rows must be recorded in ascending order — every consumer relies on that and
- * on nothing else.
- */
+/** Rows must be recorded in ascending order; every consumer relies on it. */
 export class RemovalRecorder {
   private readonly indexes = new IntBuffer();
   private readonly reasons = new IntBuffer();
@@ -86,10 +71,6 @@ export class RemovalRecorder {
   }
 }
 
-/**
- * Removals the user may overturn. The heading row and the preamble above it are
- * not on the list: the way to keep those is to pick a different heading row.
- */
 export const RESCUABLE_REASONS: ReadonlySet<RemovalReason> = new Set<RemovalReason>([
   'duplicate',
   'blank',
@@ -97,7 +78,6 @@ export const RESCUABLE_REASONS: ReadonlySet<RemovalReason> = new Set<RemovalReas
   'index-only',
 ]);
 
-/** Position of `index` in the ascending removal list, or -1. */
 function findRemoval(removed: RemovedRows, index: number): number {
   let low = 0;
   let high = removed.indexes.length - 1;
@@ -116,10 +96,6 @@ export function removalReasonOf(removed: RemovedRows, index: number): RemovalRea
   return at === -1 ? null : REMOVAL_REASONS[removed.reasons[at]];
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Choosing which rows to show
-// ─────────────────────────────────────────────────────────────────────────
-
 export type RowFilter = 'all' | 'changed' | 'removed' | 'touched';
 
 export interface RowSelection {
@@ -130,12 +106,6 @@ export interface RowSelection {
   offset: number;
 }
 
-/**
- * Apply a filter to every row in the sheet and hand back one window of it.
- *
- * `total` is the honest count, so the UI can say "showing 100 of 4,312".
- * Filtering only the rows already on screen would be a lie with a progress bar.
- */
 export function selectRows(
   outcome: CleanOutcome,
   filter: RowFilter,
@@ -176,17 +146,7 @@ export function selectRows(
   return { indexes, total, offset };
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Recomputing the detail
-// ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Work out cell by cell what happened to these rows.
- *
- * Only ever called for the rows on screen: it re-runs the same pure transform
- * the pass used, so the answer is identical to what the pass did without the
- * pass having had to remember any of it.
- */
+/** Recomputes cell detail; only ever call it for the rows actually on screen. */
 export function rowDiffs(outcome: CleanOutcome, indexes: readonly number[]): RowDiff[] {
   const { plan } = outcome;
   const out: RowDiff[] = [];
@@ -197,8 +157,6 @@ export function rowDiffs(outcome: CleanOutcome, indexes: readonly number[]): Row
     const source = plan.source[index];
     const cells: CellChange[] = [];
 
-    // Nothing is applied to the preamble or the heading row, so there is no
-    // cell detail to show for them — only the reason they are not data.
     if (source && index >= plan.firstDataRow) {
       for (let column = 0; column < plan.columnCount; column += 1) {
         const before = source[column] ?? '';
@@ -215,7 +173,6 @@ export function rowDiffs(outcome: CleanOutcome, indexes: readonly number[]): Row
   return out;
 }
 
-/** Plain-English reasons, so every screen words a removal the same way. */
 export const removalReasonLabels: Record<RemovalReason, string> = {
   duplicate: 'The same as an earlier row',
   blank: 'Empty row',
@@ -235,21 +192,7 @@ export const cellChangeReasonLabels: Record<CellChangeReason, string> = {
   date: 'Date written the same way as the rest',
 };
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Keeping a row the pass removed
-// ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Put rows the user asked to keep back into a finished result.
- *
- * This is a step after the pass, never an option inside it: the pass takes a
- * couple of seconds on a large file, and running it again on every "keep this
- * one" click would freeze the tab. Only the rescued rows are worked on.
- *
- * Always apply the whole plan to the pass's own result, not to the result of an
- * earlier rescue — although doing the latter is harmless, since a row that is
- * already back cannot be rescued twice.
- */
+/** Apply the whole plan to the pass's own result, never to an earlier rescue's. */
 export function applyRescues(outcome: CleanOutcome, plan: RescuePlan): CleanOutcome {
   const removed = outcome.changes.removed;
   if (plan.length === 0 || removed.indexes.length === 0) return outcome;
@@ -297,8 +240,6 @@ export function applyRescues(outcome: CleanOutcome, plan: RescuePlan): CleanOutc
     }
   }
 
-  // Splice each rescued row back in at its original position, so the result
-  // reads in file order like any other.
   const total = outcome.rows.length + rescued.length;
   const rows = new Array<string[]>(total);
   const rowSources = new Int32Array(total);
@@ -325,7 +266,6 @@ export function applyRescues(outcome: CleanOutcome, plan: RescuePlan): CleanOutc
     stats: {
       ...outcome.stats,
       rowsAfter: rows.length,
-      // The removal counters still say what the pass did; this is the correction.
       rescuedRows: outcome.stats.rescuedRows + rescued.length,
     },
     changes: {
@@ -341,7 +281,6 @@ export function applyRescues(outcome: CleanOutcome, plan: RescuePlan): CleanOutc
   };
 }
 
-/** Removed rows for one panel, capped so a bad file cannot bloat UI state. */
 export function removedRowIndexes(
   removed: RemovedRows,
   reason: RemovalReason,

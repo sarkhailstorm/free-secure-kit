@@ -1,16 +1,3 @@
-/**
- * Where the header row is, and whether the last rows are a total.
- *
- * Nothing here is ever applied on its own. Every row near the top is scored,
- * a suggestion comes back with a confidence, and the UI decides what to ask.
- *
- * The scoring works by contrast rather than by rules: a header row is the row
- * that stands out from the rows underneath it. That is also what makes
- * "this sheet has no header" answerable — when the best row scores no better
- * than the ordinary rows below it, there is nothing header-like to find, and
- * offering `null` is more honest than picking row 0 and hoping.
- */
-
 import { inspectDate } from './dates';
 import {
   HEADER_SCAN_ROWS,
@@ -22,7 +9,6 @@ import {
   type StructureReport,
 } from './types';
 
-/** Just the parts of a `ParsedSheet` this module reads. */
 export interface StructureInput {
   rows: readonly string[][];
   columnCount: number;
@@ -30,7 +16,6 @@ export interface StructureInput {
 
 /** Rows below a candidate used to judge what the data underneath looks like. */
 const BODY_ROWS = 20;
-/** Trailing data rows considered for a total row. */
 const FOOTER_SCAN_ROWS = 5;
 /** Data rows sampled to learn how full an ordinary row is. */
 const BODY_SAMPLE_ROWS = 50;
@@ -38,11 +23,8 @@ const BODY_SAMPLE_ROWS = 50;
 const SUM_SCAN_ROWS = 20_000;
 /** Cells the sum test may read. Short sheets get every column, long ones a few. */
 const SUM_CELL_BUDGET = 400_000;
-/** Data rows read to decide which columns the body fills with numbers. */
 const NUMBER_COLUMN_ROWS = 12;
-/** Data rows sampled when looking for an unnamed index column. */
 const INDEX_SCAN_ROWS = 50;
-/** Rows of a row counter needed before it can be called one. */
 const INDEX_MIN_ROWS = 3;
 /** A header cell longer than this is prose, not a label. */
 const LABEL_MAX_CHARS = 60;
@@ -73,17 +55,9 @@ const WEIGHT = {
   depth: 0.03,
 };
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Cell shapes
-// ─────────────────────────────────────────────────────────────────────────
-
 type CellType = 'blank' | 'number' | 'date' | 'text';
 
-/**
- * Numbers as a spreadsheet writes them: `1,234.50`, `-12`, `(99)`, `45%`,
- * `£3.20`, `1.234,56`. Deliberately small — this only has to separate a
- * measurement from a label.
- */
+// Numbers as a spreadsheet writes them: 1,234.50, -12, (99), 45%, 1.234,56.
 const NUMBER_LIKE =
   /^[-+(]?\s*[£$€¥]?\s*(?:\d{1,3}(?:[ .,]\d{3})+|\d+)(?:[.,]\d+)?\s*[)%]?$/;
 /** A clock time with no date, which `inspectDate` deliberately refuses. */
@@ -103,7 +77,6 @@ function isLabel(trimmed: string, type: CellType): boolean {
   return type === 'text' && trimmed.length <= LABEL_MAX_CHARS && HAS_LETTER.test(trimmed);
 }
 
-/** Read a number for the sum test. Returns null for anything not plainly numeric. */
 function toNumber(raw: string): number | null {
   const value = raw.trim();
   if (!NUMBER_LIKE.test(value)) return null;
@@ -116,8 +89,7 @@ function toNumber(raw: string): number | null {
   let fraction = '';
   if (cut >= 0) {
     const other = digits[cut] === '.' ? ',' : '.';
-    // Three digits after the only kind of separator present groups thousands
-    // (`1,234`); anything else is the decimal point (`12,50`, `1.234,56`).
+    // Three digits after the only separator present groups thousands; anything else is a decimal point.
     const grouped = digits.length - cut - 1 === 3 && !digits.includes(other);
     if (!grouped) {
       whole = digits.slice(0, cut);
@@ -129,17 +101,6 @@ function toNumber(raw: string): number | null {
   return negative ? -n : n;
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Header scoring
-// ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Every cell near the top of the sheet, classified once.
- *
- * Scoring compares each candidate against the rows below it, and the baseline
- * rows are scored the same way, so the same cells are looked at many times.
- * Doing the work once keeps the whole pass inside its budget.
- */
 interface ScanWindow {
   width: number;
   depth: number;
@@ -215,8 +176,7 @@ function scoreRow(w: ScanWindow, index: number): RowScore {
   for (let r = bodyStart; r < bodyEnd; r += 1) bodyFillTotal += w.filled[r] / width;
   const bodyFill = bodyRows === 0 ? fillShare : bodyFillTotal / bodyRows;
 
-  // Type contrast: the strongest signal there is. A header is text sitting on
-  // top of a column that is not text.
+  // A header is text sitting on top of a column that is not text.
   let comparable = 0;
   let contrasting = 0;
   for (let c = 0; c < width; c += 1) {
@@ -271,12 +231,6 @@ function scoreRow(w: ScanWindow, index: number): RowScore {
   return { raw, reasons };
 }
 
-/**
- * Every non-blank cell is either a name or a bare code, and at least one is a
- * name. This is the shape of a pivot or a set of accounts: `Region, 2023, 2024,
- * 2025`. A date or a measurement anywhere in the row rules it out, which is
- * what keeps `2024-01-14, Gadget, 9.99, 3` from reading as column names.
- */
 function namesAndCodes(w: ScanWindow, index: number): boolean {
   if (w.labels[index] < 1) return false;
   const types = w.types[index];
@@ -289,15 +243,6 @@ function namesAndCodes(w: ScanWindow, index: number): boolean {
   return true;
 }
 
-/**
- * Could this row be a set of column names at all, ignoring how it compares to
- * anything else? Half its cells have to read as labels — or as names and codes
- * — and half the names have to differ. A file that exports `Price` twice is
- * ordinary; a row saying the same thing over and over is data, or a banner.
- *
- * This is what keeps a row of plain data from being offered as a header when
- * it happens to score well: `2024-01-14, Gadget, 9.99, 3` fails it outright.
- */
 function looksLikeLabels(w: ScanWindow, index: number): boolean {
   const nonBlank = w.filled[index];
   if (nonBlank < Math.min(2, w.width)) return false;
@@ -316,12 +261,7 @@ function preview(row: readonly string[] | undefined): string[] {
   return (row ?? []).slice(0, PREVIEW_CELLS).map((cell) => cell.slice(0, PREVIEW_CHARS));
 }
 
-/**
- * How far the best-scoring row beat the runner-up.
- *
- * Under `CLOSE_MARGIN` no row stands out and the suggestion is a coin toss —
- * see `looksHeaderless`.
- */
+/** How far the best-scoring row beat the runner-up; under `CLOSE_MARGIN` it is a coin toss. */
 export function headerMargin(scores: readonly HeaderRowScore[]): number {
   if (scores.length < 2) return Infinity;
   let best = -Infinity;
@@ -337,18 +277,10 @@ export function headerMargin(scores: readonly HeaderRowScore[]): number {
   return best - second;
 }
 
-/**
- * True when no row near the top stands out from the rest, so whatever
- * `headerRowIndex` says is a guess. The UI should offer "no header row" beside
- * the suggestion here rather than present it as settled.
- */
+/** True when no row near the top stands out, so `headerRowIndex` is only a guess. */
 export function looksHeaderless(report: StructureReport): boolean {
   return report.headerRowIndex === null || headerMargin(report.scores) < CLOSE_MARGIN;
 }
-
-// ─────────────────────────────────────────────────────────────────────────
-//  Footers and index columns
-// ─────────────────────────────────────────────────────────────────────────
 
 /** `Total`, `Grand total`, `Subtotal`, `Sum` at the start of a cell. */
 const TOTAL_LABEL = /^(grand\s+)?(total|subtotal|sum)\b/i;
@@ -362,17 +294,7 @@ function sumsMatch(total: number, sum: number): boolean {
   return Math.abs(total - sum) <= Math.max(0.01, Math.abs(sum) * 1e-9);
 }
 
-/**
- * Which of `rows` at `targets` hold, in some column, the total of the values
- * above them. This is the evidence that makes a total row a total row, rather
- * than a customer whose name happens to begin "Total".
- *
- * One pass up the sheet carrying a running total per column, so five trailing
- * rows cost no more than one, and only the columns a target row actually puts
- * a number in are added up — on a wide sheet that is a handful out of hundreds.
- * A long sheet gets fewer columns still, so the pass stays inside its budget.
- * `targets` must be in order.
- */
+// `targets` must be in order; one pass up the sheet carries a running total per column.
 function sumMatches(
   rows: readonly string[][],
   dataStart: number,
@@ -401,8 +323,7 @@ function sumMatches(
   const sum = new Float64Array(count);
   const seen = new Int32Array(count);
   const nonZero = new Uint8Array(count);
-  // A column with anything unreadable above the row cannot be totalled, and
-  // once that is true it stays true for every row further down.
+  // A column with anything unreadable above the row can never be totalled again.
   const broken = new Uint8Array(count);
 
   let next = 0;
@@ -466,15 +387,7 @@ function numberColumns(
   return found;
 }
 
-/**
- * Rows at the end of the sheet that look like a total or a note.
- *
- * Suggestions only — dropping them is off by default, and a row is never
- * offered on the word "total" alone. It has to be at the end of the sheet
- * *and* either read as the bare word on its own, or actually add up. Being
- * shorter than an ordinary row is not enough: `Total Gym Equipment,,,120.00`
- * is a supplier, and losing that row would cost real money.
- */
+/** Suggestions only: a row is never offered on the word "total" alone. */
 export function findFooterRows(
   sheet: StructureInput,
   headerRowIndex: number | null,
@@ -484,8 +397,7 @@ export function findFooterRows(
   const dataStart = headerRowIndex === null ? 0 : headerRowIndex + 1;
   if (rows.length - dataStart < 3) return [];
 
-  // An unnamed index counts for nothing here: a row holding only its own row
-  // number is a blank row, not a total.
+  // A row holding only its own row number is a blank row, not a total.
   const skipColumn = findIndexColumn(sheet, headerRowIndex);
   const countFilled = (row: readonly string[] | undefined): number => {
     let n = 0;
@@ -495,8 +407,7 @@ export function findFooterRows(
     return n;
   };
 
-  // Always leave two rows above the window, so there is something to compare a
-  // candidate against on a short sheet.
+  // Two rows always stay above the window, so a short sheet still has something to compare.
   const windowStart = Math.max(dataStart + 2, rows.length - FOOTER_SCAN_ROWS);
   const sample: number[] = [];
   for (let r = dataStart; r < windowStart && sample.length < BODY_SAMPLE_ROWS; r += 1) {
@@ -543,9 +454,7 @@ export function findFooterRows(
     });
   }
 
-  // Adding a column up is the expensive part, so it only runs on rows that
-  // already look like a footer. A full row of ordinary values never starts it,
-  // whatever its first cell happens to say.
+  // Adding a column up is expensive, so only rows that already look like a footer start it.
   const addsUp = sumMatches(
     rows,
     dataStart,
@@ -554,9 +463,7 @@ export function findFooterRows(
     candidates.filter((c) => c.sparse || c.bareLabel).map((c) => c.index),
   );
 
-  // With no word to go on, one column adding up is thin: small whole numbers
-  // land on each other by chance. A real total row totals every column the
-  // body keeps numbers in.
+  // One column adding up is thin on its own: small whole numbers land on each other by chance.
   let bodyNumbers: Set<number> | null = null;
   const totalsEveryNumberColumn = (row: readonly string[] | undefined): boolean => {
     bodyNumbers ??= numberColumns(rows, dataStart, windowStart, width, skipColumn);
@@ -582,18 +489,7 @@ export function findFooterRows(
   return found;
 }
 
-/**
- * The unnamed first column pandas and R write: no name, and a run of whole
- * numbers counting up from the start of the sheet. Without it, every `47,,,,`
- * row looks like it holds data.
- *
- * The count has to start at 0 or 1 and go up one at a time. Anything else is a
- * column of real values — years, invoice numbers, readings — and rows are
- * deleted on the strength of this, so a near miss must count as a no.
- *
- * Only the first `INDEX_SCAN_ROWS` data rows are checked, which is enough to
- * recognise the shape and keeps the whole pass cheap.
- */
+/** The unnamed pandas/R index: a run counting up from 0 or 1, one at a time, or null. */
 export function findIndexColumn(
   sheet: StructureInput,
   headerRowIndex: number | null,
@@ -636,29 +532,13 @@ export function findIndexColumn(
   return null;
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  The whole picture
-// ─────────────────────────────────────────────────────────────────────────
-
 function grade(standout: number, margin: number): Confidence {
   if (standout >= 0.9 && margin >= 0.5) return 'high';
   if (standout >= 0.6 && margin >= CLOSE_MARGIN) return 'medium';
   return 'low';
 }
 
-/**
- * Score the top of the sheet and suggest a header row.
- *
- * `headerRowIndex` is `null` when the best row reads as data rather than as a
- * set of column names — taking it would cost a row of real values, so the UI
- * should offer "no header row" instead.
- *
- * Two rows of plain text, one above the other, are genuinely indistinguishable:
- * nothing structural separates `Country,Capital` from `France,Paris`. When that
- * happens the suggestion stays on row 0, which is what the file most likely
- * means and what the tool did before, and `looksHeaderless` reports that
- * nothing stood out so the UI can offer the alternative.
- */
+/** `headerRowIndex` is null when the best row reads as data rather than column names. */
 export function analyseStructure(sheet: StructureInput): StructureReport {
   const rows = sheet.rows;
   const scan = buildWindow(rows, sheet.columnCount);
@@ -687,8 +567,7 @@ export function analyseStructure(sheet: StructureInput): StructureReport {
     if (scores[i].score > scores[best].score) best = i;
   }
 
-  // Moving the header off row 0 drops everything above it, so a row further
-  // down has to earn it. Without a clear win, row 0 keeps the job.
+  // Moving the header off row 0 drops everything above it, so row 0 keeps the job by default.
   let chosen = best;
   if (best !== 0 && looksLikeLabels(scan, 0) && scores[best].score - scores[0].score < MOVE_MARGIN)
     chosen = 0;
@@ -703,8 +582,7 @@ export function analyseStructure(sheet: StructureInput): StructureReport {
   const headerRowIndex = looksLikeLabels(scan, chosen) ? scores[chosen].index : null;
   const confidence: Confidence =
     headerRowIndex === null
-      ? // Telling a headerless sheet from a weakly-marked one is guesswork, so
-        // this never claims to be sure.
+      ? // Telling a headerless sheet from a weakly-marked one is guesswork.
         'medium'
       : grade(standout, headerMargin(scores));
 

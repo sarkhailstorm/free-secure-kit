@@ -127,6 +127,5 @@ export interface ExcelResult {
   bytes: Uint8Array;
   filename: string;
   mime: string;
-  /** Sheets actually written. */
   written: string[];
 }

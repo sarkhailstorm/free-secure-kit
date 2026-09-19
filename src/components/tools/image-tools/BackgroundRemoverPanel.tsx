@@ -65,7 +65,6 @@ const SWATCHES: readonly { value: string; label: string }[] = [
   { value: '#dcfce7', label: 'Pale green' },
 ];
 
-/** Grey squares, so a transparent cut-out reads as transparent in either theme. */
 const CHECKS: React.CSSProperties = {
   backgroundImage:
     'linear-gradient(45deg, rgb(127 127 127 / 0.22) 25%, transparent 25%), linear-gradient(-45deg, rgb(127 127 127 / 0.22) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgb(127 127 127 / 0.22) 75%), linear-gradient(-45deg, transparent 75%, rgb(127 127 127 / 0.22) 75%)',
@@ -80,7 +79,6 @@ interface Picked {
   height: number;
 }
 
-/** Paint the cut-out over a colour, so the saved PNG has nothing see-through. */
 async function flatten(blob: Blob, colour: string): Promise<Blob> {
   const bitmap = await createImageBitmap(blob);
   const canvas = document.createElement('canvas');
@@ -119,7 +117,6 @@ export function BackgroundRemoverPanel() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [backdrop, setBackdrop] = useState<Backdrop>('none');
   const [colour, setColour] = useState('#ffffff');
-  // 0 shows the whole cut-out; dragging wipes the original back in from the left.
   const [split, setSplit] = useState(0);
   const [showOriginal, setShowOriginal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -157,8 +154,6 @@ export function BackgroundRemoverPanel() {
     [releaseUrl],
   );
 
-  // Leaving the page: stop the work, hand back the several megabytes the
-  // remover holds, and let go of every preview a full-size photo pins.
   useEffect(() => {
     const held = urls.current;
     return () => {
@@ -257,7 +252,6 @@ export function BackgroundRemoverPanel() {
         },
       );
 
-      // Stop can land after the last cancellation check, so say so here too.
       if (controller.signal.aborted) {
         setStopped(true);
         return;
@@ -307,8 +301,6 @@ export function BackgroundRemoverPanel() {
 
   const info = MODEL_CHOICES[choice];
   const ready = stored.includes(choice);
-  // The engine is the bulk of it and both choices share it, so once either one
-  // is here the other costs only its own file.
   const quoted = stored.length > 0 ? info.extraDownloadLabel : info.downloadLabel;
   const shown = showOriginal ? 100 : split;
 
@@ -512,7 +504,6 @@ export function BackgroundRemoverPanel() {
               className="relative mx-auto select-none overflow-hidden rounded-xl border border-line"
               style={{
                 aspectRatio: `${result.width} / ${result.height}`,
-                // Keeps a tall photo from taking over the screen, without letterboxing it.
                 width: `min(100%, calc(70vh * ${result.width} / ${result.height}))`,
                 ...(backdrop === 'colour' ? { backgroundColor: colour } : CHECKS),
               }}

@@ -1,10 +1,3 @@
-/**
- * One small dataset written three ways, so switching examples shows the same
- * records rather than three unrelated snippets. It deliberately contains the
- * awkward cases: nested objects, a ragged array of primitives, a null, a
- * boolean, a float and a string that would be ruined by number coercion.
- */
-
 import type { DataFormat } from './types';
 
 const JSON_EXAMPLE = `[

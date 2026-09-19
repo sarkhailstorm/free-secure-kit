@@ -1,18 +1,6 @@
 import { pxPerMm } from './layout';
 import { PassportPhotoError, type SheetSpec } from './types';
 
-/**
- * Laying finished photos out on one print.
- *
- * Nearly every shop prints 6 x 4 photos for pennies, and nearly none of them
- * print passport photos for less than ten pounds. So the finished photo is
- * tiled across a sheet the shop does print, with faint lines to cut along. One
- * print, a pair of scissors, and the whole thing costs about thirty pence.
- *
- * Paper and photo sizes are both published in millimetres, so all the working
- * out is done in millimetres and turned into pixels at the very end.
- */
-
 /** iOS caps total canvas area and hands back a blank canvas rather than throwing. */
 const MAX_SHEET_PIXELS = 16_777_216;
 
@@ -20,7 +8,6 @@ const DEFAULT_DPI = 300;
 const DEFAULT_GAP_MM = 2;
 const DEFAULT_MARGIN_MM = 4;
 
-/** Below this a print is too coarse to be worth collecting. */
 const MIN_DPI = 72;
 const DPI_STEP = 25;
 
@@ -54,7 +41,7 @@ interface Settings {
   cutMarks: boolean;
 }
 
-/** A grid worked out in millimetres, on the sheet turned whichever way suits. */
+/** In millimetres, on the sheet turned whichever way fits more copies. */
 interface Grid {
   columns: number;
   rows: number;
@@ -63,7 +50,6 @@ interface Grid {
   sheetHeightMm: number;
 }
 
-/** The same grid in whole pixels, ready to draw. */
 interface Placement {
   columns: number;
   rows: number;
@@ -98,13 +84,11 @@ function settle(options: SheetOptions): Settings {
   };
 }
 
-/** Rescues a row that fits exactly: see the note in `countAcross`. */
+/** Rescues a row that fits exactly: the decimal sum lands a hair under the whole number. */
 const HAIR = 1e-9;
 
 function countAcross(spaceMm: number, itemMm: number, gapMm: number): number {
   if (!(itemMm > 0) || !(spaceMm > 0)) return 0;
-  // Paper and photo sizes are decimals, and a sum that ought to land on a whole
-  // number lands a hair under it often enough to cost a whole row of photos.
   return Math.max(0, Math.floor((spaceMm + gapMm) / (itemMm + gapMm) + HAIR));
 }
 
@@ -120,7 +104,6 @@ function gridFor(
   return { columns, rows, copies: columns * rows, sheetWidthMm, sheetHeightMm };
 }
 
-/** The better of the two ways round, with ties going to the sheet as it comes. */
 function plan(
   sheet: SheetSpec,
   photoWidthMm: number,
@@ -132,12 +115,7 @@ function plan(
   return turned.copies > upright.copies ? turned : upright;
 }
 
-/**
- * How many copies fit on one sheet.
- *
- * The sheet is tried both ways round, so a tall photo on a wide print still
- * comes out with as many copies as the paper will take.
- */
+/** How many copies fit on one sheet, trying it both ways round. */
 export function sheetCapacity(
   sheet: SheetSpec,
   photoWidthMm: number,
@@ -148,12 +126,6 @@ export function sheetCapacity(
   return { columns, rows, copies };
 }
 
-/**
- * Bring the dots per inch down until the canvas is small enough to draw on.
- *
- * A large sheet at a high dpi is an enormous canvas, and iOS quietly hands back
- * a blank one rather than refusing. A slightly coarser print beats a blank page.
- */
 function fitDpi(dpi: number, widthMm: number, heightMm: number): number {
   const area = (value: number) =>
     Math.round(widthMm * pxPerMm(value)) * Math.round(heightMm * pxPerMm(value));
@@ -165,8 +137,7 @@ function fitDpi(dpi: number, widthMm: number, heightMm: number): number {
   }
   value = Math.max(MIN_DPI, value);
 
-  // A sheet wide enough to blow the cap even at the coarsest print is still
-  // better handed back grainy than blank, so the floor gives way if it has to.
+  // Better grainy than blank, so the MIN_DPI floor gives way if it has to.
   while (value > 1 && area(value) > MAX_SHEET_PIXELS) {
     value -= value > MIN_DPI ? DPI_STEP : 1;
   }
@@ -181,17 +152,7 @@ function context2d(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   return context;
 }
 
-/**
- * Fix the grid to whole pixels.
- *
- * Every size is rounded down, never up. Rounded up, a row of photos can come
- * out a pixel or two wider than the paper, which eats the margin and shaves the
- * end of the last photo off. Rounding down costs less than a tenth of a
- * millimetre and always leaves the border the caller asked for.
- *
- * The cut marks lean on the whole-pixel steps: each one is only ever as long as
- * the space beside it, which is what keeps them off the photos.
- */
+/** Sizes round down, never up: rounded up, a row eats the margin and shaves the last photo. */
 function place(
   grid: Grid,
   photoWidthMm: number,
@@ -246,11 +207,7 @@ function drawPhotos(context: CanvasRenderingContext2D, photo: ImageBitmap, spot:
   }
 }
 
-/**
- * Short ticks at the corner of every photo, reaching out into the space around
- * it. Lining a ruler up across two of them gives a straight line to cut along,
- * and nothing is ever drawn over a photo.
- */
+/** Ticks reach only into the space beside a photo, so nothing is ever drawn over one. */
 function drawCutMarks(context: CanvasRenderingContext2D, spot: Placement): void {
   context.fillStyle = CUT_MARK_COLOUR;
   const half = spot.thickness / 2;
@@ -304,12 +261,7 @@ function toJpeg(canvas: HTMLCanvasElement): Promise<Blob> {
   });
 }
 
-/**
- * Fill a sheet with copies of one finished photo.
- *
- * The result is a JPEG, not a PNG: an A4 sheet at 300 dpi holds eight million
- * pixels, and as a PNG that is a download nobody wants.
- */
+/** Fill a sheet with copies of one finished photo. The blob is a JPEG. */
 export async function renderSheet(
   photo: Blob,
   photoWidthMm: number,

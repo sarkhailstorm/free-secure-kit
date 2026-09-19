@@ -1,12 +1,3 @@
-/**
- * Case conversion for the Text Utilities tool.
- *
- * The interesting part is the tokeniser: "hello world", "helloWorld",
- * "hello-world", "HELLO_WORLD" and "XMLHttpRequest" all have to break into the
- * same shape of words so that every target case is reachable from every source
- * case. Pure string work — nothing here touches the DOM or the network.
- */
-
 export type CaseId =
   | 'upper'
   | 'lower'
@@ -22,7 +13,6 @@ export type CaseId =
 export interface CaseDefinition {
   id: CaseId;
   label: string;
-  /** Shown under the button and in the tooltip. */
   example: string;
 }
 
@@ -39,23 +29,13 @@ export const CASES: readonly CaseDefinition[] = [
   { id: 'toggle', label: 'iNVERT cASE', example: 'hELLO wORLD' },
 ] as const;
 
-/**
- * Break a string into its component words.
- *
- *   "XMLHttpRequest" -> ["XML", "Http", "Request"]
- *   "HELLO_WORLD"    -> ["HELLO", "WORLD"]
- *   "hello-world"    -> ["hello", "world"]
- *
- * Digits stay attached to the letters they follow ("html5Parser" ->
- * ["html5", "Parser"]), which is what people expect from identifiers.
- */
+/** "XMLHttpRequest" -> ["XML", "Http", "Request"]; digits stay with the letters they follow. */
 export function tokenize(input: string): string[] {
   return input
     // ACRONYMFollowed -> ACRONYM Followed
     .replace(/(\p{Lu}|\p{N})(\p{Lu}\p{Ll})/gu, '$1 $2')
     // camelBoundary -> camel Boundary
     .replace(/(\p{Ll}|\p{N})(\p{Lu})/gu, '$1 $2')
-    // Anything that is not a letter or a digit is a separator.
     .split(/[^\p{L}\p{N}]+/u)
     .filter((part) => part.length > 0);
 }
@@ -67,7 +47,6 @@ const SMALL_WORDS = new Set([
   'vs', 'with', 'yet',
 ]);
 
-/** Sentence-ending punctuation, used to find where a new sentence starts. */
 const SENTENCE_BREAK = /([.!?…]["'’”)\]]*\s+)/;
 
 function capitalise(word: string): string {
@@ -75,10 +54,7 @@ function capitalise(word: string): string {
   return word[0].toUpperCase() + word.slice(1).toLowerCase();
 }
 
-/**
- * Apply `fn` to each line, leaving the original line terminators (and any
- * mixture of CRLF/LF/CR) exactly as they were.
- */
+// Leaves the original line terminators, and any CRLF/LF/CR mixture, exactly as they were.
 function mapLines(text: string, fn: (line: string) => string): string {
   return text
     .split(/(\r\n|\n|\r)/)
@@ -86,17 +62,13 @@ function mapLines(text: string, fn: (line: string) => string): string {
     .join('');
 }
 
-/** Split leading indentation from the rest of a line, so we can restore it. */
 function splitIndent(line: string): [string, string] {
   const match = /^\s*/.exec(line);
   const indent = match ? match[0] : '';
   return [indent, line.slice(indent.length)];
 }
 
-/**
- * Expand an identifier-shaped word into its parts, but leave ordinary prose
- * alone — "XMLHttpRequest" becomes three words, while "don't" stays one.
- */
+// "XMLHttpRequest" becomes three words, while "don't" stays one.
 function expandWord(word: string): string[] {
   const looksLikeIdentifier =
     word.includes('_') ||
@@ -107,11 +79,7 @@ function expandWord(word: string): string[] {
   return parts.length > 0 ? parts : [word];
 }
 
-/**
- * Rewrite every word in a line while keeping punctuation and spacing intact.
- * Identifier-shaped words ("XMLHttpRequest", "user_id") are expanded into
- * separate words first, so prose cases read properly.
- */
+// Keeps punctuation and spacing intact; identifier-shaped words are expanded first.
 function rewriteWords(
   line: string,
   transform: (word: string, index: number, total: number) => string,
@@ -168,7 +136,6 @@ function upperFirstLetter(chunk: string): string {
   return chunk.slice(0, i) + chunk[i].toUpperCase() + chunk.slice(i + 1);
 }
 
-/** Join tokens for the identifier-shaped cases, one line at a time. */
 function toProgrammerCase(
   text: string,
   join: (tokens: string[]) => string,
@@ -248,14 +215,6 @@ function isSpaceCode(code: number): boolean {
   );
 }
 
-/**
- * Live counts shown beside the input and output areas.
- *
- * This runs on every keystroke, against text that has no size ceiling of its
- * own, so it counts in a single pass and never allocates a second copy of the
- * input — `split` and `replace` on a megabyte of pasted text cost far more in
- * garbage collection than in the counting itself.
- */
 export function countText(text: string): TextCounts {
   const characters = text.length;
   if (characters === 0) {
@@ -277,8 +236,7 @@ export function countText(text: string): TextCounts {
     }
   }
 
-  // Counted rather than collected: the array of every word in a large document
-  // is the expensive part, and nothing needs the words themselves.
+  // Counted rather than collected: the array of words is the expensive part.
   let words = 0;
   WORD_PATTERN.lastIndex = 0;
   while (WORD_PATTERN.exec(text) !== null) words += 1;

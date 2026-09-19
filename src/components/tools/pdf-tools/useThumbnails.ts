@@ -94,7 +94,6 @@ export function useThumbnails(source: LoadedPdf | null): Thumbnails {
     generation.current += 1;
     const mine = generation.current;
 
-    // Drop everything belonging to the document we were showing before.
     const stale = liveUrls.current;
     liveUrls.current = [];
     stale.forEach((url) => URL.revokeObjectURL(url));
@@ -144,7 +143,6 @@ export function useThumbnails(source: LoadedPdf | null): Thumbnails {
     })();
   }, [source, drain]);
 
-  // Final sweep, so no blob URL and no worker outlives the page.
   useEffect(() => {
     return () => {
       generation.current += 1;

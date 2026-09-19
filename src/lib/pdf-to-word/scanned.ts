@@ -1,9 +1,3 @@
-/**
- * Scanned and no-text pages. Classification runs before line building; pages we
- * give up on are rendered with page.render, the machinery rasterize.ts already
- * proves on phones, which costs ~9 MB against ~24 MB for the XObject route.
- */
-
 import type { PDFPageProxy, PageViewport } from 'pdfjs-dist';
 import { PdfToolsError } from '@/lib/pdf-tools/errors';
 import {
@@ -51,10 +45,7 @@ export function degradeReasonFor(p: PageFacts, cls: PageClass): DegradeReason | 
   }
 }
 
-/**
- * Render a whole page to a JPEG. `vp` is the caller's own viewport — its scale
- * and rotation are honoured so the bitmap lines up with the facts taken from it.
- */
+/** Renders a whole page to a JPEG; `vp`'s own scale and rotation are honoured. */
 export async function rasterPage(
   page: PDFPageProxy,
   vp: PageViewport,

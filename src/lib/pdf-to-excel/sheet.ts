@@ -21,8 +21,7 @@ export const sheetConfidence = (sheet: Sheet): number =>
   sheet.rows.length === 0 ? 1 : sheet.rows.filter((row) => row.ok).length / sheet.rows.length;
 
 function buildOne(table: DetectedTable, id: string, title: string): Sheet {
-  // Money columns decide where a record starts. The column rung knows them from the geometry;
-  // the other two have to type the ungrouped rows first.
+  // Money columns decide where a record starts; only the column rung knows them from geometry.
   const moneyCols =
     table.moneyCols ??
     typeColumns(table.rows, null, null)

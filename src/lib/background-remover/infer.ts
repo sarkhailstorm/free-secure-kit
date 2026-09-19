@@ -86,13 +86,6 @@ function toInput(pixels: Uint8ClampedArray, count: number, choice: ModelChoice):
   return data;
 }
 
-/**
- * Turn the raw result into a white stencil whose alpha channel is the cut-out.
- *
- * The 'anything' result is a saliency score rather than a coverage value, so it
- * is stretched to fill 0–1; the 'person' result is already coverage and is only
- * clamped.
- */
 function toStencil(
   raw: Float32Array,
   width: number,
@@ -137,12 +130,7 @@ function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) throw new DOMException('Cancelled.', 'AbortError');
 }
 
-/**
- * Run the cutter and hand back the raw coverage, at the size the network saw.
- *
- * Callers that only want to measure the subject use this directly; `cutOut`
- * scales the same stencil up and composites with it.
- */
+/** The stencil comes back at the size the network saw, not the source's size. */
 export async function segment(
   session: InferenceSession,
   choice: ModelChoice,
@@ -188,14 +176,6 @@ export async function segment(
   }
 }
 
-/**
- * Cut the subject out of `source` and return it as a PNG.
- *
- * The result is composited onto the original full-resolution pixels, not onto
- * the small copy the network saw, so nothing is resampled twice. The stencil is
- * scaled up smoothly on the way — at 320 wide against a 4000-wide photo, a
- * nearest-neighbour edge would come out as visible steps.
- */
 export async function cutOut(
   session: InferenceSession,
   choice: ModelChoice,

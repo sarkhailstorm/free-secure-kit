@@ -1,27 +1,7 @@
-/**
- * Shared shapes for Spreadsheet Tools.
- *
- * Everything here is plain data — no DOM, no React, no I/O — so the whole
- * transformation is easy to read (and to audit) on its own.
- *
- * Two indexing rules hold everywhere in this contract, and every module must
- * honour them:
- *   • ROW indexes are positions in `ParsedSheet.rows`, i.e. the file as it was
- *     read, counting from 0 and including the header row and anything above it.
- *   • COLUMN indexes are positions in the ORIGINAL sheet width. Changing the
- *     header row moves rows, never columns, so column-keyed choices
- *     (`columnDecisions`, `spellingMerges`, `columnBlankSentinels`) stay valid
- *     across a header change and must NOT be cleared when one happens.
- */
+/** Row indexes count from 0 in `ParsedSheet.rows` (header included); column indexes are ORIGINAL-width, so column-keyed choices survive a header change. */
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Small shared vocabulary
-// ─────────────────────────────────────────────────────────────────────────
-
-/** How sure an automatic choice is. Drives whether the UI asks or just tells. */
 export type Confidence = 'high' | 'medium' | 'low';
 
-/** How loudly a finding should be shown. */
 export type Severity = 'info' | 'warning' | 'serious';
 
 /** A rectangular sheet of strings. Every row is padded to `header.length`. */
@@ -30,20 +10,9 @@ export interface Grid {
   rows: string[][];
 }
 
-/** Row lists carried to the UI are capped at this, so a bad file cannot bloat state. */
 export const MAX_LINKED_ROWS = 500;
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Reading — text encoding (encoding.ts)
-// ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Encodings we will decode. All are TextDecoder labels.
- *
- * Only `utf-8` and `windows-1252` can be written back out: TextEncoder is
- * UTF-8 only by spec (its constructor argument is ignored), so windows-1252
- * output needs a hand-rolled reverse table.
- */
+/** TextDecoder labels. Only `utf-8` and `windows-1252` can be written back out. */
 export type EncodingId =
   | 'utf-8'
   | 'utf-16le'
@@ -63,31 +32,22 @@ export type OutputEncoding = 'utf-8' | 'windows-1252';
 
 export type BomKind = 'utf-8' | 'utf-16le' | 'utf-16be';
 
-/** Where the chosen encoding came from. `chosen` means the user picked it. */
 export type DecodeSource = 'bom' | 'detected' | 'assumed' | 'chosen';
 
-/** One reading of the same bytes, for the "which of these looks right?" picker. */
 export interface EncodingCandidate {
   id: EncodingId;
-  /** Plain-English name for the picker, e.g. "Western European (Windows)". */
   label: string;
   /** 0–1. Relative, not absolute — only useful for ordering the list. */
   score: number;
   /** U+FFFD characters produced by this reading. Zero is not proof of correct. */
   replacements: number;
-  /** First few hundred characters under this reading, so the user can compare. */
   sample: string;
 }
 
-/**
- * Mojibake repair: UTF-8 bytes that were already decoded as windows-1252 once
- * ("CafÃ©"). Self-gating — the inverse re-decode throws on legitimate text that
- * merely contains Ã sequences, so `available` is false unless it round-trips.
- */
+/** `available` is false unless the inverse re-decode round-trips. */
 export interface MojibakeReport {
   available: boolean;
   applied: boolean;
-  /** A handful of before/after pairs so the user can see what would change. */
   examples: Array<{ before: string; after: string }>;
 }
 
@@ -103,17 +63,12 @@ export interface DecodeReport {
   mojibake: MojibakeReport;
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Reading — delimiter and sheets (parse.ts)
-// ─────────────────────────────────────────────────────────────────────────
-
 /** `declared` means the file said so itself, via a `sep=;` first line. */
 export type DelimiterSource = 'declared' | 'detected' | 'assumed' | 'chosen';
 
 export interface DelimiterCandidate {
   /** The literal character, e.g. ',' or a tab. */
   delimiter: string;
-  /** Plain-English name for the picker, e.g. "Semicolon". */
   label: string;
   /** Columns the first rows would have under this delimiter. */
   columns: number;
@@ -132,7 +87,6 @@ export interface DelimiterReport {
 
 export type SheetVisibility = 'visible' | 'hidden' | 'very-hidden';
 
-/** Non-fatal things found while reading. Structured so the UI can link to rows. */
 export type ReadIssueKind =
   | 'ragged-rows'
   | 'unclosed-quote'
@@ -155,19 +109,11 @@ export interface ReadIssue {
   rowIndexes: number[];
   /** Original column index when the issue belongs to one column. */
   columnIndex?: number;
-  /** Sheet index when the issue belongs to one sheet. */
   sheetIndex?: number;
-  /** A few offending values, verbatim, for the UI to show. */
   samples: string[];
 }
 
-/**
- * One sheet as it was read.
- *
- * `rows` holds EVERY row — nothing is split off as a header. Which row is the
- * header is a reversible option (`CleanOptions.headerRowIndex`), so cleaning
- * can always restart from the untouched original.
- */
+/** `rows` holds EVERY row; nothing is split off as a header. */
 export interface ParsedSheet {
   name: string;
   /** Position in the workbook, used to key output selection. */
@@ -177,16 +123,13 @@ export interface ParsedSheet {
   /** Every row in `rows` is padded to this width. */
   columnCount: number;
   rowCount: number;
-  /** True when the sheet was larger than we were willing to read. */
   truncated: boolean;
   issues: ReadIssue[];
 }
 
-/** Delimited text, or a workbook. Replaces the old 'csv' | 'tsv' | 'excel'. */
 export type SourceKind = 'delimited' | 'workbook';
 
 export interface ParsedFile {
-  /** Original filename, used to name the download. */
   filename: string;
   kind: SourceKind;
   /** Lower-case, no dot. Kept for wording: 'csv', 'xlsx', 'ods', 'numbers'… */
@@ -196,22 +139,16 @@ export interface ParsedFile {
   decode: DecodeReport | null;
   /** Delimited files only; null for workbooks. */
   delimiter: DelimiterReport | null;
-  /** File-level issues. Per-sheet ones live on the sheet. Replaces `notes`. */
+  /** File-level issues; per-sheet ones live on the sheet. */
   issues: ReadIssue[];
 }
 
-/** Overrides for a re-read after the user disagrees with a guess. */
 export interface ReadOptions {
   encoding?: EncodingId;
   repairMojibake?: boolean;
   delimiter?: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Structure — where the header and the footer are (structure.ts)
-// ─────────────────────────────────────────────────────────────────────────
-
-/** Rows scored for the header picker. */
 export const HEADER_SCAN_ROWS = 20;
 
 export type HeaderScoreReason =
@@ -231,7 +168,6 @@ export interface HeaderRowScore {
   /** Higher is more header-like. Only meaningful against the other scores. */
   score: number;
   reasons: HeaderScoreReason[];
-  /** The row's first few cells, for the picker. */
   preview: string[];
 }
 
@@ -252,30 +188,19 @@ export interface StructureReport {
   scores: HeaderRowScore[];
   /** Suggestions only — dropping them is off by default. */
   footerCandidates: FooterRowCandidate[];
-  /**
-   * An unnamed pandas/R index column (blank header, ascending integers), which
-   * otherwise keeps every `47,,,,` row looking non-blank.
-   */
+  /** An unnamed pandas/R index column (blank header, ascending integers), or null. */
   indexColumn: number | null;
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Cleaning (clean.ts)
-// ─────────────────────────────────────────────────────────────────────────
-
-/** Output style for normalised dates. */
 export type DateFormat = 'iso' | 'us' | 'eu';
 
-/** Which of the first two numeric components is the day. */
 export type DateOrder = 'dmy' | 'mdy';
 
-/** What the user decided about a column we could not resolve on our own. */
 export type ColumnDecision = DateOrder | 'skip';
 
 /** Accepted spelling merges for one column: value seen -> value to write. */
 export type MergePlan = Record<string, string>;
 
-/** Values commonly typed to mean "nothing here". Opt-in — blanking is lossy. */
 export const DEFAULT_BLANK_SENTINELS: readonly string[] = [
   'N/A',
   '#N/A',
@@ -289,23 +214,16 @@ export const DEFAULT_BLANK_SENTINELS: readonly string[] = [
   '?',
 ];
 
-/** Characters that take up no space but break matching and sorting. */
 export const INVISIBLE_CHARACTER_PATTERN =
-  // Tab, newline and carriage return are left out: they are structure, and
-  // the whitespace options deal with them.
+  // Tab, newline and carriage return are left out: the whitespace options deal with them.
   /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u00AD\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u2064\uFEFF\uFFF9-\uFFFC]/gu;
 
 /** Spaces that are not the ordinary one. Replaced by a plain space, not deleted. */
 export const ODD_SPACE_PATTERN = /[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/gu;
 
 export interface CleanOptions {
-  /**
-   * ORIGINAL row index of the header row. Rows above it are dropped as
-   * preamble. `null` means the sheet has no header: every row is data and the
-   * columns are named Column 1…N.
-   */
+  /** ORIGINAL row index of the header row; `null` means every row is data. */
   headerRowIndex: number | null;
-  /** Off by default: dropping trailing rows loses data. */
   dropFooterRows: boolean;
   /** ORIGINAL row indexes to drop when `dropFooterRows` is on. */
   footerRowIndexes: readonly number[];
@@ -313,11 +231,7 @@ export interface CleanOptions {
   dedupeRows: boolean;
   removeBlankRows: boolean;
   removeBlankColumns: boolean;
-  /**
-   * Let a row count as blank even though its unnamed index cell holds a number.
-   * Only applies when `removeBlankRows` is on and structure found an index
-   * column. Off by default — it removes rows nothing else would.
-   */
+  /** Only applies when `removeBlankRows` is on and structure found an index column. */
   ignoreIndexColumnInBlankRows: boolean;
 
   trimCells: boolean;
@@ -344,26 +258,17 @@ export interface CleanOptions {
   /** Keyed by ORIGINAL column index. */
   columnDecisions: Record<number, ColumnDecision>;
 
-  /**
-   * Keyed by ORIGINAL column index. Keys inside a plan are values as they stand
-   * AFTER whitespace, invisible-character and sentinel handling, so cluster.ts
-   * must group those same values. Re-applying a plan is a no-op; clearing it
-   * undoes the merge.
-   */
+  /** Keyed by ORIGINAL column index; plan keys are values AFTER whitespace and sentinel handling. */
   spellingMerges: Record<number, MergePlan>;
 }
 
-/**
- * Older callers and stored presets. `collapseWhitespace` is the retired single
- * toggle: it sets both `collapseSpaces` and `flattenNewlines`.
- */
 export interface LegacyCleanOptions extends Partial<CleanOptions> {
   /** @deprecated Use `collapseSpaces` and `flattenNewlines`. */
   collapseWhitespace?: boolean;
 }
 
 export const defaultOptions: CleanOptions = {
-  // Replaced per file by StructureReport.headerRowIndex; 0 is the old behaviour.
+  // Replaced per file by StructureReport.headerRowIndex.
   headerRowIndex: 0,
   dropFooterRows: false,
   footerRowIndexes: [],
@@ -374,7 +279,6 @@ export const defaultOptions: CleanOptions = {
   ignoreIndexColumnInBlankRows: false,
 
   trimCells: true,
-  // Destructive to deliberate formatting, so off unless asked for.
   collapseSpaces: false,
   flattenNewlines: false,
   removeInvisibleCharacters: false,
@@ -394,12 +298,7 @@ export const defaultOptions: CleanOptions = {
   spellingMerges: {},
 };
 
-/**
- * Fill in defaults and expand the retired `collapseWhitespace` alias.
- *
- * Always use this rather than spreading `defaultOptions`: the record fields on
- * that constant are shared objects, and this hands back fresh ones.
- */
+/** Always use this rather than spreading `defaultOptions`, whose record fields are shared. */
 export function withDefaults(input: LegacyCleanOptions = {}): CleanOptions {
   const { collapseWhitespace, ...rest } = input;
   return {
@@ -435,7 +334,6 @@ export interface CleanStats {
   rescuedRows: number;
 
   trimmedCells: number;
-  /** Replaces the old `collapsedCells`, which folded both of these together. */
   collapsedSpaceCells: number;
   flattenedNewlineCells: number;
   invisibleCharacterCells: number;
@@ -465,7 +363,6 @@ export interface CleanResult extends Grid {
   changes: ChangeLog;
 }
 
-/** True when a clean pass with these stats changed precisely nothing. */
 export function changedNothing(s: CleanStats): boolean {
   return (
     s.preambleRows === 0 &&
@@ -488,14 +385,7 @@ export function changedNothing(s: CleanStats): boolean {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Change tracking (changes.ts)
-// ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Why a row is not in the result. The array IS the wire format: a reason is
- * stored as its index here, so never reorder it, only append.
- */
+/** The array IS the wire format: a reason is stored as its index, so only ever append. */
 export const REMOVAL_REASONS = [
   'duplicate',
   'blank',
@@ -507,13 +397,6 @@ export const REMOVAL_REASONS = [
 
 export type RemovalReason = (typeof REMOVAL_REASONS)[number];
 
-/**
- * Removed rows, held as parallel typed arrays.
- *
- * A record object per removed row costs tens of megabytes on a large file; nine
- * bytes per row costs almost nothing, so every removal is kept and every one
- * can be rescued.
- */
 export interface RemovedRows {
   /** ORIGINAL row indexes, ascending. */
   indexes: Int32Array;
@@ -524,14 +407,6 @@ export interface RemovedRows {
   counts: Record<RemovalReason, number>;
 }
 
-/**
- * What the whole pass records.
- *
- * Deliberately one byte per row plus the removals — a before/after record per
- * CELL measures 627 MB on a 60 MB file and is unshippable. Every cell transform
- * is a pure function of the original cell, so the detail is recomputed on
- * demand for the rows on screen (see `RowDiff`).
- */
 export interface ChangeLog {
   /** Indexed by ORIGINAL row index, length `ParsedSheet.rowCount`. 1 = changed. */
   rowChanged: Uint8Array;
@@ -569,18 +444,7 @@ export interface RowDiff {
 /** Rows the user asked to keep, by ORIGINAL row index, ascending. */
 export type RescuePlan = readonly number[];
 
-/**
- * Rescues are applied as a cheap step AFTER `cleanGrid`, never as a cleaning
- * option: the pass takes seconds on a large file and every "keep this one"
- * click would otherwise freeze the tab. The rescued row is put through the cell
- * transforms on its own and spliced in at its original position, so the result
- * carries the same shape as any other `CleanResult`.
- */
 export type RescuedResult = CleanResult;
-
-// ─────────────────────────────────────────────────────────────────────────
-//  Things to check (checks.ts)
-// ─────────────────────────────────────────────────────────────────────────
 
 export type CheckKind =
   | 'ragged-rows'
@@ -621,7 +485,6 @@ export interface CheckFinding {
   columnIndex?: number;
   /** Header text at the time of the check, for wording. */
   columnName?: string;
-  /** A few offending values, verbatim. */
   samples: string[];
 }
 
@@ -632,11 +495,6 @@ export interface ChecksReport {
   sampled: boolean;
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Value clustering (cluster.ts)
-// ─────────────────────────────────────────────────────────────────────────
-
-/** Why the members of a group were judged to be the same thing. */
 export type ClusterReason =
   | 'case'
   | 'whitespace'
@@ -657,7 +515,6 @@ export interface ValueCluster {
   columnIndex: number;
   /** Descending by count. Always two or more. */
   members: ClusterMember[];
-  /** The member we propose keeping — usually the most common spelling. */
   suggested: string;
   reason: ClusterReason;
   /** Rows the whole group covers. */
@@ -674,28 +531,16 @@ export interface ClusterReport {
   truncated: boolean;
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Writing (serialize.ts)
-// ─────────────────────────────────────────────────────────────────────────
-
 export type OutputFormat = 'csv' | 'xlsx';
 
 export const EXCEL_MAX_ROWS = 1_048_576;
 export const EXCEL_MAX_COLUMNS = 16_384;
 export const EXCEL_MAX_SHEET_NAME = 31;
 
-/**
- * A value whose first character could make a spreadsheet run it.
- *
- * `=` and `@` are always escaped. `+` and `-` are escaped only when the value
- * is not a plain number — apostrophising every negative in an accounts file is
- * worse than the bug. In a CSV the apostrophe is visible data, so any copy
- * about this must say a character was added.
- */
+/** A first character that could make a spreadsheet run the value. */
 export const FORMULA_LEAD_PATTERN = /^[=@+-]/;
 export const PLAIN_NUMBER_PATTERN = /^[+-]?(?:\d{1,3}(?:,\d{3})*|\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/;
 
-/** One sheet on the way out. */
 export interface OutputSheet {
   name: string;
   grid: Grid;
@@ -711,10 +556,7 @@ export interface WriteOptions {
   encoding: OutputEncoding;
   bom: boolean;
   escapeFormulas: boolean;
-  /**
-   * `ParsedSheet.index` values to write, in order. One CSV holds one sheet, so
-   * several selected sheets are written as a zip of one file per sheet.
-   */
+  /** `ParsedSheet.index` values to write, in order; several sheets go out as a zip. */
   sheets: readonly number[];
 }
 
@@ -728,7 +570,6 @@ export const defaultWriteOptions: WriteOptions = {
   sheets: [],
 };
 
-/** Whether what we are about to write will fit in a spreadsheet at all. */
 export interface OutputLimits {
   rows: number;
   columns: number;

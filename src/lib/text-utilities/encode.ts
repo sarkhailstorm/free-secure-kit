@@ -1,20 +1,4 @@
-/**
- * Encoding and decoding helpers: Base64, URL escaping, HTML entities and JWT
- * inspection.
- *
- * All of it runs in the page. Nothing is sent anywhere — which matters most for
- * the JWT panel, where people paste real, live access tokens.
- *
- * Every function that can fail throws an `Error` carrying a sentence a human
- * can act on; the UI prints that sentence verbatim.
- */
-
-/* ------------------------------------------------------------------ base64 */
-
-/**
- * `btoa` only accepts code points up to U+00FF, so "café" or an emoji throws.
- * Encoding the UTF-8 bytes first is the fix.
- */
+// `btoa` only accepts code points up to U+00FF, so encode the UTF-8 bytes first.
 export function base64Encode(text: string, urlSafe: boolean): string {
   const bytes = new TextEncoder().encode(text);
   let binary = '';
@@ -37,8 +21,7 @@ export function base64DecodeBytes(input: string): Uint8Array {
     if (bad) {
       throw new Error(`That isn't valid Base64 — it contains ${JSON.stringify(bad[0])}.`);
     }
-    // Only "=" can be left: padding somewhere other than the very end, or more
-    // than the two characters a base64 tail can ever need.
+    // Only "=" can be left: padding in the wrong place, or too much of it.
     throw new Error(
       "That isn't valid Base64 — the \"=\" padding has to be the last one or two characters, and nothing may follow it.",
     );
@@ -70,8 +53,6 @@ export function base64Decode(input: string): string {
   }
 }
 
-/* --------------------------------------------------------------------- url */
-
 export type UrlScope = 'component' | 'full';
 
 export function urlEncode(text: string, scope: UrlScope): string {
@@ -91,8 +72,6 @@ export function urlDecode(text: string, scope: UrlScope): string {
     throw new Error('That contains a percent-escape that does not decode to valid UTF-8.');
   }
 }
-
-/* ------------------------------------------------------------------- html */
 
 const HTML_ESCAPES: ReadonlyArray<[RegExp, string]> = [
   [/&/g, '&amp;'],
@@ -127,11 +106,7 @@ const NAMED_ENTITIES: Readonly<Record<string, string>> = {
   shy: '­', ensp: ' ', emsp: ' ', thinsp: ' ', zwj: '‍', zwnj: '‌',
 };
 
-/**
- * Unescape entities without touching the DOM — building an element and reading
- * `textContent` would work but runs markup through the parser, which we would
- * rather not do with untrusted input.
- */
+/** Unescapes without the DOM, so untrusted markup never goes through the parser. */
 export function htmlUnescape(text: string): string {
   return text.replace(/&(#[0-9]+|#[xX][0-9A-Fa-f]+|[A-Za-z][A-Za-z0-9]{1,31});/g, (match, body: string) => {
     if (body[0] === '#') {
@@ -148,8 +123,6 @@ export function htmlUnescape(text: string): string {
     return named ?? match;
   });
 }
-
-/* --------------------------------------------------------------------- jwt */
 
 export interface JwtClaim {
   name: string;
@@ -200,7 +173,7 @@ function formatTimestamp(seconds: number, now: number): string {
   return `${date.toLocaleString()} (${relativeTime(seconds * 1000 - now)})`;
 }
 
-/** "in 5 minutes" / "2 days ago", without pulling in a date library. */
+/** "in 5 minutes" / "2 days ago". */
 export function relativeTime(deltaMs: number): string {
   const units: ReadonlyArray<[Intl.RelativeTimeFormatUnit, number]> = [
     ['year', 31_536_000_000],
@@ -219,10 +192,7 @@ export function relativeTime(deltaMs: number): string {
   return 'now';
 }
 
-/**
- * Decode a JWT's header and payload. This is a *decoder*: it never checks the
- * signature, so nothing it prints proves the token is genuine.
- */
+/** A decoder only: the signature is never checked, so nothing here proves the token is genuine. */
 export function decodeJwt(token: string, now: number): JwtResult {
   const trimmed = token.trim().replace(/^Bearer\s+/i, '');
   if (trimmed.length === 0) throw new Error('Paste a token to decode.');

@@ -137,9 +137,7 @@ function Stat({ label, before, after }: { label: string; before: number; after: 
 
 export interface ChangeSummaryProps {
   stats: CleanStats;
-  /** `CleanOutcome.invisibleCharacters` — names what was taken out. */
   invisibleCharacters?: readonly InvisibleCharacterTally[];
-  /** `CleanOutcome.headersKeptDistinct`. */
   headersKeptDistinct?: number;
 }
 
@@ -164,9 +162,7 @@ export function ChangeSummary({
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-ok" aria-hidden />
           <span>
             {stats.pendingDateColumns > 0
-              ? // Calling the file "already clean" would contradict the warning
-                // sitting directly underneath this line.
-                'Nothing has been changed yet — the date question below is the only thing still waiting on you.'
+              ? 'Nothing has been changed yet — the date question below is the only thing still waiting on you.'
               : 'This pass changed nothing — with the options as they stand, the file is already clean.'}
           </span>
         </p>

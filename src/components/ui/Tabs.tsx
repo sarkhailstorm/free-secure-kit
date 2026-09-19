@@ -8,10 +8,6 @@ export interface TabItem<T extends string> {
   icon?: React.ReactNode;
 }
 
-/**
- * Accessible tab strip. Arrow keys move between tabs, matching the WAI-ARIA
- * tabs pattern; the parent owns the active-tab state.
- */
 export function Tabs<T extends string>({
   tabs,
   active,

@@ -34,11 +34,6 @@ const formatChoices: readonly Choice<OutputFormat>[] = FORMAT_OPTIONS.map((f) =>
 const numberField =
   'h-9 w-full rounded-lg border border-line bg-surface px-2.5 text-[13px] text-ink transition-colors placeholder:text-faint focus:border-accent/60 disabled:cursor-not-allowed disabled:opacity-45';
 
-/**
- * Honest about what the slider does per format — PNG has no lossy mode, but
- * the encoder spends the quality number on a colour budget instead, so it is
- * emphatically not a no-op. See `qualityEffect`.
- */
 function qualityHint(format: OutputFormat): string {
   if (format === 'original') {
     return 'Lower means a smaller file — softer detail in JPEG and WebP, fewer colours in PNG.';
@@ -48,7 +43,6 @@ function qualityHint(format: OutputFormat): string {
     : 'Lower means a smaller file and softer detail.';
 }
 
-/** True when the current resize rule will actually change any pixel sizes. */
 function resizeIsActive(resize: ResizeSettings): boolean {
   if (resize.preset === 'original') return false;
   if (resize.preset === 'custom') return Boolean(resize.customWidth || resize.customHeight);
@@ -104,7 +98,6 @@ export function ControlPanel({
       />
 
       <div className="grid gap-6 p-5 md:grid-cols-3">
-        {/* --------------------------------------------------------- quality */}
         <div>
           <Slider
             label="Quality"
@@ -119,7 +112,6 @@ export function ControlPanel({
           />
         </div>
 
-        {/* ---------------------------------------------------------- resize */}
         <div>
           <p className="text-[13px] font-medium text-ink">Resize</p>
           <ChoiceGroup
@@ -186,7 +178,6 @@ export function ControlPanel({
           </p>
         </div>
 
-        {/* ---------------------------------------------------------- format */}
         <div>
           <p className="text-[13px] font-medium text-ink">Output format</p>
           <ChoiceGroup
@@ -206,7 +197,6 @@ export function ControlPanel({
         </div>
       </div>
 
-      {/* ------------------------------------------------------------- exif */}
       <div className="flex items-start gap-2.5 border-t border-line px-5 py-3.5">
         <MapPinOff className="mt-0.5 h-4 w-4 shrink-0 text-ok" aria-hidden />
         <p className="text-[13px] leading-relaxed text-muted">

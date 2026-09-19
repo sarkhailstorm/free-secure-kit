@@ -16,20 +16,15 @@ function describe(sheet: ParsedSheet, cleanedRows: number | undefined): string {
 }
 
 export interface SheetsPanelProps {
-  /** Every sheet in the workbook. Renders nothing when there is only one. */
   sheets: readonly ParsedSheet[];
   /** The sheet on screen, by `ParsedSheet.index`. */
   activeSheet: number;
   onActiveSheetChange: (index: number) => void;
-  /**
-   * Sheets ticked to save, by `ParsedSheet.index`. Hidden sheets start
-   * unticked — this panel only labels them, it does not choose for you.
-   */
+  /** Sheets ticked to save, by `ParsedSheet.index`. */
   selected: ReadonlySet<number>;
   onSelectedChange: (selected: ReadonlySet<number>) => void;
   /** Rows each sheet keeps once cleaned, by `ParsedSheet.index`. */
   cleanedRowCounts?: Readonly<Record<number, number>>;
-  /** True while something is being written; the ticks are held. */
   busy?: boolean;
 }
 

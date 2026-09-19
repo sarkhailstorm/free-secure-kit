@@ -46,7 +46,6 @@ export interface ExactImage {
   behind?: boolean;
 }
 
-/** One page, ready to emit. PageLayout is not in the frozen types.ts — see needsShared. */
 export interface PageLayout {
   facts: PageFacts;
   lines: readonly Line[];
@@ -203,9 +202,7 @@ function boxRuns(box: Box, layout: PageLayout): Run[] {
 function frameFor(rect: Rect, page: { width: Pt; height: Pt }, exact: boolean): IFrameOptions {
   return {
     type: 'absolute',
-    // A frame at or past the right edge is dropped by Word; one that merely overhangs is clipped.
-    // §7.2 rule 3: a frame past an edge is dropped, one that overhangs is clipped. Lifting y
-    // instead of clipping it would move a baseline, so y is capped at the foot and never raised.
+    // Word drops a frame past an edge and clips one that overhangs, so y is capped at the foot, never raised.
     position: { x: tw(clamp(rect.x, 0, page.width - 1)), y: tw(Math.min(rect.y, page.height - 1)) },
     width: tw(rect.w),
     height: tw(rect.h),

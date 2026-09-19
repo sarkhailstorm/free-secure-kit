@@ -11,25 +11,12 @@ import type {
   Severity,
 } from './types';
 
-/**
- * Everything that gets a passport photo turned away, found before it is sent.
- *
- * A rejection costs weeks and another fee, so this is the part of the tool that
- * earns its keep. The arithmetic here is dull; the wording is not. Each check
- * says what is wrong in the words the person would use themselves, and carries
- * a fix only where there is something they can actually go and do.
- */
-
-/** Past this the head reads as leaning, in degrees. */
 const MAX_TILT_DEGREES = 5;
 
 /** Nose drift, as a share of the gap between the eyes. Past this the face is turned. */
 const MAX_TURN = 0.22;
 
-/** Background variation past this is clutter rather than a wall. */
 const MAX_SPREAD = 0.35;
-
-/** Under this the photo is stretched far enough to print soft. */
 const MIN_SOURCE_PER_OUTPUT = 0.6;
 
 /** Plain RGB distance from the nearest allowed swatch before the wall is the wrong colour. */
@@ -38,13 +25,7 @@ const MAX_SWATCH_DISTANCE = 60;
 /** Half a source pixel: below this the crop is inside the photo bar rounding. */
 const EDGE_SLACK = 0.5;
 
-/**
- * A missing strip thinner than this share of the finished photo is not worth
- * stopping someone over: on a 35 x 45 mm print it is under half a millimetre of
- * flat colour along one edge, thinner than the scissors are accurate. Measuring
- * the same head twice moves the crop about that far on its own, so without this
- * a photo that came out of this very tool comes back as unusable.
- */
+/** A missing strip this share of the photo is thinner than the scissors are accurate. */
 const EDGE_TOLERANCE = 0.01;
 
 const RANK: Record<Severity, number> = { blocker: 0, warning: 1, note: 2 };
@@ -73,7 +54,6 @@ function parseSwatch(hex: string): Rgb | null {
   ];
 }
 
-/** Distance to the closest swatch the rule allows, or null when none can be read. */
 function nearestSwatch(colour: Rgb, swatches: readonly string[]): number | null {
   let best: number | null = null;
   for (const hex of swatches) {
@@ -85,13 +65,11 @@ function nearestSwatch(colour: Rgb, swatches: readonly string[]): number | null 
   return best;
 }
 
-/** "a", "a and b", "a, b and c". */
 function joinParts(parts: readonly string[]): string {
   if (parts.length < 2) return parts[0] ?? '';
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 }
 
-/** Which way the crop runs off the photo, said the way a person would say it. */
 function missingRoom(
   over: { left: number; top: number; right: number; bottom: number },
   crop: Crop,
@@ -108,8 +86,7 @@ function missingRoom(
   return parts;
 }
 
-// The specs carry the no-retouching rule as ordinary note text rather than a
-// flag, so the note is what we read.
+// The no-retouching rule lives in the spec's note text rather than a flag.
 function mentionsRetouching(notes: readonly string[] | undefined): boolean {
   return (notes ?? []).some((note) => /retouch/i.test(note));
 }

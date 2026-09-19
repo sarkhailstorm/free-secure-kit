@@ -2,15 +2,6 @@ import type { Stencil } from '@/lib/background-remover/infer';
 import { eyeLine } from './detect';
 import type { FaceDetection, MaskData, Measurements } from './types';
 
-/**
- * Turning a face box and a cut-out into the four numbers a crop needs.
- *
- * The crown is the hard one. A face detector finds the face, and the top of a
- * face box sits somewhere around the eyebrows — nowhere near the top of the
- * hair, which is what every authority measures to. The cut-out knows where the
- * hair ends, so that is where the crown comes from whenever there is one.
- */
-
 /** Alpha above this counts as part of the person. */
 const SOLID = 128;
 
@@ -37,12 +28,7 @@ function clamp(value: number, low: number, high: number): number {
   return value < low ? low : value > high ? high : value;
 }
 
-/**
- * The topmost row of the cut-out inside a horizontal band, in source pixels.
- *
- * The band keeps a raised arm or a second person out of the answer. Null when
- * the band holds nothing solid, which happens when the cut-out failed.
- */
+/** Topmost row of the cut-out inside the band, in source pixels; null when nothing solid is there. */
 export function findCrown(
   mask: MaskData,
   sourceWidth: number,
@@ -67,13 +53,6 @@ export function findCrown(
   return null;
 }
 
-/**
- * Where the head is, from whatever evidence there is.
- *
- * With a face and a cut-out this is close enough to download without touching.
- * With only one of them it is a starting point the user is expected to drag,
- * which is why `origin` travels with the numbers.
- */
 export function measure(
   sourceWidth: number,
   sourceHeight: number,
@@ -90,8 +69,7 @@ export function measure(
     ? findCrown(mask, sourceWidth, sourceHeight, face.x - spread, face.x + face.width + spread)
     : null;
 
-  // A cut-out that puts the crown below the eyes has found something other than
-  // a head — a hat brim lost against the wall, or nothing at all.
+  // A crown below the eyes means the cut-out found something other than a head.
   const usable = fromMask != null && fromMask < eyes.y - face.height * 0.1;
   const crownY = usable ? fromMask : face.y - face.height * CROWN_RISE;
 
@@ -104,10 +82,6 @@ export function measure(
   };
 }
 
-/**
- * A guess for a photo with no face in it, so the editor still opens with
- * something to drag rather than an error.
- */
 function withoutFace(
   sourceWidth: number,
   sourceHeight: number,
@@ -126,12 +100,7 @@ function withoutFace(
   };
 }
 
-/**
- * How much the background varies, 0 to 1, and its average colour.
- *
- * Only pixels well clear of the cut-out are sampled, so hair edges do not count
- * as clutter. A plain wall lands near 0; a bookcase or a doorframe climbs fast.
- */
+/** How much the background varies, 0 to 1, and its average colour. */
 export function backgroundSpread(
   pixels: ImageData,
   mask: MaskData,

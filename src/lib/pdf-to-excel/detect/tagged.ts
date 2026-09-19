@@ -51,12 +51,7 @@ export function taggedCells(page: PageRead, tableIndex: number): TaggedCell[] {
   return [...buckets.values()];
 }
 
-/**
- * The real page columns, as the union of every cell's x extent across every page.
- *
- * LibreOffice omits an empty cell entirely, so one page can carry 4 tree columns where 5 exist
- * and every cell after the gap shifts left. Bands put each cell back where it is drawn.
- */
+/** Union of every cell's x extent across pages: LibreOffice omits an empty cell, shifting later ones left. */
 export function columnBands(cells: readonly TaggedCell[]): [Pt, Pt][] {
   const sorted = [...cells].sort((a, b) => a.x0 - b.x0);
   const bands: [Pt, Pt][] = [];

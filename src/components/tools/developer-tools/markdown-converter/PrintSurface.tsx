@@ -9,16 +9,6 @@ import {
   type ThemeId,
 } from '@/lib/markdown-converter/themes';
 
-/**
- * A copy of the document parked at the end of `<body>`, hidden on screen and
- * revealed only by the print stylesheet — which simultaneously hides every
- * other direct child of `<body>` (header, tool page, editor, controls, toasts).
- *
- * Printing a real element rather than rasterising a canvas is what makes the
- * resulting PDF searchable, selectable and small. The portal lives at body
- * level so that "hide everything except this" can be expressed as one rule
- * instead of unsetting the styles of a dozen ancestors.
- */
 export function PrintSurface({ html, themeId }: { html: string; themeId: ThemeId }) {
   const [mounted, setMounted] = useState(false);
 

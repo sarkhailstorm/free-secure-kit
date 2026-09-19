@@ -21,12 +21,7 @@ function joinOne(spans: readonly Span[], bodySize: Pt): string {
   return text;
 }
 
-/**
- * One cell's text, grouped into visual lines first.
- *
- * Sorting a cell's spans by x alone fuses a wrapped continuation onto the line above with no
- * space at all, because the continuation starts left of the previous span's right edge.
- */
+/** One cell's text, grouped into visual lines first so a wrapped line does not fuse onto the one above. */
 export function cellText(spans: readonly Span[], bodySize: Pt): string {
   const ink = [...spans].filter(isInk);
   if (ink.length === 0) return '';

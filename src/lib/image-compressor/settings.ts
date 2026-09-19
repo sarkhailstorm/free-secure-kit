@@ -9,9 +9,6 @@ import type {
   ResizeSettings,
 } from './types';
 
-/* -------------------------------------------------------------- formats -- */
-
-/** Types a `<canvas>` can encode to in every browser we support. */
 const ENCODABLE: readonly EncodableType[] = ['image/jpeg', 'image/png', 'image/webp'];
 
 const EXTENSION_BY_TYPE: Record<string, string> = {
@@ -37,46 +34,26 @@ export const FORMAT_OPTIONS: readonly { id: OutputFormat; label: string }[] = [
   { id: 'image/webp', label: 'WebP' },
 ];
 
-/** Short, human name for a MIME type — "image/webp" → "WebP". */
 export function formatLabel(mime: string): string {
   return LABEL_BY_TYPE[mime] ?? (mime.split('/')[1] ?? mime).toUpperCase();
 }
 
-/**
- * Decide what MIME type to encode to.
- *
- * "Keep original" only really works when the source type is one the canvas can
- * write back; an exotic source (GIF, BMP, AVIF…) is written as PNG so the file
- * we hand back actually matches the extension we put on it.
- */
+/** "Keep original" falls back to PNG when the source is a type the canvas can't write. */
 export function resolveOutputType(sourceType: string, format: OutputFormat): EncodableType {
   if (format !== 'original') return format;
   const match = ENCODABLE.find((t) => t === sourceType);
   return match ?? 'image/png';
 }
 
-/** Filename for the result, with the extension swapped to match `type`. */
 export function outputFilename(originalName: string, type: string): string {
   const ext = EXTENSION_BY_TYPE[type] ?? 'img';
   return safeFilename(`${baseName(originalName)}.${ext}`, `image.${ext}`);
 }
 
-/**
- * What the quality slider actually does to a given output type.
- *
- * JPEG and WebP take it straight through as a lossy quality level. PNG has no
- * lossy mode, so it is tempting to say "quality is ignored for PNG" — but that
- * is not what this encoder does. `browser-image-compression`'s `canvasToFile`
- * writes PNG with `UPNG.encode(..., 4096 * quality)`, and that fourth argument
- * is a colour budget: anything non-zero runs a quantiser. So a low quality
- * setting posterises a PNG (≈409 colours at 10%) rather than softening it.
- * Claiming otherwise on screen would be a lie.
- */
+/** PNG has no lossy mode: the encoder spends quality as a colour budget, not detail. */
 export function qualityEffect(type: string): 'detail' | 'colours' {
   return type === 'image/png' ? 'colours' : 'detail';
 }
-
-/* --------------------------------------------------------------- resize -- */
 
 export interface ResizePreset {
   id: ResizePresetId;
@@ -94,7 +71,7 @@ export const RESIZE_PRESETS: readonly ResizePreset[] = [
   { id: 'custom', label: 'Custom', max: null, detail: 'Your size' },
 ];
 
-/** Clamp a typed-in pixel value to something sane, or `null` for "blank". */
+/** Clamped to 1–20000 px; `null` when the box is blank or holds no usable number. */
 export function parsePixelInput(raw: string): number | null {
   const trimmed = raw.trim();
   if (trimmed === '') return null;
@@ -103,16 +80,7 @@ export function parsePixelInput(raw: string): number | null {
   return Math.min(Math.round(n), 20000);
 }
 
-/**
- * Work out the longest-edge cap to hand the encoder, in the source image's own
- * pixels.
- *
- * The underlying resize always scales the *longest* edge and keeps the aspect
- * ratio, so a custom width-and/or-height box is expressed here as the scale
- * factor it implies. Returns `undefined` when no resize should happen — which
- * includes every case where the image is already smaller than the target, so
- * nothing is ever upscaled.
- */
+/** Longest-edge cap in the source's own pixels; `undefined` when nothing should be resized. */
 export function resolveMaxDimension(
   source: Dimensions,
   resize: ResizeSettings,
@@ -128,7 +96,6 @@ export function resolveMaxDimension(
     if (resize.customHeight && source.height > 0) {
       scale = Math.min(scale, resize.customHeight / source.height);
     }
-    // scale >= 1 means the image already fits — never enlarge it.
     if (scale >= 1) return undefined;
     return Math.max(1, Math.round(longest * scale));
   }
@@ -138,7 +105,6 @@ export function resolveMaxDimension(
   return longest > preset.max ? preset.max : undefined;
 }
 
-/** Human summary of the active resize rule, for the control panel. */
 export function describeResize(resize: ResizeSettings): string {
   if (resize.preset === 'custom') {
     const { customWidth: w, customHeight: h } = resize;
@@ -152,13 +118,7 @@ export function describeResize(resize: ResizeSettings): string {
   return `Longest edge capped at ${preset.max} px`;
 }
 
-/* ------------------------------------------------------------ filenames -- */
-
-/**
- * De-duplicate a list of filenames so an archive never holds two identical
- * entries — "photo.jpg", "photo.jpg" becomes "photo.jpg", "photo (2).jpg".
- * Comparison is case-insensitive because Windows and macOS treat it that way.
- */
+/** De-duplicates case-insensitively: a second "photo.jpg" becomes "photo (2).jpg". */
 export function uniqueNames(names: readonly string[]): string[] {
   const taken = new Set<string>();
   return names.map((name) => {
@@ -179,12 +139,6 @@ export function uniqueNames(names: readonly string[]): string[] {
   });
 }
 
-/* ------------------------------------------------------------- identity -- */
-
-/**
- * Stable fingerprint of the settings, so the UI can tell which already-finished
- * results were produced with the settings currently on screen.
- */
 export function settingsKey(settings: CompressSettings): string {
   const { quality, format, resize } = settings;
   const custom = resize.preset === 'custom' ? `${resize.customWidth ?? ''}x${resize.customHeight ?? ''}` : '';

@@ -1,13 +1,3 @@
-/**
- * The document a first-time visitor lands on. It doubles as a short reference
- * for the Markdown this editor supports, so it is worth keeping rather than
- * being noise to delete — and it exercises headings, a table, a fenced code
- * block, lists, task lists and a blockquote, which is exactly what the theme
- * picker needs in order to show a real difference.
- *
- * Written as an array of lines so the fenced code blocks below do not need
- * backtick gymnastics inside a template literal.
- */
 export const SAMPLE_DOCUMENT: string = [
   '# Markdown, at a glance',
   '',

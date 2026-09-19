@@ -11,7 +11,6 @@ const formatTabs = (['iso', 'us', 'eu'] as const).map((id) => ({
   label: dateFormatLabels[id].label,
 }));
 
-/** "N/A, NULL, None and 7 more" — the whole list is too long for a hint. */
 function blankList(values: readonly string[]): string {
   const shown = values.slice(0, 3).join(', ');
   const rest = values.length - 3;
@@ -21,7 +20,6 @@ function blankList(values: readonly string[]): string {
 export interface OptionsPanelProps {
   options: CleanOptions;
   onChange: (patch: Partial<CleanOptions>) => void;
-  /** Columns in this sheet that look like dates. */
   dateColumnCount: number;
   /** True when this sheet has an unnamed row-number column down its side. */
   hasIndexColumn?: boolean;

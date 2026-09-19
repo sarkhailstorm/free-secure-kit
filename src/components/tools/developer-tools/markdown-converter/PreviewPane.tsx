@@ -5,13 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
 import { PREVIEW_ROOT_CLASS } from '@/lib/markdown-converter/themes';
 
-/**
- * The right-hand (or "Preview" tab) pane.
- *
- * `html` has already been through DOMPurify in `lib/markdown-converter/render`
- * — that is the only reason `dangerouslySetInnerHTML` is defensible here, and
- * the sanitiser must stay the last step before this prop is built.
- */
+/** `html` must already be sanitised — it is injected with dangerouslySetInnerHTML. */
 export function PreviewPane({
   html,
   loading,

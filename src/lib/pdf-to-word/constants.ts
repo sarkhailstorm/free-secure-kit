@@ -1,8 +1,5 @@
 import type { Pt } from './types';
 
-/* Thresholds. B = page body size, S = the span's own size. Values are measured,
-   not guessed — the basis for each is in the design spec. */
-
 /** Min observed body leading was 1.34 em, so this never merges two lines. */
 export const LINE_TOL = (bodySize: Pt): Pt => Math.max(1.2, 0.3 * bodySize);
 /** Word fragments runs at style boundaries with a p50 gap of 0.004 em. */
@@ -55,13 +52,11 @@ export const MAX_FRAMES_PER_PAGE = 1500;
 export const MAX_RUNS_PER_PAGE = 20000;
 export const PAGE_WARN_THRESHOLD = 200;
 
-/** Never emit these as a run family: Word reinterprets the text through the
-    font's custom encoding and the characters become unrecoverable. */
+/** Never emit these as a run family: Word reinterprets the text through the font's own encoding. */
 export const SYMBOLIC_RE =
   /^(Symbol|SymbolMT|ZapfDingbats|Dingbats|Wingdings\d?|Webdings|OpenSymbol|MTExtra|Marlett)$/i;
 
-/** Private-use codepoints are producer-specific: the same DOCX gives U+2022
-    through Word and U+F0B7 through LibreOffice. */
+/** Private-use codepoints are producer-specific: Word gives U+2022 where LibreOffice gives U+F0B7. */
 export const PUA_MAP: ReadonlyMap<number, number> = new Map([
   [0xf0a7, 0x25aa],
   [0xf0a8, 0x25a1],
@@ -99,8 +94,7 @@ export const LIGATURES: ReadonlyMap<string, string> = new Map([
   ['ﬆ', 'st'],
 ]);
 
-/** Spelling must match Word's exactly — 'LiberationSerif' misses even where
-    'Liberation Serif' is installed. */
+/** Spelling must match Word's exactly: 'LiberationSerif' misses where 'Liberation Serif' is installed. */
 export const FAMILY_MAP: ReadonlyMap<string, string> = new Map([
   ['arial', 'Arial'],
   ['arialmt', 'Arial'],

@@ -1,14 +1,3 @@
-/**
- * Diff engine for the Text Utilities tool.
- *
- * Everything here is pure: strings in, plain data out. The React layer only
- * renders what these functions return. The `diff` package itself is imported
- * dynamically inside `computeDiff` so it never lands in the initial bundle.
- *
- * No part of this file touches the network, the DOM or any browser global —
- * the text you compare never leaves the tab it is typed into.
- */
-
 import type { ChangeObject } from 'diff';
 
 export type DiffMode = 'lines' | 'words' | 'chars';
@@ -17,17 +6,11 @@ export interface DiffOptions {
   mode: DiffMode;
   /** Ignore leading/trailing whitespace when deciding whether two lines match. */
   ignoreWhitespace: boolean;
-  /** Treat "Hello" and "hello" as the same token. */
   ignoreCase: boolean;
-  /**
-   * Set when the user has seen the "this is very large" warning and asked for
-   * the comparison anyway. The size ceiling is skipped; the timeout still
-   * applies, so the tab recovers even if the algorithm gives up.
-   */
+  /** Skips the size ceiling; the timeout still applies. */
   allowOversize?: boolean;
 }
 
-/** A run of text inside a line, classified against its counterpart. */
 export interface InlineSpan {
   kind: 'same' | 'add' | 'del';
   text: string;
@@ -80,10 +63,7 @@ export interface InlineDiffResult {
 
 export type DiffResult = LineDiffResult | InlineDiffResult;
 
-/**
- * Above these input sizes we refuse to run rather than freeze the tab.
- * Character diffing is by far the most expensive, so its ceiling is lowest.
- */
+/** Total characters across both sides, above which we refuse rather than freeze the tab. */
 export const DIFF_LIMITS: Readonly<Record<DiffMode, number>> = {
   lines: 400_000,
   words: 150_000,
@@ -125,10 +105,7 @@ type Block = {
   count: number;
 };
 
-/**
- * Run the diff. Throws an `Error` with a human-readable message when the input
- * is too large or the algorithm gives up; callers surface that text directly.
- */
+/** Throws an `Error` whose message is written to be shown to the user as-is. */
 export async function computeDiff(
   original: string,
   changed: string,
@@ -150,9 +127,7 @@ export async function computeDiff(
     let parts: ChangeObject<string>[] | undefined;
     if (options.mode === 'words') {
       parts = diffWords(left, right, { ignoreCase: options.ignoreCase, timeout: DIFF_TIMEOUT_MS });
-      // `diffWords` ignores whitespace, so its change objects do not always add
-      // back up to the text that went in. Fall back to the whitespace-exact
-      // tokeniser rather than render characters neither side actually contains.
+      // `diffWords` ignores whitespace, so its parts do not always add back up to the input.
       if (parts && !rebuildsExactly(parts, left, right, options.ignoreCase)) {
         parts = diffWordsWithSpace(left, right, {
           ignoreCase: options.ignoreCase,
@@ -196,7 +171,6 @@ export async function computeDiff(
     };
   }
 
-  // ---------------------------------------------------------------- line mode
   const oldLines = splitLines(original);
   const newLines = splitLines(changed);
 
@@ -242,8 +216,7 @@ export async function computeDiff(
 
     const next = blocks[i + 1];
     if (block.kind === 'del' && next && next.kind === 'add') {
-      // A removal immediately followed by an insertion is almost always an
-      // edit. Pair the lines up so we can show *which words* changed.
+      // A removal immediately followed by an insertion is almost always an edit.
       const pairCount = Math.min(block.count, next.count);
       const delSpans: (InlineSpan[] | null)[] = new Array(block.count).fill(null);
       const addSpans: (InlineSpan[] | null)[] = new Array(next.count).fill(null);
@@ -262,19 +235,14 @@ export async function computeDiff(
 
         inlineBudget -= 1;
         let parts = diffWords(before, after, { ignoreCase: options.ignoreCase });
-        // `diffWords` treats whitespace as insignificant, so the values it hands
-        // back re-form the *new* text's spacing on both sides. Rendering those
-        // would print a removed line that never existed — re-run with the
-        // whitespace-exact tokeniser whenever the round-trip does not hold.
+        // Same whitespace caveat: re-run exact when the round trip does not hold.
         if (!rebuildsExactly(parts, before, after, options.ignoreCase)) {
           parts = diffWordsWithSpace(before, after, { ignoreCase: options.ignoreCase });
         }
         if (!isSimilar(parts, before, after)) continue;
 
         modifiedHere += 1;
-        // Spans are sliced out of the real inputs, so each side always reads
-        // back exactly as it was typed — including its own capitalisation when
-        // "ignore case" is on.
+        // Sliced from the real inputs, so each side reads back exactly as typed.
         const sliced = spansFromParts(parts, before, after);
         if (sliced) {
           delSpans[j] = sliced.del;
@@ -358,7 +326,6 @@ function timeoutMessage(mode: DiffMode): string {
   return `The ${labelForMode(mode)} comparison was taking too long and stopped. Try line mode, or compare a smaller section.`;
 }
 
-/** Turn the library's run-length changes into indexed blocks. */
 function toBlocks(changes: ChangeObject<string[]>[]): Block[] {
   const blocks: Block[] = [];
   let oldIndex = 0;
@@ -384,13 +351,7 @@ function toBlocks(changes: ChangeObject<string[]>[]): Block[] {
   return blocks;
 }
 
-/**
- * Do these change objects add back up to the two strings that produced them?
- *
- * `diffWords` answers "no" whenever whitespace moved, because it treats runs of
- * whitespace as insignificant and reports them in the new text's shape. When
- * "ignore case" is on, capitalisation is allowed to differ for the same reason.
- */
+/** Do these change objects add back up to the two strings that produced them? */
 function rebuildsExactly(
   parts: ChangeObject<string>[],
   before: string,
@@ -409,12 +370,7 @@ function rebuildsExactly(
   );
 }
 
-/**
- * Turn change objects into two span lists, taking every character from the
- * original inputs rather than from the library's values. Returns null when the
- * token lengths do not line up with the sources, in which case the caller shows
- * the plain line instead of a highlight that would be in the wrong place.
- */
+/** Null when the token lengths do not line up with the sources. */
 function spansFromParts(
   parts: ChangeObject<string>[],
   before: string,
@@ -445,11 +401,6 @@ function spansFromParts(
   return { del, add };
 }
 
-/**
- * Two lines only count as an *edit* of one another when they still share a
- * decent chunk of text. Otherwise they are genuinely a deletion plus an
- * unrelated insertion, and pretending otherwise makes the diff harder to read.
- */
 function isSimilar(parts: ChangeObject<string>[], before: string, after: string): boolean {
   let shared = 0;
   for (const part of parts) {
@@ -460,10 +411,7 @@ function isSimilar(parts: ChangeObject<string>[], before: string, after: string)
   return shared / longest >= SIMILARITY_THRESHOLD;
 }
 
-/**
- * Replace long runs of unchanged lines with a single "N unchanged lines" row,
- * keeping `context` lines of breathing room around every change.
- */
+/** `context` lines of unchanged text are kept around every change. */
 export function collapseUnchanged(rows: DiffRow[], context: number): RenderRow[] {
   const keep: boolean[] = new Array(rows.length).fill(false);
 
@@ -491,7 +439,6 @@ export function collapseUnchanged(rows: DiffRow[], context: number): RenderRow[]
   return out;
 }
 
-/** Render the diff as plain text, for copying or saving next to a commit. */
 export function diffToText(result: DiffResult): string {
   if (result.kind === 'lines') {
     return result.rows
@@ -505,7 +452,6 @@ export function diffToText(result: DiffResult): string {
     .join('');
 }
 
-/** The unit a given mode counts in, for labelling the summary. */
 export function unitForMode(mode: DiffMode, count: number): string {
   const word = mode === 'lines' ? 'line' : mode === 'words' ? 'word' : 'character';
   return count === 1 ? word : `${word}s`;

@@ -131,10 +131,7 @@ function stitchRuled(tables: readonly DetectedTable[]): DetectedTable[] {
   return out;
 }
 
-/**
- * The ladder: the tagged tree where it covers the page, then a ruled grid, then the column model.
- * A page that none of them fits contributes nothing — an invented row is worse than a missing one.
- */
+/** The ladder: the tagged tree, then a ruled grid, then the column model; a page that fits none contributes nothing. */
 export function detectTables(pages: readonly PageRead[]): Detection {
   const readable = pages.filter((page) => page.cls === 'text' && page.lines.length > 0);
   const tables: DetectedTable[] = [];

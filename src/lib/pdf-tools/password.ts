@@ -1,18 +1,6 @@
 import { bytesOutstanding, loadAssets } from '@/lib/assets';
 import { PdfToolsError } from './errors';
 
-/**
- * Taking the password off a PDF, with qpdf.
- *
- * This is the one job pdf-lib cannot do: it refuses an encrypted file outright.
- * qpdf is the tool that exists for it, compiled to WebAssembly and run here, so
- * a bank statement never leaves the device. It is fetched the first time
- * someone asks and kept, like every other large file on this site.
- *
- * Nothing here guesses or removes a password you do not have. The password goes
- * straight to qpdf in this tab and is never stored.
- */
-
 type Qpdf = {
   FS: {
     writeFile(path: string, data: Uint8Array): void;
@@ -38,7 +26,6 @@ const OUT = '/out.pdf';
 /** qpdf says 0 for success and 3 when it succeeded but had something to say. */
 const OK = new Set([0, 3]);
 
-/** Compiling 1.2 MB of WebAssembly takes a moment, so it is done once. */
 let compiled: Promise<WebAssembly.Module> | null = null;
 
 async function compile(): Promise<WebAssembly.Module> {
@@ -67,18 +54,9 @@ interface Run {
   output: Uint8Array | null;
 }
 
-/**
- * Run qpdf once over `bytes`.
- *
- * Each run gets its own instance. Emscripten's `callMain` is not built to be
- * called twice on one instance, and a half-finished run would otherwise leave
- * state behind for the next file.
- */
 async function run(args: string[], bytes: Uint8Array, wantsOutput: boolean): Promise<Run> {
   const wasm = await compile();
-  // The package's .mjs entry hands the factory around through `globalThis`,
-  // which a bundler rewrites out from under it. Its CommonJS build exports the
-  // factory properly, so that is the one imported here.
+  // The .mjs entry passes its factory through `globalThis`, which a bundler rewrites away; the CommonJS build exports it properly.
   const loaded = (await import('@jspawn/qpdf-wasm/qpdf.js')) as unknown as {
     default?: (options: QpdfOptions) => Promise<Qpdf>;
   };
@@ -86,8 +64,7 @@ async function run(args: string[], bytes: Uint8Array, wantsOutput: boolean): Pro
 
   const qpdf = await createModule({
     noInitialRun: true,
-    // qpdf's own messages never reach these in the browser build, which is why
-    // nothing below reads them: the exit code and the output file decide.
+    // qpdf's messages never reach these in the browser build; the exit code and output file decide.
     print: () => {},
     printErr: () => {},
     instantiateWasm(imports, done) {
@@ -118,20 +95,15 @@ async function run(args: string[], bytes: Uint8Array, wantsOutput: boolean): Pro
 }
 
 export type UnlockOutcome =
-  /** There was nothing to remove. */
   | { kind: 'not-protected' }
-  /** It opens, but only with a password we were not given. */
   | { kind: 'needs-password' }
-  /** The password given is not the right one. */
   | { kind: 'wrong-password' }
   | {
       kind: 'unlocked';
       bytes: Uint8Array;
-      /** A password someone had to type, or restrictions that blocked printing and copying. */
       removed: 'password' | 'restrictions';
     };
 
-/** Every PDF starts with this, and nothing else does. */
 function looksLikePdfBytes(bytes: Uint8Array): boolean {
   return (
     bytes.length > 8 &&
@@ -143,15 +115,6 @@ function looksLikePdfBytes(bytes: Uint8Array): boolean {
   );
 }
 
-/**
- * Whether the file carries an encryption dictionary.
- *
- * A PDF's trailer names its `/Encrypt` dictionary in plain bytes, even when the
- * rest of the file is scrambled and even when the trailer is a cross-reference
- * stream. Reading it here is what separates "this needs a password" from "this
- * file is broken", because qpdf's own message for the two is the same exit code
- * and its text does not survive the browser build.
- */
 function hasEncryptDictionary(bytes: Uint8Array): boolean {
   const needle = [0x2f, 0x45, 0x6e, 0x63, 0x72, 0x79, 0x70, 0x74]; // "/Encrypt"
   outer: for (let at = 0; at <= bytes.length - needle.length; at++) {
@@ -163,13 +126,7 @@ function hasEncryptDictionary(bytes: Uint8Array): boolean {
   return false;
 }
 
-/**
- * Take the protection off one PDF.
- *
- * Pass an empty password to find out what the file needs: a file with only
- * printing and copying restrictions opens without one, and comes back unlocked
- * in the same step.
- */
+/** Pass an empty password to probe: a restrictions-only file comes back unlocked. */
 export async function unlockPdf(bytes: Uint8Array, password: string): Promise<UnlockOutcome> {
   if (!looksLikePdfBytes(bytes)) {
     throw new PdfToolsError(
@@ -198,7 +155,6 @@ export async function unlockPdf(bytes: Uint8Array, password: string): Promise<Un
   );
 }
 
-/** True when the unlocker is already on the device and costs nothing to use. */
 export async function isUnlockerReady(): Promise<boolean> {
   return (await bytesOutstanding(['qpdf'])) === 0;
 }

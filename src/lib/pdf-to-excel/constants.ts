@@ -1,7 +1,5 @@
 import type { Pt } from '@/lib/pdf-to-word/types';
 
-/* Every threshold this tool uses, with the measurement that fixed it. B = page body size. */
-
 /** Word leaves 3.4–3.5 pt between one cell's border rect and the next at 9 pt body. */
 export const RULE_JOIN_GAP = (bodySize: Pt): Pt => Math.max(4, 0.5 * bodySize);
 /** Word's top border clears the first vertical by 3.5 pt; at SEG_TOL the header row is lost. */

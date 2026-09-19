@@ -8,12 +8,7 @@ import { useToast } from '@/components/ToastProvider';
 import { Button } from '@/components/ui/Button';
 import { countText } from '@/lib/text-utilities/case';
 
-/* ------------------------------------------------------------------ counts */
-
-/** Live "1,204 characters · 210 words · 12 lines" readout. */
 export function Counts({ text, className }: { text: string; className?: string }) {
-  // Toggling any option in a panel re-renders every text area in it; without
-  // this the counts would be recomputed over unchanged megabytes each time.
   const counts = useMemo(() => countText(text), [text]);
   return (
     <p className={cn('font-mono text-[11px] tabular-nums text-faint', className)}>
@@ -22,8 +17,6 @@ export function Counts({ text, className }: { text: string; className?: string }
     </p>
   );
 }
-
-/* --------------------------------------------------------------- text area */
 
 export function TextField({
   label,
@@ -79,8 +72,6 @@ export function TextField({
   );
 }
 
-/* ------------------------------------------------------------ copy button */
-
 export function CopyButton({
   text,
   label = 'Copy',
@@ -118,7 +109,6 @@ export function CopyButton({
     setCopied(true);
     if (timer.current) clearTimeout(timer.current);
     timer.current = setTimeout(() => setCopied(false), 1800);
-    // The copy has already happened; the nudge never gates it.
     toast.celebrate(successMessage);
   }
 
@@ -140,8 +130,6 @@ export function CopyButton({
     </Button>
   );
 }
-
-/* -------------------------------------------------------------- checkboxes */
 
 export function CheckboxRow({
   label,
@@ -178,8 +166,6 @@ export function CheckboxRow({
   );
 }
 
-/* --------------------------------------------------------------- messaging */
-
 export function ErrorNote({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -201,7 +187,6 @@ export function WarnNote({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** Dashed placeholder used wherever a panel has nothing to show yet. */
 export function EmptyState({
   icon,
   title,
@@ -234,8 +219,6 @@ export function Working({ label }: { label: string }) {
   );
 }
 
-/* --------------------------------------------------------------- misc bits */
-
 export function Pill({
   tone = 'neutral',
   children,
@@ -262,7 +245,6 @@ export function Pill({
   );
 }
 
-/** Small labelled `<select>` matching the Button's visual weight. */
 export function SelectField<T extends string>({
   label,
   value,
@@ -299,7 +281,6 @@ export function SelectField<T extends string>({
   );
 }
 
-/** Labelled number stepper for the small numeric controls. */
 export function NumberField({
   label,
   value,

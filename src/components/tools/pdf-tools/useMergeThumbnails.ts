@@ -183,7 +183,6 @@ export function useMergeThumbnails(
     [drain],
   );
 
-  // Release exactly what belonged to files that have left the queue.
   useEffect(() => {
     files.current = new Map(items.map((file) => [file.id, file]));
     const live = new Set(items.map((file) => file.id));

@@ -192,7 +192,6 @@ export function SplitPanel() {
     [resetChoices],
   );
 
-  /** Selection and the range box are two views of the same list of pages. */
   const applySelection = useCallback((pages: number[]) => {
     setSelected(new Set(pages));
     setRangeText(formatPageRanges(pages));

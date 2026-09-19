@@ -75,8 +75,6 @@ export function PageStrip({
     [sources],
   );
 
-  /* ------------------------------------------------------------ previews */
-
   useEffect(() => {
     if (typeof IntersectionObserver === 'undefined') return;
     const obs = new IntersectionObserver(
@@ -99,8 +97,7 @@ export function PageStrip({
     };
   }, [request]);
 
-  // One observer for the whole strip rather than one per tile, so a plan of
-  // several hundred pages does not create several hundred observers.
+  // One observer for the whole strip, not one per tile: a plan can run to hundreds of pages.
   useEffect(() => {
     const obs = observer.current;
     const root = gridRef.current?.parentElement;
@@ -113,8 +110,6 @@ export function PageStrip({
     for (const el of root.querySelectorAll<HTMLElement>('[data-pending="1"]')) obs.observe(el);
   }, [plan, removed, urls, failed, request]);
 
-  /* -------------------------------------------------------------- focus */
-
   useEffect(() => {
     const key = refocus.current;
     if (!key) return;
@@ -126,8 +121,6 @@ export function PageStrip({
     (key: string | null) => (key === null ? -1 : plan.findIndex((ref) => planKey(ref) === key)),
     [plan],
   );
-
-  /* ----------------------------------------------------------- mutations */
 
   const moveTo = useCallback(
     (from: number, to: number) => {
@@ -155,8 +148,6 @@ export function PageStrip({
     },
     [plan, onRemove, describe],
   );
-
-  /* ---------------------------------------------------------- keyboard */
 
   function columns(): number {
     const grid = gridRef.current;
@@ -238,7 +229,6 @@ export function PageStrip({
       return;
     }
     if (activeKey !== null) {
-      // A second tap moves the page already picked up onto this one.
       const from = indexOf(activeKey);
       if (from >= 0) {
         moveTo(from, index);
@@ -250,8 +240,6 @@ export function PageStrip({
     setFocusIndex(index);
     setStatus(`Picked up ${describe(ref)}, position ${index + 1} of ${plan.length}.`);
   }
-
-  /* -------------------------------------------------------------- drag */
 
   function endDrag() {
     setDragKey(null);
@@ -305,9 +293,7 @@ export function PageStrip({
                     setDragKey(key);
                   }}
                   onDragOver={(e) => {
-                    // Only claim the drop when one of OUR tiles is moving, so
-                    // a PDF dragged in from the desktop still reaches the
-                    // drop zone above.
+                    // Only claim the drop for our own tiles, so a PDF from the desktop still reaches the drop zone.
                     if (!dragKey) return;
                     e.preventDefault();
                     e.dataTransfer.dropEffect = 'move';

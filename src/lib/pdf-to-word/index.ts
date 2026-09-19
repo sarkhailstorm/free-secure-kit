@@ -1,8 +1,3 @@
-/**
- * PDF to Word, entirely in this browser tab. Nothing here talks to a network,
- * and the heavy libraries are only imported once a conversion actually starts.
- */
-
 import type { LoadedPdf } from '@/lib/pdf-tools/pdf';
 import { convert, openDocument } from './convert';
 export { PAGE_WARN_THRESHOLD } from './constants';
@@ -28,7 +23,6 @@ export function pdfToWord(
   return convert(source, options, onProgress);
 }
 
-/** What page 1 is made of, so a scan can be owned up to before the whole run. */
 export async function inspectFirstPage(source: LoadedPdf): Promise<PageClass> {
   const doc = await openDocument(source);
   try {

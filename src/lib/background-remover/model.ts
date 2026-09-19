@@ -33,7 +33,6 @@ export interface DownloadedAssets {
   cutter: Uint8Array;
 }
 
-/** True when this choice is already on the device and costs nothing to use. */
 export async function isModelReady(choice: ModelChoice): Promise<boolean> {
   return areAssetsReady(['engine', CUTTERS[choice]]);
 }

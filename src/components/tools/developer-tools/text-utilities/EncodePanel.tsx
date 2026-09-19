@@ -47,7 +47,6 @@ interface ConversionResult {
   error: string | null;
 }
 
-/** Run a conversion, turning any thrown error into a message we can print. */
 function attempt(run: () => string): ConversionResult {
   try {
     return { output: run(), error: null };
@@ -85,8 +84,6 @@ export function EncodePanel() {
     </div>
   );
 }
-
-/* ------------------------------------------------------------- shared shell */
 
 function Converter({
   title,
@@ -193,8 +190,6 @@ function Converter({
   );
 }
 
-/* ------------------------------------------------------------------ base64 */
-
 function Base64Section() {
   const [direction, setDirection] = useState<Direction>('encode');
   const [urlSafe, setUrlSafe] = useState(false);
@@ -232,8 +227,6 @@ function Base64Section() {
     />
   );
 }
-
-/* --------------------------------------------------------------------- url */
 
 const SCOPE_OPTIONS: readonly { value: UrlScope; label: string }[] = [
   { value: 'component', label: 'Component (encodeURIComponent)' },
@@ -276,8 +269,6 @@ function UrlSection() {
   );
 }
 
-/* -------------------------------------------------------------------- html */
-
 function HtmlSection() {
   const [direction, setDirection] = useState<Direction>('encode');
   const [value, setValue] = useState('');
@@ -306,8 +297,6 @@ function HtmlSection() {
     />
   );
 }
-
-/* --------------------------------------------------------------------- jwt */
 
 function JwtSection() {
   const [token, setToken] = useState('');

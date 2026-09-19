@@ -42,18 +42,11 @@ export function imageExtension(format: ImageFormat): string {
   return format === 'jpeg' ? 'jpg' : 'png';
 }
 
-/** Roughly how big one page will come out, for the on-screen estimate. */
 export function pixelsPerPage(widthPt: number, heightPt: number, quality: ImageQualityId): number {
   const scale = QUALITY_DPI[quality] / CSS_DPI;
   return Math.round(widthPt * scale) * Math.round(heightPt * scale);
 }
 
-/**
- * Render chosen pages to PNG or JPEG with pdf.js.
- *
- * Pages are drawn and released one at a time: a single 300 DPI A4 page is
- * already ~8.7 million pixels, so holding a whole document would be fatal.
- */
 export async function pagesToImages(
   source: LoadedPdf,
   pages: readonly number[],

@@ -25,7 +25,6 @@ const DATE_FORMAT: Record<DateOrder, string> = {
   ymd: 'yyyy-mm-dd',
 };
 
-/** One spreadsheet's worth of a sheet: the header, the body, and the two extra columns. */
 interface Layout {
   header: string[];
   rows: Row[];

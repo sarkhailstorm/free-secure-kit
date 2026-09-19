@@ -1,12 +1,3 @@
-/**
- * All the PDF work, kept away from React.
- *
- * Every function here runs in the browser tab that called it. pdf-lib and
- * jszip are imported dynamically inside the functions that need them so they
- * never land in the initial page bundle, and nothing is ever sent anywhere:
- * bytes go File -> memory -> Blob -> your downloads folder.
- */
-
 import type {
   PDFContext as PdfContext,
   PDFDict as PdfDict,
@@ -20,7 +11,6 @@ import { describeGroup } from './ranges';
 import { baseName } from '@/lib/format';
 import { safeFilename } from '@/lib/download';
 
-/** A PDF the user has handed us, already parsed enough to describe. */
 export interface LoadedPdf {
   id: string;
   name: string;
@@ -46,39 +36,23 @@ export function tick(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-/**
- * Build a download name that always still ends in its extension.
- *
- * `safeFilename` caps at 180 characters, so a long original name — or a
- * scattered selection like "pages 1, 3, 5, 7, …" — would otherwise be cut off
- * mid-way and lose the ".pdf", leaving the user with an extensionless file.
- * Array spreading rather than `slice` so a trim never splits a surrogate pair.
- */
+/** Truncates the base name so the result always still ends in its extension. */
 export function downloadName(base: string, extension: string, fallback: string): string {
   const chars = [...base];
   const capped = chars.length > 120 ? `${chars.slice(0, 120).join('').trimEnd()}…` : base;
   return safeFilename(`${capped}.${extension}`, fallback);
 }
 
-/**
- * "pages 4-9" for something contiguous, but a plain count once the list is so
- * scattered that spelling it out would swamp the filename.
- */
+/** "pages 4-9" when contiguous, a plain count once the list is too scattered to spell out. */
 export function groupLabel(pages: readonly number[]): string {
   const described = describeGroup([...pages]);
   return described.length > 48 ? `${pages.length} pages` : described;
 }
 
-/**
- * Read a picked file and count its pages.
- *
- * Loading with `ignoreEncryption` left at its default is deliberate: it makes
- * pdf-lib throw for password-protected files, which is exactly the case we
- * want to report by name rather than fail mysteriously later.
- */
 export async function readPdf(file: File): Promise<LoadedPdf> {
   const { PDFDocument } = await import('pdf-lib');
   const bytes = new Uint8Array(await file.arrayBuffer());
+  // No `ignoreEncryption` on purpose: pdf-lib then throws for a password-protected file.
   const doc = await PDFDocument.load(bytes.slice(), { updateMetadata: false });
   const pageCount = doc.getPageCount();
   if (pageCount === 0) {
@@ -95,8 +69,6 @@ export async function readPdf(file: File): Promise<LoadedPdf> {
   };
 }
 
-/* ------------------------------------------------------------------ merge */
-
 /** One page of one queued file. `page` is 1-based, the way it is shown. */
 export interface PageRef {
   fileId: string;
@@ -107,7 +79,6 @@ export function planKey(ref: PageRef): string {
   return `${ref.fileId}:${ref.page}`;
 }
 
-/** Every page of every file, in file order — the plan before anything is touched. */
 export function allPages(items: readonly LoadedPdf[]): PageRef[] {
   return items.flatMap((file) =>
     Array.from({ length: file.pageCount }, (_, i) => ({ fileId: file.id, page: i + 1 })),
@@ -145,14 +116,7 @@ function checkPlan(items: readonly LoadedPdf[], plan: readonly PageRef[]): void 
   }
 }
 
-/**
- * Build one document from an explicit, ordered list of pages.
- *
- * One copyPages call per source, added in order afterwards. Copying per page
- * would be shorter but pdf-lib uses a fresh object copier per call, so shared
- * fonts and images get re-embedded for every page: measured at 11.7x the
- * output size for 12 pages, ~50x at 200.
- */
+/** One copyPages call per source: copying page by page re-embeds shared fonts and images. */
 export async function mergePdfPages(
   items: readonly LoadedPdf[],
   plan: readonly PageRef[],
@@ -190,13 +154,6 @@ export async function mergePdfPages(
   return out.save({ useObjectStreams: true, addDefaultPage: false });
 }
 
-/* ------------------------------------------------------------------ split */
-
-/**
- * Reject a page list that would silently produce nonsense — an empty document,
- * or a page that is not in the source. pdf-lib itself fails these with an
- * internal TypeError, which is no use to anyone reading the screen.
- */
 function checkPages(source: LoadedPdf, pages: readonly number[]): void {
   if (pages.length === 0) {
     throw new PdfToolsError('Choose at least one page first — an empty PDF is not much use.');
@@ -228,7 +185,6 @@ export async function extractPages(
   return out.save({ useObjectStreams: true, addDefaultPage: false });
 }
 
-/** Build one document per group of pages, named after the original file. */
 export async function splitIntoFiles(
   source: LoadedPdf,
   groups: readonly number[][],
@@ -263,8 +219,7 @@ export async function splitIntoFiles(
   return files;
 }
 
-/** Bundle several outputs into one archive. PDFs are already compressed, so
- *  the archive is stored rather than deflated — much faster, same size. */
+/** Stored rather than deflated: PDFs are already compressed, so deflating buys nothing. */
 export async function zipFiles(
   files: readonly NamedFile[],
   onProgress: (done: number, total: number) => void,
@@ -289,8 +244,6 @@ export async function zipFiles(
   });
 }
 
-/* --------------------------------------------------------------- compress */
-
 export type CompressStage = 'reading' | 'images' | 'saving';
 
 export interface CompressProgress {
@@ -308,17 +261,13 @@ export interface CompressReport {
   /** True when re-saving gained nothing, so we hand back the original file. */
   keptOriginal: boolean;
   pageCount: number;
-  /** Every image XObject in the file. */
   imagesFound: number;
-  /** Images stored as plain JPEG, which is all we can safely re-encode. */
   jpegImages: number;
-  /** Images we actually replaced with a smaller version. */
   imagesRewritten: number;
   imageBytesBefore: number;
   imageBytesAfter: number;
 }
 
-/** Keys worth carrying across to a re-encoded image. */
 const CARRY_OVER = ['SMask', 'Mask', 'Intent', 'Interpolate', 'OC', 'StructParent'];
 
 /** Below this an image is not worth the round trip through a canvas. */
@@ -334,12 +283,7 @@ function nameOf(obj: PdfObject | undefined): string | null {
   return typeof value === 'string' && value.startsWith('/') ? value.slice(1) : null;
 }
 
-/**
- * Shrink a PDF by re-encoding its JPEG images at a lower quality, plus the
- * free structural wins (object streams, dropping XMP and application private
- * data). Pure JS cannot do much more than this: images that are not stored as
- * plain JPEG are left untouched rather than risked, and the report says so.
- */
+/** Re-encodes plain-JPEG images and takes the free structural wins; other images are left untouched. */
 export async function compressPdf(
   source: LoadedPdf,
   quality: number,
@@ -356,7 +300,6 @@ export async function compressPdf(
   const ctx = doc.context;
   const pageCount = doc.getPageCount();
 
-  // --- free wins: XMP packets and editor scratch data are often several KB.
   doc.catalog.delete(PDFName.of('Metadata'));
   doc.catalog.delete(PDFName.of('PieceInfo'));
   for (const page of doc.getPages()) {
@@ -367,7 +310,6 @@ export async function compressPdf(
   const resolve = (dict: PdfDict, key: string): PdfObject | undefined =>
     ctx.lookup(dict.get(PDFName.of(key)));
 
-  // --- find the image XObjects we are allowed to touch.
   const candidates: { ref: PdfRef; stream: PdfRawStream }[] = [];
   let imagesFound = 0;
 
@@ -377,13 +319,11 @@ export async function compressPdf(
     if (nameOf(resolve(dict, 'Subtype')) !== 'Image') continue;
     imagesFound++;
 
-    // Stencil masks are 1-bit; a Decode array may invert the samples. Both
-    // would be silently corrupted by a round trip through a canvas.
+    // A stencil mask or an inverting Decode array would be silently corrupted by a canvas round trip.
     const imageMask = resolve(dict, 'ImageMask');
     if (imageMask instanceof PDFBool && imageMask.asBoolean()) continue;
     if (resolve(dict, 'Decode')) continue;
-    // A colour-key mask is expressed in the *original* colour space, which we
-    // are about to replace with DeviceRGB.
+    // A colour-key mask is expressed in the original colour space, which becomes DeviceRGB below.
     if (resolve(dict, 'Mask') instanceof PDFArray) continue;
 
     const filter = resolve(dict, 'Filter');
@@ -431,8 +371,7 @@ export async function compressPdf(
         imageBytesAfter += reencoded.byteLength;
       }
     } catch {
-      // An image the browser cannot decode (CMYK oddity, JPEG the decoder
-      // rejects) simply stays as it was. Never fatal.
+      // An image the browser cannot decode simply stays as it was. Never fatal.
     }
 
     onProgress({ stage: 'images', done: i + 1, total: jpegImages });
@@ -441,8 +380,7 @@ export async function compressPdf(
   onProgress({ stage: 'saving', done: 0, total: 0 });
   await tick();
 
-  // Everything we just unlinked — and anything the document had already
-  // orphaned — would otherwise be written straight back out.
+  // pdf-lib would otherwise write the objects we just unlinked straight back out.
   dropUnreachableObjects(ctx, lib);
 
   const rebuilt = await doc.save({ useObjectStreams: true, addDefaultPage: false });
@@ -463,19 +401,6 @@ export async function compressPdf(
   };
 }
 
-/**
- * Delete indirect objects that nothing points at any more.
- *
- * pdf-lib faithfully writes back every object it parsed, including ones the
- * document itself abandoned: XMP packets we just unlinked, editor scratch
- * data, whole revisions left behind by an incremental save. Walking the graph
- * from the trailer and dropping the unreachable remainder is the only
- * structural saving available without touching page content.
- *
- * It is deliberately all-or-nothing. The reachable set is built first, and if
- * anything at all goes wrong while building it, not a single object is
- * removed and the document is saved exactly as it was parsed.
- */
 function dropUnreachableObjects(
   ctx: PdfContext,
   lib: typeof import('pdf-lib'),
@@ -534,14 +459,8 @@ interface Reencoded {
   height: number;
 }
 
-/**
- * Decode a JPEG, redraw it at its original size, and re-encode it at the
- * requested quality. Dimensions are preserved on purpose so that any soft
- * mask attached to the image still lines up.
- */
 async function reencodeJpeg(jpeg: Uint8Array, quality: number): Promise<Reencoded | null> {
-  // `none` keeps the stored sample order: a PDF positions an image itself, so
-  // honouring an EXIF orientation tag here would rotate it on the page.
+  // A PDF positions an image itself, so honouring an EXIF orientation tag here would rotate it.
   const bitmap = await createImageBitmap(new Blob([jpeg], { type: 'image/jpeg' }), {
     imageOrientation: 'none',
   });
@@ -576,10 +495,6 @@ async function reencodeJpeg(jpeg: Uint8Array, quality: number): Promise<Reencode
   return { bytes, byteLength: bytes.byteLength, width, height };
 }
 
-/**
- * The honest summary shown after compressing. It never invents a saving, and
- * explains *why* when there was nothing to gain.
- */
 export function summariseCompression(report: CompressReport): {
   tone: 'good' | 'flat';
   headline: string;

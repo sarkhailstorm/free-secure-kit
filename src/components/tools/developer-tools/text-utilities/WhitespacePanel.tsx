@@ -25,7 +25,6 @@ import {
   WarnNote,
 } from './shared';
 
-/** Above this we stop recomputing on every keystroke. */
 const LIVE_LIMIT = 1_000_000;
 
 const TAB_OPTIONS: readonly { value: TabMode; label: string }[] = [
@@ -257,8 +256,6 @@ export function WhitespacePanel() {
           ) : (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                {/* Expanding tabs or switching to CRLF makes the text longer,
-                    so this has to be able to count upwards as well. */}
                 <Pill tone={charsSaved > 0 ? 'ok' : 'neutral'}>
                   {charsSaved > 0
                     ? `−${charsSaved.toLocaleString()} chars`

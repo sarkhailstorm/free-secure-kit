@@ -366,7 +366,6 @@ export function WordPanel() {
           <div className="flex flex-col gap-4 p-5">
             <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <Stat label="Pages" value={result.report.pageCount} />
-              {/* Exact mode builds boxes, not paragraphs and tables, so it counts what it made. */}
               {result.report.mode === 'exact' ? (
                 <Stat label="Boxes" value={result.report.paragraphs} />
               ) : (

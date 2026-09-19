@@ -76,15 +76,6 @@ const viewTabs = [
 /** Rows drawn in the preview, and the size of one page of removed rows. */
 const PAGE = 100;
 
-/**
- * Everything the user has said about one sheet.
- *
- * Held per sheet so moving between the sheets of a workbook and back does not
- * throw any of it away. `options.spellingMerges` is never written here — the
- * plan is built from `accepted` instead, because the groups themselves are
- * worked out on a grid with no merges applied and would otherwise vanish the
- * moment one was accepted.
- */
 interface SheetState {
   options: CleanOptions;
   accepted: Record<string, AcceptedCluster>;
@@ -115,12 +106,6 @@ function seedFor(sheet: ParsedSheet): SheetSeed {
   };
 }
 
-/**
- * What survives reading the same file a different way.
- *
- * A plain yes-or-no answer always does. Anything that points at a particular
- * row or column only does while the sheet still has the same number of them.
- */
 function carrySheet(
   state: SheetState,
   was: ParsedSheet,
@@ -179,7 +164,6 @@ function carryAnswers(
   return { states: next, dropped };
 }
 
-/** A short question over the page, for the one thing that cannot be undone. */
 function Ask({
   title,
   children,
@@ -253,7 +237,6 @@ function optionsWithMerges(state: SheetState): CleanOptions {
     : { ...state.options, spellingMerges: merges };
 }
 
-/** Column names as the file itself has them, for the Original view. */
 function originalHeader(sheet: ParsedSheet, headerRowIndex: number | null): string[] {
   const row = headerRowIndex === null ? undefined : sheet.rows[headerRowIndex];
   return Array.from(
@@ -265,16 +248,12 @@ function originalHeader(sheet: ParsedSheet, headerRowIndex: number | null): stri
 export function SpreadsheetTools() {
   const toast = useToast();
 
-  // The File is kept so the reading choices can be changed; the bytes are not,
-  // because holding them doubles the memory a large file already costs.
   const [file, setFile] = useState<File | null>(null);
   const [parsed, setParsed] = useState<ParsedFile | null>(null);
   const [readOptions, setReadOptions] = useState<ReadOptions>({});
   const [sheetIndex, setSheetIndex] = useState(0);
   const [states, setStates] = useState<Record<number, SheetState>>({});
   const [selected, setSelected] = useState<ReadonlySet<number>>(new Set());
-  // Sheets the user has actually had on screen. Nothing is quietly deleted
-  // from a sheet they have never looked at.
   const [visited, setVisited] = useState<ReadonlySet<number>>(new Set());
 
   const [view, setView] = useState<View>('cleaned');
@@ -300,8 +279,7 @@ export function SpreadsheetTools() {
     statesRef.current = states;
   }, [parsed, states]);
 
-  // A file dropped anywhere else on the page opens in the browser and takes
-  // every answer with it, so the whole window is held shut while one is loaded.
+  // A file dropped anywhere else on the page would open in the browser and lose every answer.
   const loaded = parsed !== null;
   useEffect(() => {
     if (!loaded) return;
@@ -321,8 +299,7 @@ export function SpreadsheetTools() {
     };
   }, [loaded, toast]);
 
-  // Scored once per sheet, on the rows as they were read. Nothing in here may
-  // depend on a cleaning option, or the picture would move under the user.
+  // Nothing in here may depend on a cleaning option, or the picture would move under the user.
   const seeds = useMemo(() => {
     const map = new Map<number, SheetSeed>();
     if (parsed) for (const each of parsed.sheets) map.set(each.index, seedFor(each));
@@ -337,9 +314,7 @@ export function SpreadsheetTools() {
   const context = useMemo(() => ({ indexColumn: structure?.indexColumn ?? null }), [structure]);
   const options = useMemo(() => optionsWithMerges(state), [state]);
 
-  // Always from the ORIGINAL rows, never from a previous result, so flipping a
-  // toggle twice lands exactly where it started. `bare` is the same pass with
-  // no spelling merges — the grid the groups below are worked out on.
+  // Always from the ORIGINAL rows; `bare` is the same pass with no spelling merges.
   const bare = useMemo(
     () => (sheet ? cleanSheet(sheet, state.options, context) : null),
     [sheet, state.options, context],
@@ -349,8 +324,6 @@ export function SpreadsheetTools() {
     return options === state.options ? bare : cleanSheet(sheet, options, context);
   }, [sheet, bare, options, state.options, context]);
 
-  // Rows the user asked to keep go back in after the pass, never as an option
-  // inside it.
   const shown = useMemo(
     () => (outcome ? applyRescues(outcome, state.rescues) : null),
     [outcome, state.rescues],
@@ -372,9 +345,7 @@ export function SpreadsheetTools() {
   const checks = useMemo(() => {
     if (!deferredCheckInput) return null;
     const report = runChecks(deferredCheckInput);
-    // A workbook's error cells are found while reading, and the checks stand
-    // their own scan down when that has happened — so they need carrying over
-    // by hand or nothing puts them on screen.
+    // The checks stand their own scan down for a workbook, so error cells are carried over here.
     if (report.findings.some((finding) => finding.kind === 'excel-error-cells')) return report;
     const carried = deferredCheckInput.sheet.issues
       .filter((issue) => issue.kind === 'excel-error-cells' && issue.count > 0)
@@ -414,8 +385,6 @@ export function SpreadsheetTools() {
   }, [state.accepted]);
   const ignoredIds = useMemo(() => new Set(state.ignored), [state.ignored]);
 
-  // The filter runs over every surviving row before the first hundred are cut,
-  // so the count underneath the table is the honest one.
   const preview = useMemo(() => {
     if (!shown) return { rows: [] as PreviewRow[], total: 0 };
     const changed = shown.changes.rowChanged;
@@ -453,14 +422,10 @@ export function SpreadsheetTools() {
     };
   }, [sheet, outcome, state.options.headerRowIndex]);
 
-  // Listed from the pass itself, not from the rescued result, so a row already
-  // being kept still has its Undo.
+  // From the pass itself, not the rescued result, so a row already kept still has its Undo.
   const removed = useMemo(() => {
     if (!sheet || !outcome) return { rows: [] as RemovedRow[], total: 0 };
-    // The pass records the heading row alongside the rows it took out, but a
-    // heading row being used as the heading is not a removal — it is never
-    // counted here and never listed. One extra row is asked for so dropping it
-    // still leaves a full page.
+    // One extra row is asked for so dropping the heading row still leaves a full page.
     const selection = selectRows(outcome, 'removed', 0, removedLimit + 1);
     const heading = state.options.headerRowIndex;
     const rows = selection.indexes
@@ -519,8 +484,6 @@ export function SpreadsheetTools() {
     [prepared],
   );
 
-  // Sheets ticked to save that would lose rows the user has never seen. They
-  // have no preview and no Keep button, so nothing may go without a word.
   const unseen = useMemo(
     () => prepared.filter((each) => each.losing > 0 && !visited.has(each.index)),
     [prepared, visited],
@@ -538,15 +501,13 @@ export function SpreadsheetTools() {
   );
   const formulaRisks = useMemo(() => countFormulaRisks(writable, format), [writable, format]);
 
-  // The date columns are only worked out while normalising is on, so the count
-  // is remembered — otherwise switching it off claims the sheet has no dates.
+  // Remembered because the date columns are only worked out while normalising is on.
   const dateCounts = useRef(new Map<number, number>());
   if (outcome && state.options.normaliseDates) {
     dateCounts.current.set(sheetIndex, outcome.dateColumns.length);
   }
   const dateColumnCount = dateCounts.current.get(sheetIndex) ?? 0;
 
-  // ── Loading ───────────────────────────────────────────────────────────
   const open = useCallback(
     async (next: File, read: ReadOptions, again: boolean) => {
       const previous = parsedRef.current;
@@ -562,9 +523,7 @@ export function SpreadsheetTools() {
         setParsed(result);
 
         if (again && previous) {
-          // Reading the same file another way keeps every answer it can. Only
-          // a re-read gets here, and that always lands on one sheet, so which
-          // sheet is open and which are ticked are left exactly as they were.
+          // A re-read lands on one sheet, so the open and ticked sheets are left alone.
           const carried = carryAnswers(statesRef.current, previous, result);
           setStates(carried.states);
           if (carried.dropped) {
@@ -587,16 +546,12 @@ export function SpreadsheetTools() {
           setSelected(new Set(usable.map((s) => s.index)));
         }
 
-        // Only follow the file's own separator while the user has not picked
-        // one of their own.
         if (!delimiterPicked.current) setOutputDelimiter(result.delimiter?.delimiter ?? ',');
       } catch (err) {
         const message =
           err instanceof ParseFailure
             ? err.message
             : 'That file could not be read. If it is a spreadsheet, try re-saving it as .csv or .xlsx.';
-        // A file already open stays open: a file that will not read is no
-        // reason to throw away the one that did.
         if (previous) {
           toast.error(message);
         } else {
@@ -644,7 +599,6 @@ export function SpreadsheetTools() {
     setRemovedLimit(PAGE);
   }, []);
 
-  // ── Answers, all kept per sheet ───────────────────────────────────────
   const update = useCallback(
     (change: (previous: SheetState) => SheetState) => {
       setStates((previous) => {
@@ -733,7 +687,6 @@ export function SpreadsheetTools() {
   );
 
   const onSheetChange = useCallback((index: number) => {
-    // Every answer belongs to a sheet and stays with it — nothing is cleared.
     setSheetIndex(index);
     setVisited((previous) => (previous.has(index) ? previous : new Set([...previous, index])));
     setRemovedOpen(false);
@@ -742,7 +695,6 @@ export function SpreadsheetTools() {
     setView('cleaned');
   }, []);
 
-  // ── Saving ────────────────────────────────────────────────────────────
   const onSave = useCallback(async () => {
     if (!parsed || writable.length === 0) return;
     setAsking(false);
@@ -755,8 +707,7 @@ export function SpreadsheetTools() {
           format,
           delimiter: outputDelimiter,
           escapeFormulas,
-          // Excel wrote this line itself; without it the file it made no
-          // longer opens the way it opened before.
+          // Excel wrote this line itself; without it the file it made opens differently.
           declaredSeparator: parsed.delimiter?.sepLine != null,
           sheets: writable.map((each) => each.index),
         },
@@ -780,7 +731,6 @@ export function SpreadsheetTools() {
     else void onSave();
   }, [unseen, onSave]);
 
-  // ── Empty state ───────────────────────────────────────────────────────
   if (!parsed || !sheet || !structure || !outcome || !shown) {
     return (
       <div className="animate-fade-in">
@@ -836,7 +786,6 @@ export function SpreadsheetTools() {
     );
   }
 
-  // ── Loaded state ──────────────────────────────────────────────────────
   const busy = reading || writing;
 
   return (
@@ -863,10 +812,7 @@ export function SpreadsheetTools() {
 
       <ChecksPanel report={checks} />
 
-      {/* `min-w-0` on both columns matters: a grid item defaults to
-          min-width:auto, so without it the widest unbreakable thing inside
-          (a long option hint, a wide preview row) sets the column's floor and
-          the whole page scrolls sideways on a phone. */}
+      {/* `min-w-0`: a grid item's min-width:auto lets a wide row scroll the page sideways. */}
       <div className="grid gap-5 lg:grid-cols-12">
         <div className="min-w-0 space-y-5 lg:col-span-5 xl:col-span-4">
           <SheetsPanel

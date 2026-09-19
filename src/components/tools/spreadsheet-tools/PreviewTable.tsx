@@ -6,11 +6,7 @@ import { plural } from '@/lib/format';
 import { cellChangeReasonLabels } from '@/lib/csv-cleaner/changes';
 import type { CellChangeReason } from '@/lib/csv-cleaner/types';
 
-/**
- * Only ever draws `limit` rows. A 50,000-row sheet is perfectly normal here and
- * building that many DOM nodes would lock the tab up. The filter is applied to
- * the whole sheet before the window is cut, so `total` is the honest count.
- */
+/** Rows drawn at once; a 50,000-row sheet would lock the tab up. */
 const LIMIT = 100;
 
 export interface PreviewCellChange {
@@ -24,13 +20,11 @@ export interface PreviewRow {
   /** ORIGINAL row index; the row number shown is this plus one. */
   sourceIndex: number;
   cells: readonly string[];
-  /** Cells this pass changed. Left out on the original view. */
   changes?: readonly PreviewCellChange[];
 }
 
 export type PreviewFilter = 'all' | 'changed';
 
-/** Plain rows for the original view, where nothing has been changed. */
 export function toPreviewRows(rows: readonly string[][], startIndex = 0): PreviewRow[] {
   return rows.map((cells, i) => ({ sourceIndex: startIndex + i, cells }));
 }
@@ -44,12 +38,10 @@ function hoverText(cell: string, change: PreviewCellChange | undefined): string 
 
 export interface PreviewTableProps {
   header: readonly string[];
-  /** One window of rows, already filtered; at most `limit` are drawn. */
   rows: readonly PreviewRow[];
   /** Rows the filter matched across the WHOLE sheet. */
   total: number;
   filter?: PreviewFilter;
-  /** The filter control is hidden when this is absent. */
   onFilterChange?: (filter: PreviewFilter) => void;
   limit?: number;
 }
@@ -133,8 +125,7 @@ export function PreviewTable({
               </tr>
             ) : (
               visible.map((row, r) => {
-                // The row-number cell is sticky, so its background has to be
-                // painted per-cell rather than on the <tr>.
+                // The row-number cell is sticky, so zebra must be painted per-cell.
                 const zebra = r % 2 === 1 ? 'bg-bg' : 'bg-surface';
                 const changes = new Map((row.changes ?? []).map((c) => [c.column, c]));
                 return (

@@ -10,18 +10,6 @@ import {
   type RenderedPhoto,
 } from './types';
 
-/**
- * Painting the finished photo.
- *
- * The crop planned in layout.ts is a rectangle of the photo the user picked,
- * and it is allowed to run off the edge: someone who cropped their photo close
- * to the hair still gets a preview with the missing strip filled in, rather
- * than an error. So every draw here trims the rectangle to the photo first and
- * works out where the surviving part lands, instead of handing the browser a
- * source rectangle with a corner outside the image. Some browsers throw on one
- * of those, and others quietly stretch it.
- */
-
 function context2d(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   const context = canvas.getContext('2d');
   if (!context) throw new PassportPhotoError('This browser wouldn\u2019t provide a 2D canvas.');
@@ -35,37 +23,22 @@ function release(canvas: HTMLCanvasElement): void {
   canvas.height = 0;
 }
 
-/** A flat colour to paint, and the cut-out to lift the person out with. */
 interface Replacement {
   colour: string;
   mask: MaskData;
 }
 
-/**
- * Whether the background is really being replaced.
- *
- * Asking for a colour is not enough on its own: without a cut-out there is no
- * way to tell the person from the wall, so the photo keeps the background it
- * came with.
- */
 function replacement(options: RenderOptions, mask: MaskData | null): Replacement | null {
   if (options.background.kind !== 'colour') return null;
   if (!mask || mask.width < 1 || mask.height < 1) return null;
   return { colour: options.background.colour, mask };
 }
 
-/** The lightest colour the spec allows, for the part the photo does not reach. */
 function fallbackColour(spec: PhotoSpec): string {
   return spec.background.swatches[0] ?? '#ffffff';
 }
 
-/**
- * Draw `crop` of `source` so that it fills a `width` x `height` canvas.
- *
- * `crop` is in the source's own pixels and may be fractional, and may sit partly
- * or wholly outside it. Only the overlapping part is drawn, at the place in the
- * output it belongs.
- */
+/** Only the part of `crop` inside `source` is drawn: browsers differ on a rectangle that runs outside. */
 function paintCrop(
   context: CanvasRenderingContext2D,
   source: ImageBitmap | HTMLCanvasElement,
@@ -97,12 +70,7 @@ function paintCrop(
   );
 }
 
-/**
- * The cut-out as a white image whose alpha channel is the coverage.
- *
- * White everywhere keeps the edges clean: the browser blends colour as well as
- * alpha when it scales this up, and white against white cannot fringe.
- */
+/** White everywhere with coverage in alpha, so scaling it up cannot fringe the edges. */
 function toStencil(mask: MaskData): ImageData {
   const stencil = new ImageData(mask.width, mask.height);
   const out = stencil.data;
@@ -117,7 +85,6 @@ function toStencil(mask: MaskData): ImageData {
   return stencil;
 }
 
-/** The same rectangle, measured in the cut-out's smaller pixels. */
 function inMaskPixels(crop: Crop, bitmap: ImageBitmap, mask: MaskData): Crop {
   const across = mask.width / bitmap.width;
   const down = mask.height / bitmap.height;
@@ -143,8 +110,7 @@ export function drawPhoto(
   target.height = layout.outputHeight;
   const context = context2d(target);
 
-  // A colour the browser cannot read leaves fillStyle as it was, so start from
-  // white rather than the canvas default of black.
+  // An unreadable colour leaves fillStyle as it was, so start from white not black.
   context.fillStyle = '#ffffff';
   context.fillStyle = swap ? swap.colour : fallbackColour(options.spec);
   context.fillRect(0, 0, layout.outputWidth, layout.outputHeight);
@@ -166,8 +132,6 @@ export function drawPhoto(
     stencil.height = swap.mask.height;
     context2d(stencil).putImageData(toStencil(swap.mask), 0, 0);
 
-    // The cut-out is much smaller than the photo, so it is scaled up smoothly
-    // here: a nearest-neighbour edge would come out as visible steps.
     cut.globalCompositeOperation = 'destination-in';
     paintCrop(
       cut,
@@ -194,14 +158,12 @@ function photoFilename(spec: PhotoSpec, format: RenderOptions['format']): string
   return `${safeFilename(name, 'passport photo')}.${extensionFor(format)}`;
 }
 
-/** Paint the finished photo on a canvas of its own and encode it as a file. */
 export async function renderPhoto(
   bitmap: ImageBitmap,
   options: RenderOptions,
   mask: MaskData | null,
 ): Promise<RenderedPhoto> {
-  // toBlob answers null for a photo with no pixels in it as well as for one
-  // that is too big, so the small case is caught here to keep them apart.
+  // toBlob answers null for an empty canvas as well as an oversized one, so catch the small case here.
   if (options.layout.outputWidth < 1 || options.layout.outputHeight < 1) {
     throw new PassportPhotoError(
       'That size is too small to save. Check the width and height you asked for.',
@@ -232,14 +194,7 @@ export async function renderPhoto(
   }
 }
 
-/**
- * Where the crown, chin and eye lines sit, as a share of the photo's height
- * measured down from the top, so a preview can draw them without repeating the
- * sums.
- *
- * A value below 0 or above 1 means that line falls off the photo, which is what
- * a crop that does not fit looks like.
- */
+/** Each line as a share of the photo's height from the top; outside 0 to 1 means it falls off the photo. */
 export function guideOverlay(
   layout: Layout,
   spec: PhotoSpec,

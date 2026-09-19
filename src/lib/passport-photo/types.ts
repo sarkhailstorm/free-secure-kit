@@ -1,11 +1,3 @@
-/**
- * Shared types for Passport Photos.
- *
- * Every length a document authority publishes is in millimetres, so that is the
- * unit here too. Pixels only appear where something is measured on the photo
- * the user picked, and those are always source pixels.
- */
-
 export type SpecId =
   | 'uk-passport'
   | 'uk-driving-licence'
@@ -20,15 +12,12 @@ export type SpecId =
   | 'icao-51x51'
   | 'custom';
 
-/** What the authority says about the background. */
 export interface BackgroundRule {
-  /** Shown to the user, e.g. "Plain light grey or cream". */
   label: string;
   /** Swatches that satisfy the rule, lightest first. */
   swatches: readonly string[];
 }
 
-/** What a digital copy has to be, where the authority accepts one. */
 export interface DigitalRule {
   minPx: number;
   maxPx?: number;
@@ -38,9 +27,7 @@ export interface DigitalRule {
 
 export interface PhotoSpec {
   id: SpecId;
-  /** Grouping in the picker. */
   country: string;
-  /** Shown in the picker, e.g. "Passport". */
   document: string;
   widthMm: number;
   heightMm: number;
@@ -52,11 +39,8 @@ export interface PhotoSpec {
   eyeMaxMm?: number;
   background: BackgroundRule;
   digital?: DigitalRule;
-  /** Dots per inch for a print at the size above. */
   dpi: number;
-  /** The page these numbers were taken from. */
   source: string;
-  /** Things the numbers do not say but a person needs to know. */
   notes?: readonly string[];
 }
 
@@ -71,15 +55,9 @@ export interface FaceDetection {
   points: readonly (readonly [number, number])[];
 }
 
-/** How a number was arrived at. */
 export type Origin = 'detected' | 'estimated' | 'manual';
 
-/**
- * The four numbers a passport crop needs, in source pixels.
- *
- * `crownY` is the top of the head including hair, which is what every authority
- * measures to — not the top of the forehead.
- */
+/** In source pixels. `crownY` is the top of the head including hair, not the forehead. */
 export interface Measurements {
   crownY: number;
   chinY: number;
@@ -96,13 +74,11 @@ export interface Crop {
   height: number;
 }
 
-/** A crop worked out from a spec and a set of measurements. */
 export interface Layout {
   crop: Crop;
   /** Output size in pixels at the spec's dpi. */
   outputWidth: number;
   outputHeight: number;
-  /** The chin-to-crown height this layout achieves. */
   headMm: number;
   /** Gap from the top edge down to the crown. */
   crownMm: number;
@@ -130,13 +106,10 @@ export type CheckId =
 export interface Check {
   id: CheckId;
   severity: Severity;
-  /** One sentence, already fit to show. */
   message: string;
-  /** What to do about it, where there is something to do. */
   fix?: string;
 }
 
-/** What the tool learned about the photo before any crop was chosen. */
 export interface Analysis {
   bitmap: ImageBitmap;
   /** Every face found, best score first. */
@@ -146,7 +119,6 @@ export interface Analysis {
   mask: MaskData | null;
   background: { spread: number; colour: readonly [number, number, number] } | null;
   fileBytes: number;
-  /** True when the photo was scaled down to stay inside the pixel cap. */
   resized: boolean;
 }
 
@@ -175,13 +147,11 @@ export interface RenderedPhoto {
   filename: string;
 }
 
-/** A sheet of prints, for a shop that prints photos but not passport photos. */
 export interface SheetSpec {
   id: string;
   label: string;
   widthMm: number;
   heightMm: number;
-  /** Shown in the picker so a person can pick what their shop offers. */
   hint: string;
 }
 
@@ -195,7 +165,7 @@ export interface AnalysisProgress {
 
 export type ProgressHandler = (progress: AnalysisProgress) => void;
 
-/** An error we raised ourselves, whose message is already fit to show. */
+/** Raised by this tool; the message is already fit to show the user. */
 export class PassportPhotoError extends Error {
   constructor(message: string) {
     super(message);

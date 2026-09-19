@@ -1,4 +1,3 @@
-/* ---------- units ---------- */
 export type Pt = number;
 export type Twip = number;
 export type HalfPt = number;
@@ -13,7 +12,6 @@ export interface Rect {
   h: Pt;
 }
 
-/* ---------- fonts ---------- */
 export type Generic = 'serif' | 'sans-serif' | 'monospace';
 
 export interface FontInfo {
@@ -34,7 +32,6 @@ export interface FontInfo {
   descent: number;
 }
 
-/* ---------- text ---------- */
 export type RenderMode = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 /** One pdf.js text item after enrichment, or a colour-split piece of one. */
@@ -58,7 +55,6 @@ export interface Span {
   repaired?: 'pua' | 'ligature' | 'symbolic-dropped';
 }
 
-/* ---------- graphics ---------- */
 export interface RuleSeg {
   axis: 'h' | 'v';
   /** Centre line: y for 'h', x for 'v'. */
@@ -90,7 +86,6 @@ export interface LinkBox {
   url: string;
 }
 
-/* ---------- struct tree ---------- */
 export type StructRole = string;
 
 export interface StructBlock {
@@ -118,7 +113,6 @@ export interface StructIndex {
   tables: StructTable[];
 }
 
-/* ---------- page ---------- */
 export type PageClass = 'text' | 'searchableScan' | 'imageOnly' | 'blank' | 'rasterFallback';
 
 export type DegradeReason =
@@ -158,7 +152,6 @@ export interface PageFacts {
   raster?: { bytes: Uint8Array; type: 'png' | 'jpg'; w: number; h: number };
 }
 
-/* ---------- layout ---------- */
 export interface Fragment {
   x0: Pt;
   x1: Pt;
@@ -280,7 +273,6 @@ export type ConversionNote =
   | { code: 'untagged'; pages: number[] }
   | { code: 'rtl'; pages: number[] };
 
-/* ---------- public surface ---------- */
 export type WordMode = 'editable' | 'exact';
 
 export interface WordOptions {

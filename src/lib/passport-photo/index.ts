@@ -39,7 +39,6 @@ export { clearDownloads } from '@/lib/assets';
 export { PassportPhotoError } from './types';
 export type * from './types';
 
-/** Everything this tool needs on the device before it can look at a photo. */
 const NEEDED: readonly AssetId[] = ['engine', 'yunet', 'modnet'];
 
 const CUTTER_KEY = 'cutter:person';
@@ -107,12 +106,6 @@ async function decode(file: File): Promise<{ bitmap: ImageBitmap; resized: boole
   }
 }
 
-/**
- * A small copy of the photo, for judging the background.
- *
- * The full photo can be 16 megapixels, and holding a second copy of that as
- * raw bytes is 64 MB for a question that a thumbnail answers just as well.
- */
 function smallCopy(bitmap: ImageBitmap): ImageData {
   const scale = Math.min(1, 512 / Math.max(bitmap.width, bitmap.height));
   const width = Math.max(1, Math.round(bitmap.width * scale));
@@ -130,13 +123,7 @@ function smallCopy(bitmap: ImageBitmap): ImageData {
   }
 }
 
-/**
- * Look at one photo: find the face, cut the person out, and measure the head.
- *
- * The models are fetched on the first call and never again. Nothing leaves the
- * device at any point — the only request made is for the tool's own files, from
- * this site.
- */
+/** Find the face, cut the person out and measure the head. The models download on the first call. */
 export async function analysePhoto(
   file: File,
   signal?: AbortSignal,
@@ -182,8 +169,7 @@ export async function analysePhoto(
     }
 
     report('starting', null, 'Starting the photo checker…');
-    // Both stay open together: the face finder answers where the eyes are and
-    // the cutter answers where the hair ends, and a crop needs both.
+    // Both sessions stay open together: a crop needs the eyes and the hairline.
     await releaseSessions([CUTTER_KEY, FACE_KEY]);
     const faceSession = await getSession(FACE_KEY, assets.yunet, assets.engine);
     const cutterSession = await getSession(CUTTER_KEY, assets.modnet);
@@ -199,8 +185,7 @@ export async function analysePhoto(
       mask = toMask(await segment(cutterSession, 'person', bitmap, signal));
     } catch (err) {
       if (signal?.aborted) throw err;
-      // Without a cut-out the crown is a guess rather than a measurement, which
-      // the editor says out loud. It is not worth failing the whole photo over.
+      // Without a cut-out the crown is a guess; not worth failing the whole photo.
     }
     throwIfAborted(signal);
 
@@ -227,7 +212,6 @@ export async function release(): Promise<void> {
   await releaseSessions();
 }
 
-/** Turn whatever was thrown into one sentence a person can act on. */
 export function describePassportError(err: unknown, filename?: string): string {
   if (err instanceof Error && err.name === 'PassportPhotoError') return err.message;
   if (err instanceof Error && err.name === 'DownloadError') return err.message;

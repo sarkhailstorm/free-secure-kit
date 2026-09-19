@@ -1,13 +1,3 @@
-/**
- * Turning library exceptions into sentences a person can act on.
- *
- * Two failures dominate real-world use: the file is password-protected, and
- * the file is not really a PDF (renamed, truncated, or half-downloaded).
- * Both throw from deep inside pdf-lib / pdf.js with messages written for
- * developers, so they are translated here. The first now has an answer on this
- * page rather than somewhere else, so the message points at it.
- */
-
 const ENCRYPTED =
   /encrypt|password|PasswordException|EncryptedPDFError|permissions? password/i;
 
@@ -49,7 +39,6 @@ export function describePdfError(err: unknown, filename?: string): string {
     : `Couldn’t read ${label}. It may be corrupt or password-protected.`;
 }
 
-/** True when the file the user picked is plausibly a PDF at all. */
 export function looksLikePdf(file: File): boolean {
   return (
     file.type === 'application/pdf' ||

@@ -29,7 +29,6 @@ const RULES: readonly { term: string; body: string }[] = [
   },
 ];
 
-/** Collapsed by default — the rules only matter once something looks odd. */
 export function HowItWorks() {
   return (
     <details className="group rounded-2xl border border-line bg-surface shadow-card">

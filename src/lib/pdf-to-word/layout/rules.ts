@@ -19,12 +19,7 @@ const TWIN_INSET_MAX: Pt = 8;
 const MIN_RULE_THICK: Pt = 0.24;
 const EPS: Pt = 0.01;
 
-/**
- * One painted subpath's device-space bbox becomes a rule, a fill or nothing.
- *
- * The thin axis decides: Word draws a table border as a filled rectangle and LibreOffice strokes
- * the same border as a line, and only a bbox test sees both.
- */
+/** One painted subpath's device-space bbox becomes a rule, a fill or nothing; the thin axis decides. */
 export function classifyPath(bbox: Rect, colour: string | null, strokeWidthPt = 0): PathShape {
   const short = Math.min(bbox.w, bbox.h);
   const long = Math.max(bbox.w, bbox.h);
@@ -46,8 +41,7 @@ export function classifyPath(bbox: Rect, colour: string | null, strokeWidthPt = 
   if (short > RULE_THICK_MAX) {
     return { kind: 'fill', box: { rect: { x: bbox.x, y: bbox.y, w: bbox.w, h: bbox.h }, colour } };
   }
-  // Word joins its per-cell border rects with a 0.48 pt square at every corner: 72 of them on
-  // forms-like p1, which would trip VECTOR_ART_PATHS and rasterise a page that has no art on it.
+  // Word joins its per-cell border rects with a 0.48 pt corner square that would otherwise trip VECTOR_ART_PATHS.
   return { kind: 'art', degenerate: long <= RULE_THICK_MAX };
 }
 
@@ -55,23 +49,13 @@ export function collectRules(scan: RuleScan): { rules: RuleSeg[]; fills: FillBox
   return { rules: mergeCollinear(scan.rules), fills: dedupeFills(scan.fills) };
 }
 
-/**
- * Collapse the per-cell edges Word emits into the whole-table lines LibreOffice strokes.
- *
- * Word writes one thin rectangle per cell edge — 24 horizontal segments where LibreOffice writes 6
- * — and the two producers only agree on a grid once both have been through here.
- */
+/** Collapses the per-cell edges Word emits into the whole-table lines LibreOffice strokes. */
 export function mergeCollinear(rules: readonly RuleSeg[]): RuleSeg[] {
   const merged = [...mergeAxis(rules, 'h'), ...mergeAxis(rules, 'v')];
   return merged.sort(byPlacement);
 }
 
-/**
- * Split rules into the boxes they actually draw.
- *
- * A horizontal and a vertical rule join when each crosses the other's span. Without this,
- * forms-like's ten separate bordered boxes read as one 7x17 lattice.
- */
+/** Splits rules into the boxes they draw: two rules join when each crosses the other's span. */
 export function components(rules: readonly RuleSeg[]): RuleSeg[][] {
   const parent = rules.map((_, i) => i);
   const find = (start: number): number => {

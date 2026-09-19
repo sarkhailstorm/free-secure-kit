@@ -1,19 +1,3 @@
-/**
- * Flattening nested data into dot-notation columns, and rebuilding it again.
- *
- * The contract, in one place, so a round trip is predictable:
- *
- *   { address: { city: 'London' } }   ->  column  address.city
- *   { tags: ['a', 'b'] }              ->  columns tags.0, tags.1
- *   { 'a.b': 1 }                      ->  column  a\.b        (escaped dot)
- *   { '0': 'x' }                      ->  column  \0          (escaped digits)
- *   {} / []                           ->  the literal cells {} and []
- *
- * Coming back, a path segment made only of digits rebuilds an array; anything
- * else rebuilds an object. Escaping is what keeps a key that legitimately
- * contains a dot — or that looks like an array index — from changing shape.
- */
-
 import {
   MAX_ARRAY_INDEX,
   MAX_DEPTH,
@@ -84,13 +68,7 @@ export function splitPath(path: string): PathSegment[] {
   return segments;
 }
 
-/* ------------------------------------------------------------------ flatten */
-
-/**
- * `prefix` is null only at the root — an empty *string* prefix is a real path,
- * produced by the (legal, if odd) object key `""`, and must not be confused
- * with "no path yet" or it would silently overwrite the `value` column.
- */
+// `prefix` is null only at the root; an empty string is a real path, from the key `""`.
 function flattenInto(
   value: DataValue,
   out: Record<string, Primitive>,
@@ -168,11 +146,7 @@ export function toRecords(value: DataValue): DataValue[] {
   return Array.isArray(value) ? value : [value];
 }
 
-/**
- * Flatten a whole document into a table. Columns are the union of every
- * record's keys in first-seen order; a record missing a column is simply
- * absent from that row's map, and renders as an empty cell.
- */
+/** Columns are the union of every record's keys, in first-seen order. */
 export function flattenTable(value: DataValue): FlatTable {
   const state = { truncated: false };
   const rows = toRecords(value).map((record) => {
@@ -194,8 +168,6 @@ export function flattenTable(value: DataValue): FlatTable {
 
   return { fields, rows, truncated: state.truncated };
 }
-
-/* ---------------------------------------------------------------- unflatten */
 
 function isContainer(value: DataValue | undefined): value is Container {
   return typeof value === 'object' && value !== null;
@@ -220,7 +192,6 @@ function writeSlot(container: Container, segment: PathSegment, value: DataValue)
   container[segment.key] = value;
 }
 
-/** Turn `['a','b']` into `{ '0': 'a', '1': 'b' }` when named keys show up too. */
 function arrayToObject(list: DataValue[]): { [key: string]: DataValue } {
   const out: { [key: string]: DataValue } = {};
   for (let i = 0; i < list.length; i += 1) {
@@ -244,8 +215,7 @@ function assign(root: { [key: string]: DataValue }, segments: PathSegment[], val
         child = arrayToObject(existing);
         writeSlot(container, segment, child);
       } else {
-        // An object asked to hold an index simply stores the digit as a key,
-        // which keeps arrays out of the (array, named-key) impossible state.
+        // An object asked to hold an index simply stores the digit as a key.
         child = existing;
       }
     } else {
@@ -258,10 +228,7 @@ function assign(root: { [key: string]: DataValue }, segments: PathSegment[], val
   writeSlot(container, segments[segments.length - 1], value);
 }
 
-/**
- * Rebuild one record from its flattened cells. Never throws: conflicting
- * shapes are widened rather than rejected, so a hand-edited CSV still converts.
- */
+/** Never throws: conflicting shapes are widened rather than rejected. */
 export function unflattenRecord(cells: Record<string, DataValue>): DataValue {
   const holder: { [key: string]: DataValue } = {};
   const rootSegment: PathSegment = { key: '__root__', index: null };
@@ -283,18 +250,10 @@ export function endsWithIndex(path: string): boolean {
   return segments[segments.length - 1].index !== null;
 }
 
-/* ------------------------------------------------------------------ cells */
-
-/**
- * Numbers we are willing to recognise: no leading zeros (so ZIP codes and IDs
- * survive), no `+`, no hex, no `Infinity`.
- */
+/** No leading zeros (so ZIP codes and IDs survive), no `+`, no hex, no `Infinity`. */
 const NUMBER_RE = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/;
 
-/**
- * Interpret one CSV cell. With coercion off every cell stays a string, which
- * is occasionally what you want — product codes, phone numbers, versions.
- */
+/** With coercion off every cell stays a string. */
 export function coerceCell(raw: string, coerce: boolean): DataValue {
   if (!coerce || raw === '') return raw;
 
@@ -321,7 +280,7 @@ export function coerceCell(raw: string, coerce: boolean): DataValue {
   return raw;
 }
 
-/** Render one flattened value as CSV cell text. */
+/** A missing cell renders empty; a real null renders as the text "null". */
 export function cellToText(value: Primitive | undefined): string {
   if (value === undefined) return '';
   if (value === null) return 'null';

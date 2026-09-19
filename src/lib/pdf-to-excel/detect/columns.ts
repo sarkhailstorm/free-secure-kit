@@ -83,7 +83,6 @@ function gutterIntervals(runs: readonly Span[], budget: number, minWidth: Pt): [
   return gutters;
 }
 
-/** The x-position column model: occupancy for the gutters, edge clusters for the alignment. */
 export function columnProfile(
   lines: readonly Line[],
   bodySize: Pt,
@@ -145,7 +144,6 @@ export function columnOfMid(profile: ColumnProfile, x: Pt): number {
   return profile.cols.length - 1;
 }
 
-/** Right-aligned columns, which is where the amounts are. */
 export const rightColumns = (profile: ColumnProfile): number[] =>
   profile.cols.map((col, i) => (col.align === 'right' ? i : -1)).filter((i) => i >= 0);
 
@@ -169,7 +167,6 @@ function joinSpans(spans: readonly Span[], bodySize: Pt): string {
   return text.replace(/\s+/g, ' ').trim();
 }
 
-/** One visual line cut into the profile's columns. */
 export function cellsOfLine(profile: ColumnProfile, line: Line, bodySize: Pt = line.size): string[] {
   const buckets: Span[][] = profile.cols.map(() => []);
   for (const run of lineRuns(line)) buckets[columnOfMid(profile, midOf(run))].push(run);

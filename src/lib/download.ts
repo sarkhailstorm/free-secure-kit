@@ -1,10 +1,3 @@
-/**
- * Trigger a browser download for data produced in-page.
- *
- * Everything here is local: we build an object URL from an in-memory blob and
- * click it. No network request is made, and the blob URL is revoked right
- * after so the data is not retained.
- */
 export function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -49,7 +42,6 @@ export async function copyToClipboard(text: string): Promise<boolean> {
   }
 }
 
-/** Make a filename safe across operating systems. */
 export function safeFilename(name: string, fallback = 'download'): string {
   const cleaned = name
     .replace(/[\/:*?"<>|\u0000-\u001f]/g, '-')

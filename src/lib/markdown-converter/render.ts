@@ -1,25 +1,3 @@
-/**
- * Markdown -> HTML pipeline.
- *
- * Three stages, in this order, every time:
- *
- *   1. `marked` turns the source into HTML (GitHub-flavoured: tables, task
- *      lists, strikethrough, autolinks, fenced code with info strings).
- *   2. Fenced code is highlighted with highlight.js's *common* bundle, and a
- *      DOM pass tags task-list items and marks external links.
- *   3. DOMPurify sanitises the result — always last, immediately before the
- *      HTML is handed to the page or written into an exported file.
- *
- * Stage 3 is the one that matters. Markdown is allowed to contain raw HTML, so
- * a pasted README can absolutely contain `<script>`, `onerror=`, a
- * `javascript:` href or a `<style>` block that would rewrite this page. None of
- * it survives sanitisation, and nothing here is ever rendered unsanitised.
- *
- * Every library below is imported dynamically: marked, highlight.js and
- * DOMPurify together are far too big to sit in the initial bundle. Nothing in
- * this file touches the network.
- */
-
 import type { Config as PurifyConfig } from 'dompurify';
 import type { Marked, Tokens } from 'marked';
 
@@ -37,7 +15,6 @@ interface Engine {
 
 let enginePromise: Promise<Engine> | null = null;
 
-/** Escape text for safe interpolation into an HTML string. */
 function escapeHtml(value: string): string {
   return value
     .replace(/&/g, '&amp;')
@@ -47,21 +24,6 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;');
 }
 
-/**
- * Deliberately strict: DOMPurify's defaults already drop scripts and event
- * handlers, and these forbidden tags close the remaining ways a document could
- * reach outside itself — a `<style>` block restyling the whole app, a `<form>`
- * or `<base>` pointing somewhere, an `<iframe>`/`<object>` loading a remote
- * origin. `<input>` stays allowed because GFM task lists are made of them.
- *
- * `style` is forbidden as an *attribute* too, which the defaults do allow.
- * Without that, a pasted README can ship
- * `<div style="position:fixed;inset:0;z-index:2147483647">` and paint over the
- * whole application — no script needed — and the same markup rides along into
- * every export. GitHub strips inline styles from rendered READMEs for exactly
- * this reason. `background` is the legacy image-loading attribute and has no
- * business in a document either.
- */
 const SANITIZE_CONFIG: PurifyConfig = {
   FORBID_TAGS: [
     'style',
@@ -79,9 +41,9 @@ const SANITIZE_CONFIG: PurifyConfig = {
     'template',
     'portal',
   ],
+  // `style` is forbidden beyond DOMPurify's defaults: inline styles can paint over the whole app.
   FORBID_ATTR: ['formaction', 'ping', 'srcdoc', 'style', 'background'],
-  // `target` and `referrerpolicy` are both absent from DOMPurify's default
-  // attribute allow-list; `decorate` below adds them and they must survive.
+  // Absent from DOMPurify's default allow-list, and `decorate` below adds them.
   ADD_ATTR: ['target', 'referrerpolicy'],
   ALLOW_DATA_ATTR: false,
 };
@@ -102,9 +64,7 @@ async function loadEngine(): Promise<Engine> {
     silent: false,
     renderer: {
       code({ text, lang }: Tokens.Code): string {
-        // Info strings look like "ts", "ts title=x" or "".  Take the first
-        // word, and fall back to plain text whenever highlight.js does not
-        // know the language rather than throwing.
+        // Info strings look like "ts", "ts title=x" or "" — take the first word.
         const info = (lang ?? '').trim().split(/\s+/)[0].toLowerCase();
         let body: string | null = null;
         if (info && hljs.getLanguage(info)) {
@@ -129,8 +89,7 @@ async function loadEngine(): Promise<Engine> {
 function getEngine(): Promise<Engine> {
   if (!enginePromise) {
     enginePromise = loadEngine().catch((err: unknown) => {
-      // Let a later attempt retry: a failed chunk load should not permanently
-      // brick the editor.
+      // Cleared so a failed chunk load can be retried.
       enginePromise = null;
       throw err;
     });
@@ -138,11 +97,7 @@ function getEngine(): Promise<Engine> {
   return enginePromise;
 }
 
-/**
- * Small DOM pass over the *unsanitised* output. Kept before sanitisation on
- * purpose so DOMPurify always gets the last word. `DOMParser` builds an inert
- * document: nothing executes and no resource is fetched.
- */
+// Runs on unsanitised HTML on purpose, so DOMPurify always gets the last word.
 function decorate(html: string): string {
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
@@ -160,9 +115,6 @@ function decorate(html: string): string {
     }
   });
 
-  // An image the author pointed at a remote host is still fetched by the
-  // browser — that is what an image in a document does. It does not have to
-  // announce *which* page embedded it, though, so no Referer goes out.
   doc.querySelectorAll('img').forEach((img) => {
     img.setAttribute('referrerpolicy', 'no-referrer');
     img.setAttribute('loading', 'lazy');
@@ -194,11 +146,6 @@ export async function renderMarkdown(source: string): Promise<RenderResult> {
   }
 }
 
-/**
- * Second sanitising pass, used on the way into an exported file. The HTML is
- * already clean; running it again costs nothing and means the export path
- * cannot be made unsafe by a future change upstream of it.
- */
 export async function sanitizeForExport(html: string): Promise<string> {
   const engine = await getEngine();
   return engine.sanitize(html);

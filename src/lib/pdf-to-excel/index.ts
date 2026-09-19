@@ -1,11 +1,3 @@
-/**
- * PDF to Excel, entirely in this browser tab. Nothing here talks to a network,
- * and the heavy libraries are only imported once a run actually starts.
- *
- * Finding the tables and writing the file are two calls on purpose: the user
- * sees what was read before anything is saved.
- */
-
 import type { LoadedPdf } from '@/lib/pdf-tools/pdf';
 import { findTables, writeTables } from './convert';
 import type { ExcelOptions, ExcelProgress, ExcelResult } from './types';

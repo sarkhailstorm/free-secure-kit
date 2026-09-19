@@ -1,13 +1,5 @@
 import type { BackgroundRule, PhotoSpec, SheetSpec, SpecId } from './types';
 
-/**
- * Photo rules, per document.
- *
- * Every entry carries the page it was taken from, because these change: India
- * moved from a square photo to the 35 x 45 mm standard during 2025-26. The tool
- * shows the source next to the numbers so a person can check before they send.
- */
-
 const LIGHT_GREY: BackgroundRule = {
   label: 'Plain light grey or cream',
   swatches: ['#f2f2f0', '#e8e8e4', '#dedbd2'],
@@ -23,7 +15,6 @@ const WHITE_OR_GREY: BackgroundRule = {
   swatches: ['#ffffff', '#f2f2f0', '#e8e8e4'],
 };
 
-/** Every authority that publishes this asks for the photo not to be retouched. */
 const NO_EDITING =
   'Do not retouch the photo. Cropping and resizing are fine; changing the background or the face is not.';
 
@@ -207,7 +198,6 @@ export const SPECS: Record<SpecId, PhotoSpec> = {
   },
 };
 
-/** Picker order. Grouped by country, with the catch-alls last. */
 export const SPEC_ORDER: readonly SpecId[] = [
   'uk-passport',
   'uk-driving-licence',
@@ -229,16 +219,11 @@ export function getSpec(id: SpecId): PhotoSpec {
   return SPECS[id];
 }
 
-/** "35 x 45 mm" — the label people recognise. */
 export function sizeLabel(spec: { widthMm: number; heightMm: number }): string {
   const round = (mm: number) => (Number.isInteger(mm) ? String(mm) : mm.toFixed(1));
   return `${round(spec.widthMm)} × ${round(spec.heightMm)} mm`;
 }
 
-/**
- * Print sheets, for the many shops that print 6 x 4 photos cheaply but do not
- * do passport photos.
- */
 export const SHEETS: readonly SheetSpec[] = [
   {
     id: '6x4',

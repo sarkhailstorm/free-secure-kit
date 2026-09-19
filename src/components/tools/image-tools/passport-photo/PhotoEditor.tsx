@@ -4,14 +4,6 @@ import { useCallback, useRef, useState } from 'react';
 import { cn } from '@/lib/cn';
 import type { Crop, Measurements } from '@/lib/passport-photo';
 
-/**
- * The photo, with the three lines that decide the crop drawn over it.
- *
- * Automatic measuring is right most of the time and wrong often enough that it
- * cannot be the only way in. Long hair, a hat and a high collar all move the
- * top of the head, so every line here can be dragged.
- */
-
 type Handle = 'crown' | 'chin' | 'centre';
 
 const LINES: readonly { id: Handle; label: string; hint: string }[] = [
@@ -38,7 +30,6 @@ export function PhotoEditor({
   height: number;
   measurements: Measurements;
   crop: Crop;
-  /** True when a face was found, so the eye line is measured rather than assumed. */
   eyeLocked: boolean;
   onChange: (next: Measurements) => void;
   className?: string;
@@ -202,12 +193,11 @@ function clamp(value: number, low: number, high: number): number {
   return value < low ? low : value > high ? high : value;
 }
 
-/** Eyes sit a little above halfway down a head. Only used when none were found. */
+/** Eyes sit a little above halfway down a head. */
 function eyeBetween(crownY: number, chinY: number): number {
   return crownY + (chinY - crownY) * 0.55;
 }
 
-/** The measured eye line, shown but not draggable. */
 function Line({ kind, top, label }: { kind: 'eye'; top: number; label: string }) {
   return (
     <div

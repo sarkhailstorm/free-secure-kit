@@ -107,8 +107,6 @@ export function looksLikeImage(file: File): boolean {
   return file.type.startsWith('image/') || IMAGE_EXTENSIONS.test(file.name);
 }
 
-/* ---------------------------------------------------------------- probing */
-
 interface Probe {
   kind: 'jpeg' | 'png' | 'other';
   width: number;
@@ -193,7 +191,6 @@ function readExifOrientation(view: DataView, tiff: number, limit: number): numbe
   return 1;
 }
 
-/** Width, height and real transparency straight out of the PNG header. */
 export function probePng(bytes: Uint8Array): Probe | null {
   if (
     bytes.length < 26 ||
@@ -261,8 +258,6 @@ export async function readImage(file: File): Promise<LoadedImage> {
   };
 }
 
-/* --------------------------------------------------------------- stripping */
-
 /** Strips EXIF/XMP so GPS and camera details don't ride along into the PDF. */
 function stripJpegMetadata(bytes: Uint8Array): Uint8Array {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -302,8 +297,6 @@ function stripJpegMetadata(bytes: Uint8Array): Uint8Array {
   }
   return out;
 }
-
-/* -------------------------------------------------------------- geometry */
 
 interface Placement {
   pageW: number;
@@ -383,8 +376,6 @@ function place(
       return { ...base, x: left, y: bottom, rotate: 0 };
   }
 }
-
-/* ---------------------------------------------------------------- encode */
 
 interface Prepared {
   format: 'jpeg' | 'png';

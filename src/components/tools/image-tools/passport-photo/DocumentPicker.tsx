@@ -5,7 +5,6 @@ import { ExternalLink } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { sizeLabel, SPEC_ORDER, SPECS, type PhotoSpec, type SpecId } from '@/lib/passport-photo';
 
-/** What a custom size lets someone set, when their form asks for something odd. */
 export interface CustomSize {
   widthMm: number;
   heightMm: number;
@@ -31,7 +30,6 @@ export function DocumentPicker({
   onSpecId: (id: SpecId) => void;
   custom: CustomSize;
   onCustom: (next: CustomSize) => void;
-  /** The spec in force, custom sizes already folded in. */
   spec: PhotoSpec;
 }) {
   const selectId = useId();

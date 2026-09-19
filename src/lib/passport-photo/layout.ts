@@ -1,15 +1,6 @@
 import type { Crop, Layout, Measurements, PhotoSpec } from './types';
 
-/**
- * Turning four measurements into a crop.
- *
- * Authorities measure two things: how tall the head is, chin to the top of the
- * hair, and — some of them — how far the eyes sit above the bottom edge. Both
- * are millimetre rules on the finished photo, so the crop is worked out in
- * millimetres and converted to source pixels at the end.
- */
-
-/** Where the crown sits when the authority says nothing about the eyes. */
+/** Share of the leftover height above the crown when the spec sets no eye line. */
 const CROWN_SHARE = 0.3;
 
 export interface LayoutOptions {
@@ -28,7 +19,6 @@ function clamp(value: number, low: number, high: number): number {
   return value < low ? low : value > high ? high : value;
 }
 
-/** The middle of the allowed band, which is the safest place to sit. */
 export function preferredHeadMm(spec: PhotoSpec): number {
   return (spec.headMinMm + spec.headMaxMm) / 2;
 }
@@ -39,13 +29,7 @@ export function preferredEyeMm(spec: PhotoSpec): number | null {
   return (spec.eyeMinMm + spec.eyeMaxMm) / 2;
 }
 
-/**
- * Work out which rectangle of the source photo becomes the finished photo.
- *
- * The rectangle is allowed to fall outside the source: that is how the tool
- * knows to tell someone their photo is cropped too tightly to use, rather than
- * quietly shrinking the head to make it fit.
- */
+/** The crop is allowed to fall outside the source, which is how a too-tight photo is caught. */
 export function planLayout(
   spec: PhotoSpec,
   measurements: Measurements,
@@ -63,8 +47,6 @@ export function planLayout(
 
   let crownMm: number;
   if (eyeTarget != null) {
-    // Solve for the crown from where the eyes have to land, using this person's
-    // own eye-within-head proportion rather than an assumed one.
     const chinFromBottomMm = eyeTarget - eyeFromChinMm;
     crownMm = spec.heightMm - chinFromBottomMm - headMm;
   } else {
@@ -109,7 +91,6 @@ export function overhang(
   return { left, top, right, bottom, any: left + top + right + bottom > 0.5 };
 }
 
-/** True when the head height this layout achieves is inside what the spec allows. */
 export function headInRange(spec: PhotoSpec, layout: Layout): boolean {
   return layout.headMm >= spec.headMinMm - 0.05 && layout.headMm <= spec.headMaxMm + 0.05;
 }

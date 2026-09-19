@@ -45,7 +45,6 @@ const MODE_TABS: readonly TabItem<DiffMode>[] = [
   { id: 'chars', label: 'Characters' },
 ];
 
-/** Unchanged lines kept either side of a change when collapsing. */
 const CONTEXT_LINES = 3;
 
 export function DiffPanel() {
@@ -75,8 +74,6 @@ export function DiffPanel() {
     setChanged(value);
     setForce(false);
   }, []);
-  // Switching mode changes the ceiling, so an "I know, compare anyway" for the
-  // old mode must not carry over into a far more expensive one.
   const editMode = useCallback((next: DiffMode) => {
     setMode(next);
     setForce(false);
@@ -95,8 +92,6 @@ export function DiffPanel() {
       setBusy(true);
       setError(null);
 
-      // Yield once so the "Comparing…" state actually paints before the
-      // synchronous diff work begins.
       void (async () => {
         try {
           await new Promise((resolve) => setTimeout(resolve, 0));
@@ -356,7 +351,6 @@ export function DiffPanel() {
   );
 }
 
-/** Say precisely *how* identical the two sides are — the flags change it. */
 function describeIdentical(exact: boolean, whitespace: boolean, caseToo: boolean): string {
   if (exact) return 'These two texts are identical — every character matches.';
   if (whitespace && caseToo) {
@@ -369,10 +363,6 @@ function describeIdentical(exact: boolean, whitespace: boolean, caseToo: boolean
   return 'No differences were found, but the two are not byte-for-byte identical — the line endings or some spacing differ.';
 }
 
-/**
- * Added and removed runs get a tint *and* an underline or strike-through, so
- * the diff is still readable without colour vision.
- */
 function Spans({ spans }: { spans: InlineSpan[] }) {
   return (
     <>

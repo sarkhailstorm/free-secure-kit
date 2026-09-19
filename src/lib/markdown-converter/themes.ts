@@ -1,24 +1,7 @@
-/**
- * Document stylesheets for the Markdown converter.
- *
- * Three genuinely different looks — not three shades of one — each written as
- * a real stylesheet. Every rule is generated against a *root selector* so the
- * same sheet can be pointed at the live preview (`.md-doc`), at the hidden
- * print surface (`#securekit-md-print .md-body`) or at the exported standalone
- * file, without any chance of the three bleeding into each other.
- *
- * Colours are plain hex rather than the site's theme tokens on purpose: the
- * document is a document, and the HTML/PDF a reader ends up with has to look
- * the same on a machine that has never seen this site's CSS variables.
- */
-
 export type ThemeId = 'minimal' | 'github' | 'serif';
 
-/** Class applied to the on-screen preview root. */
 export const PREVIEW_ROOT_CLASS = 'md-doc';
-/** Id of the body-level element that exists only to be printed. */
 export const PRINT_ROOT_ID = 'securekit-md-print';
-/** Class applied to the document inside the print surface. */
 export const PRINT_BODY_CLASS = 'md-body';
 
 export interface DocTheme {
@@ -53,10 +36,7 @@ export function isThemeId(value: unknown): value is ThemeId {
   return typeof value === 'string' && themes.some((t) => t.id === value);
 }
 
-/* ------------------------------------------------------------------ palettes */
-
 interface Palette {
-  /** Page colour behind the document. */
   paper: string;
   text: string;
   soft: string;
@@ -189,8 +169,6 @@ const SERIF_DARK: Palette = {
   mark: '#6b5426',
 };
 
-/* ------------------------------------------------------- syntax highlighting */
-
 interface CodePalette {
   comment: string;
   keyword: string;
@@ -278,13 +256,6 @@ ${r} .hljs-strong { font-weight: 600; }
 `;
 }
 
-/* ----------------------------------------------------------------- structure */
-
-/**
- * The handful of rules every theme needs to behave (wide tables scroll inside
- * themselves, images never overflow, task lists lose their bullets). Purely
- * structural — nothing here decides how a theme *looks*.
- */
 function structuralCss(r: string): string {
   return `
 ${r} { box-sizing: border-box; overflow-wrap: break-word; }
@@ -302,8 +273,6 @@ ${r} .contains-task-list .contains-task-list { padding-left: 1.5em; }
 ${r} sup, ${r} sub { line-height: 0; }
 `;
 }
-
-/* -------------------------------------------------------------------- themes */
 
 function minimalCss(r: string, p: Palette): string {
   return `
@@ -522,10 +491,7 @@ export function lightStylesheet(id: ThemeId, root: string): string {
   );
 }
 
-/**
- * Stylesheet for the live preview: the light treatment on `.md-doc`, plus a
- * dark treatment that only applies under the site's `.dark` root class.
- */
+/** Light treatment on `.md-doc`, plus a dark treatment under the site's `.dark` class. */
 export function previewStylesheet(id: ThemeId): string {
   const light = `.${PREVIEW_ROOT_CLASS}`;
   const dark = `.dark .${PREVIEW_ROOT_CLASS}`;
@@ -536,12 +502,7 @@ export function previewStylesheet(id: ThemeId): string {
   );
 }
 
-/**
- * Everything the print surface needs: the light treatment (people print and
- * share those, so exports are never dark), plus the rules that hide the rest
- * of the page and keep the PDF readable — sensible margins, no page breaks
- * mid-code-block or straight after a heading, and printed link targets.
- */
+/** Print CSS: hides the rest of the page and always uses the light treatment. */
 export function printStylesheet(id: ThemeId): string {
   const r = `#${PRINT_ROOT_ID} .${PRINT_BODY_CLASS}`;
   return `
@@ -569,15 +530,7 @@ ${lightStylesheet(id, r)}
 `;
 }
 
-/**
- * The `<style>` block inlined into a downloaded standalone HTML file.
- *
- * The print block has to come *after* the theme, not before it: a media query
- * adds no specificity, so rules of equal weight declared later simply win.
- * That ordering is what lets the print rules undo the on-screen scrolling
- * affordances — a scrollable `pre` or table prints clipped, because paper does
- * not scroll.
- */
+/** The `<style>` block for a standalone file; the print block must stay last to win. */
 export function exportStylesheet(id: ThemeId, root: string): string {
   return `
 *, *::before, *::after { box-sizing: border-box; }

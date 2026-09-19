@@ -18,7 +18,6 @@ const REASON: Record<ClusterReason, string> = {
   'near-spelling': 'Spelled slightly differently.',
 };
 
-/** The one group being asked about. Remounted per group, so Edit starts closed. */
 function GroupCard({
   cluster,
   busy,
@@ -119,12 +118,10 @@ export interface SpellingColumn {
   /** ORIGINAL column index — what `CleanOptions.spellingMerges` is keyed by. */
   columnIndex: number;
   columnName: string;
-  /** `clusterColumn` / `clusterColumnLoosely` for this column. */
   report: SpellingReport;
 }
 
 export interface SpellingPanelProps {
-  /** Only columns `assessColumns` called suitable. Renders nothing when none has a group. */
   columns: readonly SpellingColumn[];
   /** The column being worked through, by ORIGINAL column index; null lists the columns. */
   activeColumn: number | null;
@@ -135,9 +132,7 @@ export interface SpellingPanelProps {
   ignored: ReadonlySet<string>;
   onAccept: (cluster: ValueCluster, keep: string) => void;
   onIgnore: (cluster: ValueCluster) => void;
-  /** Undo either answer, putting the group back in the queue. */
   onUndo: (cluster: ValueCluster) => void;
-  /** True while the groups for a column are still being worked out. */
   busy?: boolean;
 }
 

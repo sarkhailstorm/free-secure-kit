@@ -3,7 +3,6 @@
 import { useId } from 'react';
 import { cn } from '@/lib/cn';
 
-/** Labelled range input with a live value readout. */
 export function Slider({
   label,
   value,

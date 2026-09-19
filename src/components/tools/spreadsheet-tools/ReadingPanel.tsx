@@ -30,17 +30,11 @@ const SEPARATOR_SOURCE: Record<DelimiterSource, string> = {
 
 const SAMPLE_LIMIT = 200;
 
-/**
- * `EncodingCandidate.sample` is the reading taken BEFORE the odd letters were
- * put back, so it has to be put back here too or the panel shows one thing and
- * says another. Empty when the sample cannot be redone, which is better than
- * showing text the file no longer holds.
- */
+/** Empty when the sample cannot be re-read at any length. */
 function sampleWithLettersBack(sample: string): string {
   const decoder = new TextDecoder('utf-8', { fatal: true });
   const head = sample.slice(0, SAMPLE_LIMIT + 4);
-  // A sample cut in the middle of a character fails the strict read, so give
-  // up to three shorter endings a go before giving up.
+  // A sample cut mid-character fails the strict read, so try a few shorter endings.
   for (let end = head.length; end > head.length - 4 && end > 0; end -= 1) {
     try {
       return decoder.decode(encodeWindows1252(head.slice(0, end), true));
@@ -51,7 +45,6 @@ function sampleWithLettersBack(sample: string): string {
   return '';
 }
 
-/** Silent on a file that was read exactly as expected. */
 function textWorthShowing(decode: DecodeReport | null): decode is DecodeReport {
   if (!decode) return false;
   return (
@@ -79,13 +72,9 @@ export interface ReadingPanelProps {
   decode: DecodeReport | null;
   /** `ParsedFile.delimiter`. Null for a workbook. */
   delimiter: DelimiterReport | null;
-  /** Read the file again, this way round. */
   onEncodingChange: (encoding: EncodingId) => void;
-  /** Read the file again, splitting the columns on this character. */
   onDelimiterChange: (delimiter: string) => void;
-  /** Read the file again with the odd letters put back, or left alone. */
   onRepairMojibake: (repair: boolean) => void;
-  /** True while the file is being read again; every control is held. */
   busy?: boolean;
 }
 

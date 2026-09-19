@@ -1,20 +1,5 @@
-/**
- * A small, deliberately conservative date reader.
- *
- * The guiding rule is *never mangle a value we are not sure about*. Anything
- * that does not match one of the shapes below — or that matches but does not
- * describe a real calendar day — is reported as `not-a-date` and left exactly
- * as the user typed it.
- *
- * The genuinely hard case is `03/04/2024`: 4 March or 3 April? That is decided
- * per COLUMN rather than per cell (see `analyseDateColumn`), because a single
- * value like `25/12/2024` elsewhere in the same column settles the question for
- * every value in it.
- */
-
 import type { DateFormat, DateOrder, Grid } from './types';
 
-/** Month names and the usual abbreviations, including a few odd ones. */
 const MONTHS: Readonly<Record<string, number>> = {
   jan: 1,
   january: 1,
@@ -47,18 +32,11 @@ export interface DateParts {
   y: number;
   m: number;
   d: number;
-  /** Preserved verbatim so normalising a date never silently drops a time. */
+  /** Clock time kept verbatim; empty string when the value had none. */
   time: string;
 }
 
-/**
- * What a single cell looks like to the parser.
- *
- * - `fixed`     — unambiguous on its own (ISO, or a spelled-out month).
- * - `ordered`   — numeric, but only one reading is a real date, so it both
- *                 resolves itself *and* votes on the column's order.
- * - `ambiguous` — numeric and both readings are real dates. Needs the column.
- */
+/** `ordered` resolves itself and votes on the column order; `ambiguous` needs the column. */
 export type Inspection =
   | { kind: 'not-a-date' }
   | { kind: 'fixed'; parts: DateParts }
@@ -99,10 +77,7 @@ function isRealDate(y: number, m: number, d: number): boolean {
   return d >= 1 && d <= daysInMonth(y, m);
 }
 
-/**
- * Two-digit years: 00–68 are read as 2000s and 69–99 as 1900s, which is the
- * long-standing POSIX window and matches what spreadsheets do.
- */
+// Two-digit years: 00-68 are 2000s, 69-99 are 1900s (the POSIX window).
 function expandYear(raw: string): number {
   const n = Number(raw);
   if (raw.length === 4) return n;
@@ -127,10 +102,7 @@ const YEAR_FIRST_TEXT = new RegExp(
 );
 /** Slash- and dash-separated numerics tolerate a 2-digit year. */
 const NUMERIC_SLASH = /^(\d{1,2})([-/])(\d{1,2})\2(\d{2}|\d{4})$/;
-/**
- * Dot-separated numerics demand a 4-digit year. `04.03.2024` is a European
- * date; `1.2.3` is a version number, and we refuse to confuse the two.
- */
+/** Dot-separated numerics demand a 4-digit year, so `1.2.3` stays a version number. */
 const NUMERIC_DOT = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
 
 function month(name: string): number | null {
@@ -141,7 +113,6 @@ function month(name: string): number | null {
 /** Classify one raw cell value. Pure, allocation-light, never throws. */
 export function inspectDate(raw: string): Inspection {
   const value = raw.trim();
-  // Cheap rejects first: this runs over every cell of every column.
   if (value.length < 4 || value.length > 40) return NOT_A_DATE;
   if (!/\d/.test(value)) return NOT_A_DATE;
 
@@ -154,7 +125,6 @@ export function inspectDate(raw: string): Inspection {
     if (!body) return NOT_A_DATE;
   }
 
-  // ── ISO / year-first numeric ──────────────────────────────────────────
   const iso = ISO_LIKE.exec(body);
   if (iso) {
     const y = Number(iso[1]);
@@ -164,7 +134,6 @@ export function inspectDate(raw: string): Inspection {
     return { kind: 'fixed', parts: { y, m, d, time } };
   }
 
-  // ── Spelled-out months, in the three orders people actually write ─────
   const textual: Array<[RegExpExecArray | null, 'md' | 'dm' | 'ym']> = [
     [MONTH_FIRST_TEXT.exec(body), 'md'],
     [DAY_FIRST_TEXT.exec(body), 'dm'],
@@ -192,7 +161,6 @@ export function inspectDate(raw: string): Inspection {
     return { kind: 'fixed', parts: { y, m, d, time } };
   }
 
-  // ── Bare numerics: the ambiguous family ───────────────────────────────
   const slash = NUMERIC_SLASH.exec(body);
   const dot = slash ? null : NUMERIC_DOT.exec(body);
   if (!slash && !dot) return NOT_A_DATE;
@@ -220,20 +188,13 @@ export function formatDate(parts: DateParts, format: DateFormat): string {
   return parts.time ? `${core} ${parts.time}` : core;
 }
 
-/** Human label for the format picker and the summary line. */
 export const dateFormatLabels: Record<DateFormat, { label: string; example: string }> = {
   iso: { label: 'ISO', example: 'YYYY-MM-DD' },
   us: { label: 'US', example: 'MM/DD/YYYY' },
   eu: { label: 'EU', example: 'DD/MM/YYYY' },
 };
 
-/**
- * Rewrite one cell, or return `null` to mean "leave this exactly as it is".
- *
- * `order` is the column's agreed reading of `a/b/y` values; `null` means no
- * ambiguous value was ever seen (or the user asked us to keep out of it), in
- * which case ambiguous cells are left alone rather than guessed at.
- */
+/** Returns null to mean "leave this cell exactly as it is". */
 export function normaliseCell(
   raw: string,
   order: DateOrder | null,
@@ -245,8 +206,6 @@ export function normaliseCell(
       return null;
     case 'fixed':
     case 'ordered':
-      // `ordered` values have exactly one valid reading, so they keep it even
-      // if the rest of the column leans the other way.
       return formatDate(seen.parts, format);
     case 'ambiguous': {
       if (!order) return null;
@@ -259,20 +218,12 @@ export function normaliseCell(
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Column-level analysis
-// ─────────────────────────────────────────────────────────────────────────
-
 export type DateColumnReason =
   /** Every value was ISO or used a month name — nothing to decide. */
   | 'unambiguous'
   /** Some value had a day above 12, which settles the whole column. */
   | 'day-over-12'
-  /**
-   * Values disagree: some can only be DD/MM, others only MM/DD. Still `auto`
-   * when no value actually *needs* a column order (each one has a single valid
-   * reading); `undecidable` as soon as one does.
-   */
+  /** Values disagree: some read only as DD/MM, others only as MM/DD. */
   | 'conflict'
   /** Every numeric value reads both ways. Genuinely undecidable. */
   | 'all-ambiguous';
@@ -283,14 +234,12 @@ export interface DateColumnAnalysis {
   header: string;
   /** Non-blank cells inspected. */
   values: number;
-  /** How many of those looked like dates. */
   dateLike: number;
   /** `auto` → safe to rewrite now. `undecidable` → ask before touching it. */
   status: 'auto' | 'undecidable';
   /** Agreed reading for ambiguous values; `null` when none were present. */
   order: DateOrder | null;
   reason: DateColumnReason;
-  /** A few distinct real values to show the user when asking. */
   samples: string[];
 }
 
@@ -306,8 +255,6 @@ function analyseColumn(header: string, rows: string[][], index: number): DateCol
   let dmyVotes = 0;
   let mdyVotes = 0;
   let ambiguous = 0;
-  // Kept apart so a conflicting column can be shown the values that actually
-  // contradict each other, rather than four interchangeable ambiguous ones.
   const ambiguousSamples: string[] = [];
   const dmySamples: string[] = [];
   const mdySamples: string[] = [];
@@ -342,7 +289,6 @@ function analyseColumn(header: string, rows: string[][], index: number): DateCol
         remember(ambiguousSamples, trimmed);
       }
     } else if (values >= EARLY_EXIT_AFTER && dateLike / values < EARLY_EXIT_RATIO) {
-      // Clearly prose or IDs — stop scanning this column.
       return null;
     }
   }
@@ -351,7 +297,6 @@ function analyseColumn(header: string, rows: string[][], index: number): DateCol
 
   const base = { index, header, values, dateLike };
   const contradicts = dmyVotes > 0 && mdyVotes > 0;
-  /** For a contradiction, lead with one value from each side — that is the evidence. */
   const conflictSamples = [
     ...dmySamples.slice(0, 1),
     ...mdySamples.slice(0, 1),
@@ -359,8 +304,7 @@ function analyseColumn(header: string, rows: string[][], index: number): DateCol
   ];
 
   if (ambiguous === 0) {
-    // Nothing here needs a column-wide order: every value settles itself, so
-    // this is safe to rewrite even when the column contradicts itself.
+    // Every value settles itself, so this is safe even when the column contradicts.
     const order: DateOrder | null = contradicts
       ? null
       : dmyVotes > 0
@@ -396,7 +340,6 @@ function analyseColumn(header: string, rows: string[][], index: number): DateCol
     };
   }
 
-  // Either the column contradicts itself, or nothing in it ever disambiguated.
   return {
     ...base,
     status: 'undecidable',
@@ -406,12 +349,7 @@ function analyseColumn(header: string, rows: string[][], index: number): DateCol
   };
 }
 
-/**
- * Find every column that is mostly dates, and work out how to read it.
- *
- * Always run against the ORIGINAL parsed grid: the answer must not wobble when
- * the user flips an unrelated toggle like "remove duplicate rows".
- */
+/** Always run against the ORIGINAL parsed grid, so the answer cannot wobble. */
 export function analyseDateColumns(grid: Grid): DateColumnAnalysis[] {
   const out: DateColumnAnalysis[] = [];
   for (let i = 0; i < grid.header.length; i += 1) {

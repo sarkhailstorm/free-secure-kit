@@ -7,8 +7,6 @@ import {
 } from './constants';
 import type { Cell, CellValue, Column, ColumnAlign, ColumnKind, DateOrder } from './types';
 
-/* ---------- amounts ---------- */
-
 export type Grouping = 'none' | 'plain' | 'indian' | 'european' | 'space';
 
 export interface Amount {
@@ -161,8 +159,6 @@ export function parseAmount(input: string): Amount | null {
   };
 }
 
-/* ---------- dates ---------- */
-
 export interface DateRead {
   iso: string | null;
   order: DateOrder | null;
@@ -271,14 +267,10 @@ function resolveOrder(values: readonly string[]): DateOrder | null {
   return null;
 }
 
-/* ---------- column typing ---------- */
-
-/** The part of a grouped row that typing reads. */
 export interface TypingRow {
   cells: readonly string[];
 }
 
-/** The part of a column profile that typing reads. */
 export interface TypingProfile {
   cols: readonly { x0: Pt; x1: Pt; align: ColumnAlign }[];
 }

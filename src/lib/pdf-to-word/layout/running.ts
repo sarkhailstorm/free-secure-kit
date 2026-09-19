@@ -1,10 +1,3 @@
-/**
- * Running headers and footers, the page-number field, and the margins left
- * behind. Running spans must leave the body before columns and margins are
- * measured — a narrow right-aligned running head otherwise manufactures a
- * gutter and eats the right margin.
- */
-
 import { A4, DEFAULT_ASCENT, DEFAULT_DESCENT, SEG_TOL } from '../constants';
 import type {
   Align,
@@ -73,8 +66,6 @@ export function noRunning(): RunningContent {
   };
 }
 
-/* ---------- candidates ---------- */
-
 interface Candidate {
   page: PageFacts;
   line: Line;
@@ -124,8 +115,6 @@ function rowsOf(
   }
   return rows.sort((a, b) => a.y - b.y);
 }
-
-/* ---------- runs and the page field ---------- */
 
 function runOf(span: Span, text: string, fonts: ReadonlyMap<string, FontInfo> | undefined): Run {
   const font = fonts?.get(span.fontId);
@@ -235,8 +224,6 @@ export function pageFieldOf(run: Run): PageField | null {
   return field === 'current' || field === 'total' ? field : null;
 }
 
-/* ---------- blocks ---------- */
-
 function alignOf(line: Line, width: Pt): Align {
   const left = line.x0;
   const right = width - line.x1;
@@ -266,8 +253,6 @@ function runningBlock(
   };
   return { block, field: runs.some((run) => pageFieldOf(run) !== null) };
 }
-
-/* ---------- detection ---------- */
 
 interface ZoneResult {
   blocks: ParaBlock[];
@@ -362,8 +347,6 @@ export function detectRunning(
   };
 }
 
-/* ---------- margins ---------- */
-
 function snap(value: Pt, limit: Pt): Pt {
   const clamped = Math.max(0, Math.min(MARGIN_MAX * limit, value));
   for (const target of SNAP) if (Math.abs(clamped - target) <= SNAP_TOL) return target;
@@ -457,8 +440,7 @@ export function deriveMargins(
   const margins: Section['margins'] = {
     top: topPt,
     right: Number.isFinite(right) ? snap(width - right, width) : DEFAULT_MARGIN,
-    // Text never reached this far down, so the slack is evidence of nothing; Word
-    // documents are symmetric and the corpus truth is bottom === top on all five.
+    // Text never reached this far down, so the slack is evidence of nothing; Word documents are symmetric.
     bottom: Number.isFinite(baseline)
       ? Math.min(snap(height - baseline, height), topPt)
       : DEFAULT_MARGIN,

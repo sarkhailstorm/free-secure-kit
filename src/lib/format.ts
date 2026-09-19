@@ -1,4 +1,3 @@
-/** Human-readable byte size, e.g. 2.4 MB. */
 export function formatBytes(bytes: number, decimals = 1): string {
   if (!Number.isFinite(bytes) || bytes < 0) return '—';
   if (bytes === 0) return '0 B';

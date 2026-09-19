@@ -6,17 +6,9 @@ import { cn } from '@/lib/cn';
 export interface Choice<T extends string> {
   id: T;
   label: string;
-  /** Optional tooltip / extra context. */
   detail?: string;
 }
 
-/**
- * A segmented single-choice control.
- *
- * Visually this is the same pill strip as the shared `Tabs`, but these options
- * do not reveal panels, so it is exposed as a radio group instead — arrow keys
- * move and select, matching the WAI-ARIA radio pattern.
- */
 export function ChoiceGroup<T extends string>({
   label,
   choices,

@@ -1,10 +1,3 @@
-/**
- * Pure helpers around the document itself: its title, its statistics, and the
- * standalone HTML file the user can download.
- *
- * Nothing here touches the DOM, so it is safe to call during render.
- */
-
 import { exportStylesheet, type ThemeId } from './themes';
 
 export interface DocStats {
@@ -26,7 +19,6 @@ export function analyse(source: string): DocStats {
   };
 }
 
-/** Strip the inline Markdown syntax out of a heading so it reads as a title. */
 function plainText(heading: string): string {
   return heading
     .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1') // links and images
@@ -37,10 +29,7 @@ function plainText(heading: string): string {
     .trim();
 }
 
-/**
- * The document's first H1 — ATX (`# Title`) or setext (`Title` over `====`) —
- * ignoring anything inside a fenced code block. Falls back to "Document".
- */
+/** The first H1 — ATX or setext — ignoring anything inside a fenced code block. */
 export function documentTitle(source: string, fallback = 'Document'): string {
   const lines = source.split(/\r?\n/);
   let fence: string | null = null;
@@ -80,12 +69,6 @@ function escapeHtml(value: string): string {
     .replace(/"/g, '&quot;');
 }
 
-/**
- * One self-contained file: doctype, charset, viewport, a title taken from the
- * document, and every scrap of CSS inlined — including the syntax-highlighting
- * theme. There is no stylesheet link, no font request and no script, so it
- * renders correctly opened straight off a disk with no network at all.
- */
 export function buildStandaloneHtml({
   title,
   bodyHtml,

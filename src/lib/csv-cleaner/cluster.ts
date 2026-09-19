@@ -1,27 +1,3 @@
-/**
- * Grouping the spellings that mean the same thing.
- *
- * The key is close to OpenRefine's fingerprint: fold case and accents, split on
- * punctuation, sort the words, rejoin. Values landing on the same key are
- * candidates, never conclusions — nothing here applies anything, and every
- * group comes back with every member and its count, because a 900-vs-2 group
- * is a typo and a 400-vs-380 group is two real things.
- *
- * Unlike OpenRefine the key does NOT drop repeated words, so "Smith" and
- * "Smith & Smith" stay apart. A repeat is a different name, not a variant.
- *
- * Sorting the words is what lets the key see "Kingdom, United" — and also what
- * would merge "Flat 2, 14 High St" with "Flat 14, 2 High St". So every group
- * is classified by WHY it matched and word-order matches are kept out of
- * `clusters` entirely; they come back in `wordOrderClusters` for the UI to
- * offer on their own, clearly labelled.
- *
- * Numbers are the other trap. "(500)" is minus five hundred, "1.000" is one on
- * a European file, "-5" is not "5". Anything the key throws away that changes
- * an amount is compared separately, and a group mixing two amounts is never
- * offered.
- */
-
 import type {
   ClusterMember,
   ClusterReason,
@@ -34,21 +10,14 @@ import type {
 /** Distinct values the exact pass will compare. Beyond this the commonest win. */
 export const MAX_DISTINCT_VALUES = 50_000;
 
-/** Groups returned per column. */
 export const MAX_CLUSTERS = 500;
 
-/** Distinct values the looser pass will look at at all — it is far slower. */
 export const MAX_LOOSE_VALUES = 3_000;
 
 /** Distinct-to-value ratio at or above which a column is not worth offering. */
 export const CATEGORICAL_RATIO = 0.5;
 
-/** Below this many values the ratio means nothing, so we do not offer. */
 export const MIN_VALUES_FOR_CLUSTERING = 6;
-
-// ─────────────────────────────────────────────────────────────────────────
-//  Fingerprints
-// ─────────────────────────────────────────────────────────────────────────
 
 const NOT_ALPHANUMERIC = /[^\p{L}\p{N}]+/u;
 const NOT_ALPHANUMERIC_ALL = /[^\p{L}\p{N}]+/gu;
@@ -58,7 +27,6 @@ const DIGITS = /\d+/g;
 const PLAIN_NUMBER = /^[+-]?(?:\d{1,3}(?:,\d{3})*|\d*)(?:\.\d+)?%?$/;
 const ID_SHAPE = /^(?=.*\d)[\p{L}\p{N}][\p{L}\p{N}_/.-]*$/u;
 
-/** Header words that mean "this is a reference, do not touch the spelling". */
 const ID_HEADER_WORDS = new Set([
   'id', 'ids', 'uuid', 'guid', 'key', 'code', 'codes', 'ref', 'refs',
   'reference', 'references', 'sku', 'isbn', 'ean', 'barcode', 'account',
@@ -86,13 +54,7 @@ function words(value: string): string[] {
   return foldAccents(value.toLowerCase()).split(NOT_ALPHANUMERIC).filter((w) => w.length > 0);
 }
 
-/**
- * OpenRefine's fingerprint, kept as a utility: same words, any case, any
- * accents, any punctuation, any order — and repeats dropped.
- *
- * Nothing here clusters on it. Dropping repeats makes "Smith" and
- * "Smith & Smith" collide, so the clustering key below keeps them.
- */
+/** OpenRefine's fingerprint, repeats dropped; the clustering key below keeps them. */
 export function fingerprint(value: string): string {
   const parts = words(value);
   if (parts.length === 0) return '';
@@ -117,10 +79,6 @@ export function ngramFingerprint(value: string, size = 3): string {
   return Array.from(grams).sort().join('');
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  What a value says about an amount
-// ─────────────────────────────────────────────────────────────────────────
-
 const SINGLE_SPACE = /\s/;
 const NUMERIC_SIGNS = '+-−–—';
 const NUMERIC_SEPARATORS = ".,'  ";
@@ -144,16 +102,7 @@ function beside(value: string, from: number, step: number): number {
   return -1;
 }
 
-/**
- * Every amount a value states, sorted: its digits plus only the marks around
- * them that change what the amount is.
- *
- * "500" and "(500)" differ. "1,000" and "1.000" differ. "5" and "-5" differ.
- * "St Johns" and "St John's" do not — with no digits there is nothing to
- * change, so both come back empty and the group is offered as normal.
- *
- * Sorted, because a word-order group states the same amounts in another order.
- */
+/** Every amount a value states, sorted; empty when it states none. */
 export function numericSignature(value: string): string {
   const amounts: string[] = [];
   let amount = '';
@@ -166,8 +115,7 @@ export function numericSignature(value: string): string {
       keep = c;
       digit = true;
     } else if (NUMERIC_SIGNS.includes(c)) {
-      // Leading: "- £500". Trailing: "500-", tight against the digits, or it is
-      // the dash in "Unit 3 - Block A".
+      // Leading: "- 500". Trailing: "500-" tight against the digits, or it is a dash in prose.
       if (isDigit(beside(value, i + 1, 1)) || isDigit(value.charCodeAt(i - 1))) {
         keep = c === '+' ? '+' : '-';
       }
@@ -188,8 +136,7 @@ export function numericSignature(value: string): string {
       amount += keep;
       started = started || digit;
     } else if (amount !== '' && (started || !isSpace(c))) {
-      // A space only ends an amount once its digits have started, so "- £500"
-      // stays one amount while "Flat 2 14" is two.
+      // A space only ends an amount once its digits have started.
       amounts.push(amount);
       amount = '';
       started = false;
@@ -199,12 +146,6 @@ export function numericSignature(value: string): string {
   return amounts.length === 0 ? '' : amounts.sort().join('|');
 }
 
-/**
- * Split a candidate group so no part mixes two amounts.
- *
- * Splitting rather than dropping: a group of "500", "500 " and "(500)" still
- * has a real whitespace fix in it, and only the bracketed one must be left out.
- */
 function splitByAmount(indices: readonly number[], values: readonly string[]): Map<string, number[]> {
   const parts = new Map<string, number[]>();
   for (const i of indices) {
@@ -223,12 +164,7 @@ function allSame(values: readonly string[]): boolean {
   return true;
 }
 
-/**
- * Why these values matched, loosest step needed wins.
- *
- * Only ever called on values that share a word key, a word order AND an amount,
- * so 'punctuation' is the last thing left when nothing tighter fits.
- */
+// Only ever called on values sharing a word key, order and amount, so 'punctuation' is last.
 function classify(values: readonly string[]): ClusterReason {
   const lowered = values.map((v) => v.toLowerCase());
   if (allSame(lowered)) return 'case';
@@ -237,10 +173,6 @@ function classify(values: readonly string[]): ClusterReason {
   if (allSame(squashed.map(foldAccents))) return 'accents';
   return 'punctuation';
 }
-
-// ─────────────────────────────────────────────────────────────────────────
-//  Counting
-// ─────────────────────────────────────────────────────────────────────────
 
 export interface ValueTally {
   /** Distinct value -> how many rows hold it. Iteration order is first-seen. */
@@ -252,10 +184,6 @@ export interface ValueTally {
 
 const BLANK = /^\s*$/;
 
-/**
- * Same answer as `trim() === ''` without allocating, and without even the
- * regex for the ordinary case of a value that starts with a letter.
- */
 function isBlank(value: string): boolean {
   const first = value.charCodeAt(0);
   // Below this there is no whitespace character except the two named.
@@ -294,11 +222,6 @@ export function tallyColumn(rows: readonly string[][], position: number): ValueT
   return { counts, values: total, blanks };
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Which columns are worth offering this on
-// ─────────────────────────────────────────────────────────────────────────
-
-/** A column in both numberings: where it sits now, and where it came from. */
 export interface ColumnRef {
   /** Position in the cleaned grid. */
   position: number;
@@ -321,18 +244,13 @@ export interface ColumnSuitability extends ColumnRef {
   ratio: number;
   suitable: boolean;
   reason: UnsuitableReason | null;
-  /**
-   * True when counting stopped early on a column already too varied to offer:
-   * `distinctValues` and `ratio` are then a floor, not a total. The verdict is
-   * the same either way.
-   */
+  /** When true, `distinctValues` and `ratio` are a floor, not a total. */
   distinctValuesCapped: boolean;
 }
 
 /** Enough to judge the shape of a column without walking 20,000 distinct values. */
 const SHAPE_SAMPLE = 400;
 
-/** What `judge` needs of a tally — a Map or a Set of the distinct values. */
 interface DistinctValues {
   readonly size: number;
   keys(): Iterable<string>;
@@ -381,12 +299,7 @@ export function assessColumn(column: ColumnRef, tally: ValueTally): ColumnSuitab
   return judge(column, tally.counts, tally.values, false);
 }
 
-/**
- * Every column judged in one pass.
- *
- * `columnSources` is `CleanResult.columnSources`: without it the grid is
- * assumed to be in its original column order.
- */
+/** Without `columnSources` the grid is assumed to be in its original column order. */
 export function assessColumns(
   grid: Grid,
   columnSources?: readonly number[],
@@ -398,14 +311,9 @@ export function assessColumns(
   const capped = new Array<boolean>(width).fill(false);
   for (let c = 0; c < width; c += 1) distinct.push(new Set<string>());
 
-  // Once a column has shown more distinct values than half the file holds rows
-  // it can only come out 'too varied', and the shape tests only ever look at
-  // the first few hundred. So stop collecting: on a big file that is most of
-  // the work, and the verdict does not change.
+  // Past this a column can only come out 'too varied', so stop collecting distinct values.
   const limit = Math.max(SHAPE_SAMPLE, Math.floor(rows.length * CATEGORICAL_RATIO));
 
-  // One walk over the rows rather than one per column: on a wide file the
-  // repeated walk was most of the cost.
   for (let r = 0; r < rows.length; r += 1) {
     const row = rows[r];
     for (let c = 0; c < width; c += 1) {
@@ -429,10 +337,6 @@ export function assessColumns(
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  The exact pass
-// ─────────────────────────────────────────────────────────────────────────
-
 export interface ClusterOptions {
   maxDistinctValues?: number;
   maxClusters?: number;
@@ -441,18 +345,11 @@ export interface ClusterOptions {
 export interface SpellingReport extends ClusterReport {
   /** Non-blank cells behind the tally. */
   totalValues: number;
-  /**
-   * Groups that matched only because the same words appear in a different
-   * order — "Flat 2, 14 High St" and "Flat 14, 2 High St". Never in `clusters`.
-   */
+  /** Groups that matched only on word order. Never also in `clusters`. */
   wordOrderClusters: ValueCluster[];
   /** True when groups were dropped to stay under `maxClusters`. */
   clustersTruncated: boolean;
-  /**
-   * Loose pass only: comparisons were cut short on a very varied column, so
-   * there may be matches it never looked at. Always false for the exact pass,
-   * which compares everything.
-   */
+  /** Loose pass only: comparisons were cut short. Always false for the exact pass. */
   searchCapped: boolean;
 }
 
@@ -461,8 +358,7 @@ function membersOf(values: readonly string[], counts: Map<string, number>): Clus
   for (let i = 0; i < values.length; i += 1) {
     members[i] = { value: values[i], count: counts.get(values[i]) ?? 0 };
   }
-  // `values` arrives in first-seen order and sort is stable, so equal counts
-  // keep the spelling that appeared first at the top.
+  // Sort is stable and `values` is first-seen order, so ties keep the earliest spelling.
   if (members.length === 2) {
     if (members[1].count > members[0].count) members.reverse();
     return members;
@@ -529,8 +425,6 @@ export function clusterTally(
 ): SpellingReport {
   const [values, truncated] = entriesWithin(tally, options.maxDistinctValues ?? MAX_DISTINCT_VALUES);
 
-  // Indexes rather than strings: on 20,000 distinct values the second map of
-  // value -> key costs more than the fingerprinting does.
   const ordering: string[] = new Array<string>(values.length);
   const buckets = new Map<string, number[]>();
   for (let i = 0; i < values.length; i += 1) {
@@ -548,8 +442,7 @@ export function clusterTally(
   for (const [key, bucket] of buckets) {
     if (bucket.length < 2) continue;
 
-    // Split the bucket by word ORDER first: same order is safe to offer, a
-    // different order is the one thing this key gets dangerously wrong.
+    // Word order first: a different order is the one thing this key gets dangerously wrong.
     const byOrder = new Map<string, number[]>();
     for (const i of bucket) {
       const group = byOrder.get(ordering[i]);
@@ -620,23 +513,13 @@ export function clusterColumn(
   return clusterTally(column, tallyColumn(grid.rows, column.position), options);
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  The looser pass — opt-in only
-// ─────────────────────────────────────────────────────────────────────────
-
 export interface LooseClusterOptions extends ClusterOptions {
   /** Characters two long spellings may differ by. Short ones get less. */
   maxEditDistance?: number;
-  /** Distinct values the pass will consider at all. */
   maxLooseValues?: number;
 }
 
-/**
- * How far apart two spellings may be.
- *
- * Short values get nothing: "UK" and "US" are one character apart and are not
- * the same country.
- */
+// Short values get nothing: "UK" and "US" are one character apart and not the same country.
 function allowedDistance(a: string, b: string, ceiling: number): number {
   const shortest = Math.min(a.length, b.length);
   if (shortest < 5) return 0;
@@ -709,24 +592,10 @@ class Unions {
 /** Buckets this big are not evidence of anything and cost O(n²) to pair up. */
 const MAX_BLOCK = 400;
 const BLOCK_SIZE = 4;
-/**
- * Pairs the loose pass will look at before it gives up.
- *
- * Set to keep the worst case — a full 3,000 distinct values, all different —
- * under about a quarter of a second, since this blocks the page while it runs.
- * Raising it buys nothing: the blocks are searched rarest first, so a real
- * typo is found long before the budget runs out.
- */
+// Set to keep the worst case under about a quarter of a second; this blocks the page.
 const MAX_COMPARISONS = 250_000;
 
-/**
- * The second pass: spellings a character or two apart.
- *
- * Deliberately behind its own call — it costs hundreds of milliseconds where
- * the exact pass costs tens, so it must never sit on the default path. It
- * reports only groups the exact pass did not already find, so the UI can show
- * them as extra suggestions.
- */
+/** Costs hundreds of milliseconds, so never put it on the default path; extra groups only. */
 export function clusterTallyLoosely(
   column: ColumnRef,
   tally: ValueTally,
@@ -735,16 +604,12 @@ export function clusterTallyLoosely(
   const cap = Math.min(options.maxLooseValues ?? MAX_LOOSE_VALUES, MAX_LOOSE_VALUES);
   const ceiling = options.maxEditDistance ?? 2;
 
-  // Over the cap this refuses rather than trims. Trimming would mean keeping
-  // the commonest spellings, and a misspelling is by definition a rare one, so
-  // the pass would work for most of a second and then find nothing.
+  // Over the cap this refuses rather than trims: a misspelling is by definition a rare one.
   if (tally.counts.size > cap) return emptyReport(column, tally, true, false);
 
   const values = Array.from(tally.counts.keys());
 
-  // One representative per WORD-ORDER group, so the exact matches count once.
-  // Grouping on the sorted key instead would quietly pull a reordering into
-  // every near-spelling group it touched.
+  // One representative per WORD-ORDER group; the sorted key would pull reorderings in.
   const groups = new Map<string, string[]>();
   const wordSets = new Map<string, string>();
   for (const value of values) {
@@ -768,7 +633,6 @@ export function clusterTallyLoosely(
     return membersOf(group, tally.counts)[0].value;
   });
   const normalised = reps.map((value) => squashSpaces(foldAccents(value.toLowerCase())));
-  // Once per value, not once per pair.
   const plain = normalised.map((value) => PLAIN_NUMBER.test(value));
   const withoutDigits = normalised.map(stripDigits);
 
@@ -793,14 +657,10 @@ export function clusterTallyLoosely(
   let comparisons = 0;
   let searchCapped = false;
 
-  // Smallest blocks first: a rare four-letter run is real evidence, and a
-  // common one ("ingt" in a column of English town names) is mostly noise. On
-  // a column varied enough to run out of budget, the useful pairs are the ones
-  // already done.
+  // Smallest blocks first: a rare four-letter run is evidence, a common one is noise.
   const ordered = Array.from(blocks.values()).sort((a, b) => a.length - b.length);
 
-  // Budget every pair the loops touch, not only the ones that reach the edit
-  // distance. Blocks overlap heavily, and skipping a repeat still costs time.
+  // Budget every pair the loops touch: blocks overlap, and skipping a repeat still costs time.
   search:
   for (const block of ordered) {
     if (block.length < 2) continue;
@@ -825,8 +685,7 @@ export function clusterTallyLoosely(
 
         const a = normalised[i];
         const b = normalised[j];
-        // "2018 Q1" and "2019 Q1" are one character apart and are not the same
-        // quarter. Anything separated only by a number is left alone.
+        // "2018 Q1" and "2019 Q1" are one character apart and not the same quarter.
         if (withoutDigits[i] === withoutDigits[j]) continue;
         if (!withinDistance(a, b, allowedDistance(a, b, ceiling))) continue;
 
@@ -850,8 +709,7 @@ export function clusterTallyLoosely(
       // Only groups that join two or more word-order groups are new here.
       if (group.length < 2) continue;
 
-      // A reordering is not a near spelling, so at most one spelling of each
-      // word set may stay. The exact pass already offers the rest, labelled.
+      // A reordering is not a near spelling, so at most one spelling of each word set stays.
       const perWordSet = new Map<string, number>();
       for (const i of group) {
         const set = wordSets.get(keys[i]) as string;
@@ -873,8 +731,7 @@ export function clusterTallyLoosely(
       const parts = splitByAmount(raw.map((_, i) => i), raw);
       for (const [signature, part] of parts) {
         if (part.length < 2) continue;
-        // A part that fell back inside one word-order group is the exact
-        // pass's find, not this pass's.
+        // A part inside one word-order group is the exact pass's find, not this pass's.
         if (new Set(part.map((i) => owner[i])).size < 2) continue;
         const id = parts.size === 1 ? keys[kept[0]] : `${keys[kept[0]]}#${signature}`;
         clusters.push(
@@ -900,9 +757,7 @@ export function clusterTallyLoosely(
     distinctValues: tally.counts.size,
     totalValues: tally.values,
     clusters: clusters.slice(0, max),
-    // Empty by design: every reordering this pass can see shares a word set, so
-    // the exact pass has already offered it as a word-order group. This pass
-    // only adds near spellings.
+    // Empty by design: the exact pass has already offered every reordering this pass can see.
     wordOrderClusters: [],
     truncated: false,
     clustersTruncated: clusters.length > max,
@@ -918,11 +773,6 @@ export function clusterColumnLoosely(
   return clusterTallyLoosely(column, tallyColumn(grid.rows, column.position), options);
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-//  Turning accepted groups into a plan
-// ─────────────────────────────────────────────────────────────────────────
-
-/** A group the user said yes to, optionally keeping a spelling of their own. */
 export interface AcceptedCluster {
   cluster: ValueCluster;
   /** Defaults to `cluster.suggested`. */
@@ -935,13 +785,7 @@ export function rowsAffected(cluster: ValueCluster, keep?: string): number {
   return cluster.members.reduce((sum, m) => (m.value === target ? sum : sum + m.count), 0);
 }
 
-/**
- * Build `CleanOptions.spellingMerges[column]` from the groups the user accepted.
- *
- * Later groups win, and a target that is itself merged onward is followed
- * through, so accepting an ordinary group and then a word-order one that
- * swallows it leaves every member pointing at the same final spelling.
- */
+/** Later groups win, and a target merged onward is followed through to the end. */
 export function buildMergePlan(accepted: readonly AcceptedCluster[]): MergePlan {
   const plan: MergePlan = {};
   for (const { cluster, keep } of accepted) {

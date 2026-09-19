@@ -1,18 +1,3 @@
-/**
- * The cleaning pipeline.
- *
- * `cleanSheet` is a pure function of (the sheet as it was read, the options).
- * It ALWAYS starts from the original rows, never from a previous result, so
- * flipping a toggle can never compound earlier edits — cleaning is idempotent
- * and the preview is always a faithful picture of the options as they stand.
- *
- * The date analysis is deliberately NOT a parameter. It is run here, on the
- * rows below the chosen heading row and after placeholders have been blanked,
- * because a banner line such as "Report run 13/09/2026" sitting above the
- * heading would otherwise cast a real day-first vote on a column nothing else
- * in the file can settle.
- */
-
 import { findInvisible } from '@/lib/text-utilities/whitespace';
 import { RemovalRecorder } from './changes';
 import { analyseDateColumns, normaliseCell, type DateColumnAnalysis } from './dates';
@@ -27,32 +12,25 @@ import {
   type DateOrder,
 } from './types';
 
-/** The sheet as it was read. `ParsedSheet` satisfies this. */
 export interface CleanSource {
   rows: readonly string[][];
   columnCount: number;
 }
 
-/** What `structure.ts` found, for the options that depend on it. */
 export interface CleanContext {
   /** Original index of an unnamed pandas/R index column. */
   indexColumn?: number | null;
 }
 
-/**
- * Enough of the pass to work out afterwards what happened to one row, without
- * the pass having had to remember anything about it.
- */
+/** Enough of the pass to work out afterwards what happened to one row. */
 export interface CleanPlan {
   source: readonly string[][];
   columnCount: number;
-  /** First row that was treated as data; everything above it is not. */
   firstDataRow: number;
   /** The whole per-cell pipeline for one ORIGINAL column. Pure. */
   cellFor(value: string, originalColumn: number, reasons?: CellChangeReason[]): string;
 }
 
-/** One kind of invisible character the pass took out, for the summary line. */
 export interface InvisibleCharacterTally {
   /** e.g. `U+200B`. */
   code: string;
@@ -63,7 +41,6 @@ export interface InvisibleCharacterTally {
   action: 'removed' | 'replaced';
 }
 
-/** A `CleanResult` plus everything the panels around the preview need. */
 export interface CleanOutcome extends CleanResult {
   plan: CleanPlan;
   /** Columns found to be dates, keyed by ORIGINAL column index. */
@@ -78,13 +55,7 @@ export interface CleanOutcome extends CleanResult {
 const SPACE_RUN = /[^\S\r\n]+/g;
 /** A line break plus any whitespace hugging it. */
 const NEWLINE_RUN = /\s*[\r\n]+\s*/g;
-/**
- * A hash of a row's text AND its shape, used to find rows worth comparing.
- *
- * Joining cells into one key is what made two different rows look like one:
- * any separator can itself appear in a cell, a NUL included. Equal hashes are
- * compared cell by cell below, so the hash only ever has to be fast.
- */
+// Equal hashes are still compared cell by cell, so this only has to be fast.
 function rowHash(row: readonly string[]): number {
   let hash = 0x811c9dc5;
   for (const cell of row) {
@@ -152,24 +123,11 @@ function isBlank(value: string): boolean {
   return value === '' || value.trim() === '';
 }
 
-/** Header text for the date analysis and for the blank-column test. */
 function headerRowOf(source: CleanSource, headerRowIndex: number | null, width: number): string[] {
   if (headerRowIndex === null) return new Array<string>(width).fill('');
   return padRow(source.rows[headerRowIndex] ?? [], width);
 }
 
-/**
- * The per-cell pipeline.
- *
- * Invisible characters go first so that what is left can be trimmed and
- * squeezed like ordinary text; placeholders are blanked before the spelling
- * merges, because a merge plan is written against values as they stand at that
- * point (see `CleanOptions.spellingMerges`).
- *
- * Nothing in here counts anything. The pass reads the reasons it hands back and
- * keeps the tally itself, so re-running one cell for the preview long after the
- * pass has finished cannot disturb the numbers on screen.
- */
 function makePipeline(options: CleanOptions, columnCount: number) {
   const lower = (value: string) => value.trim().toLowerCase();
   const defaultSentinels = new Set(options.defaultBlankSentinels.map(lower));
@@ -180,7 +138,6 @@ function makePipeline(options: CleanOptions, columnCount: number) {
 
   const merges = options.spellingMerges;
   const invisible = new Map<number, InvisibleCharacterTally>();
-  /** Columns the pass deletes as blank. Nothing is applied to them. */
   const dropped = new Uint8Array(columnCount);
   const dateOrders = new Array<DateOrder | null | false>(columnCount).fill(false);
 
@@ -284,11 +241,6 @@ function makePipeline(options: CleanOptions, columnCount: number) {
   };
 }
 
-/**
- * The date analysis is the one expensive thing that does not depend on most of
- * the options, so the last answer for a sheet is kept and reused while the
- * options that feed it stay put.
- */
 const analysisCache = new WeakMap<object, { key: string; analyses: DateColumnAnalysis[] }>();
 
 function analyseDates(
@@ -330,7 +282,6 @@ export function cleanSheet(
   let columnCount = source.columnCount;
   if (!columnCount) for (const row of source.rows) columnCount = Math.max(columnCount, row.length);
 
-  // A heading row outside the sheet means the sheet has no heading row.
   const headerRowIndex =
     options.headerRowIndex !== null &&
     options.headerRowIndex >= 0 &&
@@ -367,9 +318,6 @@ export function cleanSheet(
     options.blankSentinels ||
     Object.keys(options.spellingMerges).length > 0;
 
-  // ── 1. Columns that are blank from top to bottom ──────────────────────
-  // Settled before anything is counted, so work on a column this same pass
-  // then deletes never reaches the summary or the row detail.
   const rawHeader = headerRowOf(source, headerRowIndex, columnCount);
   const columnSources: number[] = [];
   for (let column = 0; column < columnCount; column += 1) {
@@ -389,9 +337,6 @@ export function cleanSheet(
   stats.blankColumns = columnCount - columnSources.length;
   const projecting = columnSources.length !== columnCount;
 
-  // ── 2. Cell transforms, on the data rows only ─────────────────────────
-  // The heading row is not touched here: counting its cells is what made
-  // "trimmed whitespace from N cells" overstate itself on every file.
   const working: string[][] = [];
   const reasons: CellChangeReason[] = [];
   const mergedColumns = new Set<number>();
@@ -451,11 +396,7 @@ export function cleanSheet(
   }
   stats.spellingMergedColumns = mergedColumns.size;
 
-  // ── 3. Which columns hold dates, and how they read ────────────────────
-  // Worked out here but applied row by row below, because a date written two
-  // ways is the commonest way for two rows to be the same row: normalising
-  // after the duplicate test would send the file out with identical rows in
-  // it and the summary saying none were found.
+  // Dates are normalised before the duplicate test: a date written two ways is the commonest twin.
   let dateColumns: readonly DateColumnAnalysis[] = [];
   const dateTargets: number[] = [];
   if (options.normaliseDates) {
@@ -472,8 +413,6 @@ export function cleanSheet(
       if (analysis.status === 'auto') {
         pipeline.dateOrders[analysis.index] = decision ?? analysis.order;
       } else if (decision === undefined) {
-        // Genuinely undecidable and unanswered: leave the column exactly as it
-        // came in until the user says which way to read it.
         stats.pendingDateColumns += 1;
       } else {
         pipeline.dateOrders[analysis.index] = decision;
@@ -485,7 +424,6 @@ export function cleanSheet(
     }
   }
 
-  // ── 4. Footer, blank, index-only and duplicate rows ───────────────────
   const indexColumn =
     options.removeBlankRows && options.ignoreIndexColumnInBlankRows
       ? (context.indexColumn ?? -1)
@@ -507,8 +445,7 @@ export function cleanSheet(
 
     const full = working[at];
     at += 1;
-    // Always its own array: handing back one of the sheet's rows turns a
-    // single write anywhere downstream into a corrupted original.
+    // Always its own array: handing back a sheet row lets a downstream write corrupt the original.
     let out: string[];
     if (projecting) {
       out = new Array<string>(columnSources.length);
@@ -517,8 +454,7 @@ export function cleanSheet(
       out = full.slice();
     }
 
-    // Dates can neither empty a cell nor fill one, so the blank tests below
-    // read the same either side of them and are cheaper first.
+    // Dates cannot empty or fill a cell, so the blank tests read the same and are cheaper first.
     if (options.removeBlankRows) {
       let values = 0;
       let outside = 0;
@@ -573,8 +509,7 @@ export function cleanSheet(
       }
     }
 
-    // Counted only now the row is staying, so nothing the user cannot find in
-    // the file they download is ever reported as work done to it.
+    // Counted only now the row is staying, so removed rows never count as work done.
     if (dated.length > 0) {
       for (const c of dated) datedInColumn[c] += 1;
       stats.datesNormalised += dated.length;
@@ -590,7 +525,6 @@ export function cleanSheet(
 
   for (const count of datedInColumn) if (count > 0) stats.dateColumns += 1;
 
-  // ── 5. Headings ──────────────────────────────────────────────────────
   const headerCells = columnSources.map((column) => rawHeader[column]);
   const named = standardiseHeaders(headerCells, {
     standardise: options.standardiseHeaders,

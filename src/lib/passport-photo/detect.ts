@@ -2,28 +2,12 @@ import type { InferenceSession } from 'onnxruntime-web';
 import { loadOrt } from '@/lib/onnx/runtime';
 import { PassportPhotoError, type FaceDetection } from './types';
 
-/**
- * Finding the face, with YuNet.
- *
- * The model takes a fixed 640 x 640 image and answers at three scales at once:
- * one prediction per cell of an 80 x 80, a 40 x 40 and a 20 x 20 grid. Each
- * prediction carries a box and five points — both eyes, the nose tip and both
- * mouth corners — written as offsets from its own cell, which is why every
- * number below is multiplied back up by its stride.
- */
-
 const SIZE = 640;
 const STRIDES = [8, 16, 32] as const;
-
-/** Below this a detection is more likely to be a pattern in the wallpaper. */
 const SCORE_THRESHOLD = 0.6;
-
-/** Two boxes overlapping by more than this are the same face. */
 const IOU_THRESHOLD = 0.3;
-
 const MAX_FACES = 10;
 
-/** The photo, letterboxed into the square the model insists on. */
 interface Letterbox {
   pixels: Uint8ClampedArray;
   scale: number;
@@ -51,8 +35,7 @@ function letterbox(source: ImageBitmap): Letterbox {
     canvas.width = SIZE;
     canvas.height = SIZE;
     const context = context2d(canvas);
-    // Mid grey rather than black: a hard edge against the padding reads as a
-    // strong feature and pulls false detections towards the border.
+    // Mid grey, not black: a hard edge against the padding pulls false detections to the border.
     context.fillStyle = '#808080';
     context.fillRect(0, 0, SIZE, SIZE);
     context.drawImage(source, offsetX, offsetY, width, height);
@@ -91,12 +74,7 @@ function overlap(a: FaceDetection, b: FaceDetection): number {
   return total > 0 ? shared / total : 0;
 }
 
-/**
- * Find every face in `source`, best first, in source-photo pixels.
- *
- * An empty list is a normal answer, not a failure: a photo of a pet, or one
- * where the face is turned too far away, simply has no face in it.
- */
+/** Every face in `source`, best first, in source pixels. An empty list is a normal answer. */
 export async function detectFaces(
   session: InferenceSession,
   source: ImageBitmap,
@@ -134,7 +112,6 @@ export async function detectFaces(
       const width = Math.exp(boxes[b + 2]) * stride;
       const height = Math.exp(boxes[b + 3]) * stride;
 
-      // Back out of the letterbox, into the coordinates of the photo itself.
       const toSourceX = (value: number) => (value - box.offsetX) / box.scale;
       const toSourceY = (value: number) => (value - box.offsetY) / box.scale;
 
@@ -176,13 +153,7 @@ export function eyeLine(face: FaceDetection): { x: number; y: number; tiltDegree
   return { x, y, tiltDegrees: tilt };
 }
 
-/**
- * How far the head is turned, as a ratio.
- *
- * The nose sits midway between the eyes when someone looks straight at the
- * camera, so its sideways drift is a cheap proxy for a turned head. 0 is
- * straight on; past about 0.25 the face is too far round for a passport.
- */
+/** Sideways nose drift as a share of the gap between the eyes; 0 is straight on. */
 export function turn(face: FaceDetection): number {
   const [right, left, nose] = face.points;
   const span = Math.hypot(left[0] - right[0], left[1] - right[1]);

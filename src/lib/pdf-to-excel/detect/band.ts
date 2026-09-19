@@ -10,13 +10,7 @@ const hasAmount = (cells: readonly string[]): boolean =>
 
 const filled = (cells: readonly string[]): number => cells.filter((cell) => cell !== '').length;
 
-/**
- * Which lines on a page are table: first to last line holding an amount in a right-aligned
- * column, extended up for one header row and down through the last row's wrapped tail.
- *
- * The amount has to parse, not merely be non-empty, or "Account number: 5021 4478 9910" joins
- * the band. The downward extension is what keeps a page's final wrapped line.
- */
+/** First to last line holding an amount in a right-aligned column, plus a header row and wrapped tails. */
 export function tableBand(
   profile: ColumnProfile,
   pages: readonly PageRead[],

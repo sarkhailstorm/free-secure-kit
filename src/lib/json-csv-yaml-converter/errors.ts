@@ -1,17 +1,3 @@
-/**
- * Turning parser exceptions into a sentence someone actually wants to read.
- *
- * Engines word their JSON errors very differently — V8 sometimes gives a
- * position and sometimes echoes your whole document back at you, Firefox
- * reports a line and column, Safari reports neither. So rather than rely on
- * the message, we re-scan failed input ourselves to find exactly where the
- * grammar broke, and only fall back to the engine's words if our scanner
- * cannot reproduce the failure.
- *
- * The scanner is a *locator*, never a second JSON implementation: it only ever
- * runs after `JSON.parse` has already rejected the text.
- */
-
 import type { ConvertError } from './types';
 
 /** Translate a character offset into a 1-based line and column. */
@@ -27,8 +13,6 @@ export function lineColumnAt(text: string, index: number): { line: number; colum
   }
   return { line, column: clamped - lastBreak };
 }
-
-/* -------------------------------------------------------- the JSON locator */
 
 interface Fault {
   index: number;
@@ -227,7 +211,6 @@ function scanValue(s: Scanner, depth: number): Fault | null {
   return { index: s.pos, message: `Expected a value but found ${describeChar(char)}` };
 }
 
-/** Find the first place the JSON grammar breaks, or null if it looks fine. */
 function locateJsonFault(text: string): Fault | null {
   const scanner: Scanner = { text, pos: 0 };
 
@@ -247,8 +230,6 @@ function locateJsonFault(text: string): Fault | null {
 
   return null;
 }
-
-/* ------------------------------------------------------- message tidying */
 
 function tidy(message: string): string {
   const cleaned = message
@@ -332,7 +313,6 @@ export function describeYamlError(error: unknown): ConvertError {
   return { message: tidy(errorMessage(error)), line: null, column: null };
 }
 
-/** Anything we did not anticipate — still shown as a sentence, never a stack. */
 export function describeUnknownError(error: unknown): ConvertError {
   return { message: tidy(errorMessage(error)), line: null, column: null };
 }

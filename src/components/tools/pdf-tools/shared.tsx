@@ -3,7 +3,6 @@ import { Loader2, TriangleAlert, Info, FileText } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { formatBytes, percentChange, plural } from '@/lib/format';
 
-/** A short, dismissible failure message. Never a stack trace. */
 export function ErrorNote({
   message,
   className,
@@ -90,7 +89,6 @@ export function Progress({
   );
 }
 
-/** One labelled number in a summary strip. */
 export function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="min-w-0">
@@ -100,7 +98,6 @@ export function Stat({ label, value }: { label: string; value: React.ReactNode }
   );
 }
 
-/** "2.1 MB → 840 KB" with an honest, signed badge. */
 export function SizeChange({ before, after }: { before: number; after: number }) {
   const delta = percentChange(before, after);
   const smaller = delta < 0;
@@ -126,7 +123,6 @@ export function SizeChange({ before, after }: { before: number; after: number })
   );
 }
 
-/** The filename + page count + size line shown above every result. */
 export function FileLine({
   name,
   size,
@@ -155,7 +151,6 @@ export function FileLine({
   );
 }
 
-/** Small labelled `<select>` for the conversion settings. */
 export function SelectField<T extends string>({
   label,
   value,

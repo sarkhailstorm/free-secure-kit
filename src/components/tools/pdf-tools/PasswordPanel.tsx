@@ -73,8 +73,7 @@ export function PasswordPanel() {
       });
 
       try {
-        // A fresh copy each time: qpdf is handed the bytes and a retry with a
-        // different password must start from the original file.
+        // Fresh copy each time: qpdf consumes the bytes, so a retry needs the original.
         const outcome: UnlockOutcome = await unlockPdf(target.bytes.slice(), attemptPassword);
         setDownloadHint(null);
 

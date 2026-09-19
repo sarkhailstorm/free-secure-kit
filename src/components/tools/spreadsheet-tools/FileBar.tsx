@@ -11,13 +11,10 @@ export interface FileBarProps {
   filename: string;
   /** Bytes of the file as it arrived. */
   size: number;
-  /** Rows and columns of the sheet on screen, as it was read. */
   rows: number;
   columns: number;
-  /** Read this file instead, without losing the tool. */
   onFile: (file: File) => void;
   onStartOver: () => void;
-  /** `ACCEPT_ATTRIBUTE` from the reader. */
   accept?: string;
   busy?: boolean;
 }
@@ -42,8 +39,7 @@ export function FileBar({
         'flex flex-wrap items-center justify-between gap-4 px-5 py-4 transition-colors',
         dragging && 'border-accent bg-accent-soft',
       )}
-      // Without these, a file dropped anywhere on the loaded view opens in the
-      // browser and every answer on this page is lost.
+      // Without these, a file dropped here opens in the browser and every answer is lost.
       onDragOver={(e) => {
         e.preventDefault();
         if (!busy) setDragging(true);

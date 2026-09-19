@@ -23,7 +23,6 @@ function autoReason(column: DateColumnAnalysis): string {
     : 'Read without guesswork.';
 }
 
-/** The inline question we ask about a column we genuinely cannot resolve. */
 function AmbiguityPrompt({
   column,
   decision,
@@ -111,7 +110,6 @@ function AmbiguityPrompt({
   );
 }
 
-/** A one-line entry for a column we worked out on our own. */
 function ResolvedRow({
   column,
   decision,
@@ -147,12 +145,10 @@ function ResolvedRow({
 }
 
 export interface DateColumnsPanelProps {
-  /** `analyseDateColumns(grid)` for the sheet on screen. */
   columns: readonly DateColumnAnalysis[];
   /** `CleanOptions.columnDecisions`, keyed by ORIGINAL column index. */
   decisions: Record<number, ColumnDecision>;
   onDecide: (index: number, choice: ColumnDecision | undefined) => void;
-  /** Hidden entirely when date normalising is switched off. */
   enabled: boolean;
 }
 

@@ -12,7 +12,6 @@ export interface RemovedRow {
   /** ORIGINAL row index. */
   index: number;
   reason: RemovalReason;
-  /** The row as it was read, for the one-line preview. */
   cells: readonly string[];
   /** False for the heading row and anything above it — pick another heading row instead. */
   canKeep: boolean;
@@ -21,16 +20,13 @@ export interface RemovedRow {
 export interface RemovedRowsPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** One window of the removed rows, in row order. */
   rows: readonly RemovedRow[];
   /** Removed rows across the WHOLE sheet, however few are in `rows`. */
   total: number;
   /** Rows asked to be kept, by ORIGINAL row index — the `RescuePlan`. */
   kept: ReadonlySet<number>;
   onKeep: (index: number) => void;
-  /** Undo a keep. */
   onDropAgain: (index: number) => void;
-  /** Show the next window of rows. The button is hidden when this is absent. */
   onShowMore?: () => void;
   busy?: boolean;
 }

@@ -1,11 +1,3 @@
-/**
- * Syntax highlighting for the output panel.
- *
- * highlight.js is big, so the core and the three grammars we need are pulled
- * in lazily the first time something is highlighted, and cached afterwards.
- * Nothing here reaches the network — the grammars ship with the page bundle.
- */
-
 import type { DataFormat } from '@/lib/json-csv-yaml-converter/types';
 
 /** Above this many characters we show plain text instead, to stay responsive. */
@@ -33,8 +25,7 @@ function getHighlighter(): Promise<Hljs> {
       core.registerLanguage('plaintext', plaintext.default);
       return core;
     })().catch((error: unknown) => {
-      // A chunk that failed to load once (a flaky first paint, say) must not
-      // leave a rejected promise cached and highlighting dead for the session.
+      // Never leave a rejected promise cached, or highlighting stays dead.
       cached = null;
       throw error;
     });
@@ -50,16 +41,10 @@ const HTML_ESCAPES: Record<string, string> = {
   "'": '&#39;',
 };
 
-/** Escape anything we assemble into HTML ourselves. */
 export function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char);
 }
 
-/**
- * CSV has no highlight.js grammar, and inventing one would be worse than
- * useless. Tint the header row so the columns are easy to read against, and
- * leave every data row alone.
- */
 function highlightCsv(text: string): string {
   const breakAt = text.indexOf('\n');
   if (breakAt < 0) return `<span class="hljs-attr">${escapeHtml(text)}</span>`;
@@ -69,10 +54,7 @@ function highlightCsv(text: string): string {
   );
 }
 
-/**
- * Returns HTML safe to drop into the DOM: highlight.js escapes the source it
- * is given, and the CSV path escapes it here.
- */
+/** Returns HTML that is already escaped and safe to drop into the DOM. */
 export async function highlightToHtml(text: string, format: DataFormat): Promise<string> {
   if (format === 'csv') return highlightCsv(text);
 
@@ -80,16 +62,10 @@ export async function highlightToHtml(text: string, format: DataFormat): Promise
   try {
     return hljs.highlight(text, { language: format, ignoreIllegals: true }).value;
   } catch {
-    // A grammar can still choke on pathological input; plain text always works.
     return hljs.highlight(text, { language: 'plaintext', ignoreIllegals: true }).value;
   }
 }
 
-/**
- * A small highlight.js theme built from the site's own CSS variables, so the
- * output panel follows light and dark mode like everything else. Importing one
- * of highlight.js's own stylesheets would hard-code a single palette.
- */
 export const HIGHLIGHT_THEME_CSS = `
 .securekit-hl .hljs-attr,.securekit-hl .hljs-attribute{color:rgb(var(--accent))}
 .securekit-hl .hljs-string,.securekit-hl .hljs-quote{color:rgb(var(--ok))}

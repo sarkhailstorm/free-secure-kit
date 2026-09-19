@@ -1,12 +1,3 @@
-/**
- * Shared types for the Background Remover.
- *
- * Everything happens in the browser. The one thing this tool fetches is its
- * own cut-out engine, from this site's own origin, and only after the user
- * has asked for a cut-out — never on page load.
- */
-
-/** Which kind of cut-out the user asked for. */
 export type ModelChoice = 'person' | 'anything';
 
 export interface ModelChoiceInfo {
@@ -25,9 +16,8 @@ export interface RemovalProgress {
   stage: RemovalStage;
   /** 0–1 where it can be measured, otherwise null. */
   ratio: number | null;
-  /** Ready to show as-is. */
   message: string;
-  /** Uncompressed, and only useful for driving a bar — show `message` instead. */
+  /** Uncompressed bytes; show `message` to the user rather than these. */
   downloadedBytes: number;
   totalBytes: number;
 }
@@ -45,7 +35,6 @@ export interface RemovalResult {
   filename: string;
   width: number;
   height: number;
-  /** True when the photo was scaled down to stay inside the pixel cap. */
   resized: boolean;
   elapsedMs: number;
 }

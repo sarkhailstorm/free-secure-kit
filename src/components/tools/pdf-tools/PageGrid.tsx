@@ -7,11 +7,6 @@ import type { Thumbnails } from './useThumbnails';
 
 export type PageInteraction = 'select' | 'break' | 'none';
 
-/**
- * A thumbnail per page. Previews are drawn lazily: a tile only asks for its
- * image once it scrolls near the viewport, so a 500-page document does not
- * rasterise 500 pages the moment it is opened.
- */
 export function PageGrid({
   pageCount,
   thumbs,
@@ -37,8 +32,7 @@ export function PageGrid({
             key={page}
             page={page}
             url={thumbs.urls[page]}
-            // A document-level failure means no preview is ever coming: mark
-            // every tile settled so they stop asking and stop pulsing.
+            // A document-level failure means no preview is coming: settle every tile.
             failed={Boolean(thumbs.failed[page]) || thumbs.error !== null}
             isSelected={selected.has(page)}
             isBreak={page === 1 || breaks.has(page)}

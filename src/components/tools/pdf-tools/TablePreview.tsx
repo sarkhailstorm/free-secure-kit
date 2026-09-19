@@ -44,7 +44,6 @@ function columnHint(sheet: Sheet, column: Column): string {
   return column.balance ? 'Running balance' : KIND[column.kind];
 }
 
-/** What the cell shows: the value as read, or the page's own text when it was not read. */
 function CellText({ cell }: { cell: Cell | undefined }) {
   if (!cell || cell.value.kind === 'empty') return null;
   if (cell.offType) {
@@ -92,7 +91,6 @@ function BodyRow({ row, columns }: { row: Row; columns: Column[] }) {
   );
 }
 
-/** Every row the sheet holds, in order, with the flagged ones marked where they sit. */
 export function TablePreview({ sheet }: { sheet: Sheet }) {
   const [all, setAll] = useState(false);
 

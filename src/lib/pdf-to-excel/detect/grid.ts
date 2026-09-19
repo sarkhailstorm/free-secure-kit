@@ -11,12 +11,7 @@ import { cellText } from './text';
 const isInk = (span: Span): boolean =>
   !span.synthetic && !span.artifact && span.text.trim().length > 0;
 
-/**
- * Union collinear segments across the producer's own per-cell gap.
- *
- * Word writes one border rectangle per cell and leaves 3.4–3.5 pt between them, which mergeCollinear
- * (1.2 pt) never closes — so a 24-row table stays 168 separate verticals and scores no grid at all.
- */
+/** Unions collinear segments across the per-cell gap Word leaves between its border rectangles. */
 export function joinRules(rules: readonly RuleSeg[], gap: Pt): RuleSeg[] {
   const out: RuleSeg[] = [];
   for (const axis of ['h', 'v'] as const) {
@@ -122,7 +117,6 @@ function gridRows(grid: Grid, page: PageRead): { rows: CellRow[]; baselines: num
   };
 }
 
-/** Ruled tables on one page: the joined grid, its cells, and a note if it swallowed a row. */
 export function ruledTables(page: PageRead): DetectedTable[] {
   const joined = joinRules(page.rules, RULE_JOIN_GAP(page.bodySize));
   const out: DetectedTable[] = [];

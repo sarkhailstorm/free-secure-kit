@@ -1,19 +1,9 @@
-/**
- * Page-range parsing and formatting.
- *
- * Pure functions, no DOM and no PDF library — this is the bit that decides
- * which pages "1-3, 7, 9-12" refers to, so it is kept small and readable.
- * Page numbers here are always 1-based, the way they are shown to the user.
- */
-
+/** Page numbers throughout this module are 1-based, the way they are shown to the user. */
 export type RangeResult =
   | { ok: true; pages: number[] }
   | { ok: false; message: string };
 
-/**
- * en dash, em dash, figure dash, minus sign, and the small / full-width forms
- * a CJK keyboard produces … all of them mean "to".
- */
+/** Every dash character that means "to", including the CJK forms. */
 const DASHES = /[‐-―−﹘﹣－]/g;
 /** People paste semicolons and full-width commas as separators too. */
 const SEPARATORS = /[;，、；]/g;
@@ -22,14 +12,7 @@ function quoted(token: string): string {
   return `“${token}”`;
 }
 
-/**
- * Turn a human page-range string into a sorted, de-duplicated page list.
- *
- * Deliberately forgiving: stray whitespace, trailing commas, repeated
- * separators, reversed ranges ("9-4") and open-ended ranges ("5-", "-4") all
- * work. Anything genuinely ambiguous returns a message written for a person,
- * never a silent empty result.
- */
+/** Forgiving: reversed ("9-4") and open-ended ("5-", "-4") ranges are accepted. */
 export function parsePageRanges(input: string, pageCount: number): RangeResult {
   const text = input.replace(DASHES, '-').replace(SEPARATORS, ',').trim();
   if (text === '') return { ok: true, pages: [] };
@@ -123,10 +106,7 @@ export function describeGroup(pages: number[]): string {
   return `pages ${formatPageRanges(pages)}`;
 }
 
-/**
- * Split 1..pageCount into consecutive groups, starting a new group at every
- * chosen break page. Page 1 always starts the first group.
- */
+/** Splits 1..pageCount at each break page; page 1 always starts the first group. */
 export function groupsFromBreaks(pageCount: number, breaks: Iterable<number>): number[][] {
   if (pageCount <= 0) return [];
   const starts = new Set<number>([1]);
@@ -143,7 +123,6 @@ export function groupsFromBreaks(pageCount: number, breaks: Iterable<number>): n
   });
 }
 
-/** One group per page: [[1],[2],[3]…]. */
 export function groupsPerPage(pageCount: number): number[][] {
   const groups: number[][] = [];
   for (let p = 1; p <= pageCount; p++) groups.push([p]);

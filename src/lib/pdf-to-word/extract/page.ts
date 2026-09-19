@@ -1,9 +1,3 @@
-/**
- * The per-page recipe. Every later stage drinks from PageFacts, so the pdf.js call order here
- * is load-bearing: commonObjs.get throws until getOperatorList has resolved alongside
- * getTextContent, and the callback form never fires.
- */
-
 import type { PDFDocumentProxy, PDFPageProxy, PageViewport } from 'pdfjs-dist';
 import type { StructTreeNode, TextStyle } from 'pdfjs-dist/types/src/display/api';
 import { PdfToolsError } from '@/lib/pdf-tools/errors';

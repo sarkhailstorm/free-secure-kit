@@ -1,8 +1,3 @@
-/**
- * The last step: docx objects in, a .docx Blob out, plus the honest summary the
- * result card shows. Everything here is pure assembly — no PDF is touched.
- */
-
 import type { IPropertiesOptions, ISectionOptions } from 'docx';
 import { boxCount, type PageLayout } from './emit/exact';
 import { hp, tw } from './emit/units';
@@ -165,8 +160,7 @@ export function buildReport(source: ReportSource, opts: WordOptions): WordReport
   const noteCodes = mergeNotes(
     exact ? model.notes.filter((note) => !EDITABLE_ONLY.has(note.code)) : model.notes,
   );
-  // Exact mode emits one framed box per line fragment and no tables, headings or lists at all,
-  // so the model's structural counts describe the analysis rather than the file it produced.
+  // Exact mode emits framed boxes and no tables, headings or lists, so these counts describe the analysis.
   const boxes = exact ? layouts.reduce((n, l) => n + boxCount(l.lines, l.fonts), 0) : 0;
   return {
     pageCount,

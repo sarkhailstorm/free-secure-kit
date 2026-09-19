@@ -46,7 +46,6 @@ export interface PageContext {
 type HeadingLevel = NonNullable<ParaBlock['level']>;
 type Kind = ParaBlock['kind'];
 
-/** What §4.4 scores on, plus the struct position model.ts needs to splice tables back in. */
 export interface BlockMetrics {
   /** Struct block index, or -1 on the geometry path. */
   structIndex: number;
@@ -72,7 +71,6 @@ export interface MeasuredPara extends ParaBlock {
   metrics: BlockMetrics;
 }
 
-/** §4.4 candidate guards. */
 const HEAD_MAX_LINES = 2;
 const HEAD_SHORT = 0.7;
 /** §4.2 size-change break; also the size bucket for the leading history and heading ranks. */
@@ -87,7 +85,6 @@ const STRUCT_SPLIT = 2.5;
 const MARKER_GAP = 1.2;
 const CONTINUATION_TOL: Pt = 2;
 const MAX_LIST_DEPTH = 3;
-/** §4.7 alignment. */
 const CENTRE_TOL = 0.02;
 const X0_VARY: Pt = 3;
 const SHARE_MIN = 0.7;
@@ -128,8 +125,6 @@ function shareRatio(values: readonly Pt[]): number {
 const spread = (values: readonly Pt[]): Pt =>
   values.length === 0 ? 0 : Math.max(...values) - Math.min(...values);
 
-/* ---------- §4.7 alignment ---------- */
-
 export function detectAlignment(lines: readonly Line[], left: Pt, right: Pt, em: Pt): Align {
   if (lines.length === 0) return 'left';
   const width = Math.max(1, right - left);
@@ -160,8 +155,6 @@ export function detectAlignment(lines: readonly Line[], left: Pt, right: Pt, em:
   return 'left';
 }
 
-/* ---------- §4.5 markers ---------- */
-
 interface Marker {
   text: string;
   markerX: Pt;
@@ -179,16 +172,13 @@ function markerOf(line: Line): Marker | null {
   const inkWidth = (first.w * glyph.length) / Math.max(1, first.text.length);
   if (!isListMarker(glyph, inkWidth, size)) return null;
   const next = ink[1];
-  // Measured from the marker's own x: Word's bullet leaves 12.9 pt of clear gap at an
-  // 11.04 pt body, just under §4.5's 1.2 S, but a full 18 pt from marker start to text.
+  // Measured from the marker's own x: Word's bullet leaves a full 18 pt from marker start to text.
   if (next.x - first.x < MARKER_GAP * size) return null;
   return { text: glyph, markerX: first.x, textX: next.x };
 }
 
 /** Where a line's body text starts — past its marker, when it has one. */
 const textStart = (line: Line): Pt => markerOf(line)?.textX ?? line.x0;
-
-/* ---------- runs ---------- */
 
 function hrefOf(span: Span, links: readonly LinkBox[]): string | null {
   if (links.length === 0) return null;
@@ -326,8 +316,6 @@ function blockRuns(
   return out.filter((run) => run.tab === true || run.text.length > 0);
 }
 
-/* ---------- §4.7 measurement ---------- */
-
 function tabStopsFor(lines: readonly Line[], left: Pt): ParaBlock['tabStops'] {
   const stops: Pt[] = [];
   for (const line of lines) {
@@ -452,8 +440,6 @@ function rankListDepths(blocks: readonly MeasuredPara[]): void {
   }
 }
 
-/* ---------- §4.2 paragraph segmentation ---------- */
-
 interface GapSample {
   size: Pt;
   gap: Pt;
@@ -540,8 +526,6 @@ function splitStructLines(lines: readonly Line[], bodySize: Pt): Line[][] {
   return groups;
 }
 
-/* ---------- shared page plumbing ---------- */
-
 function bodySpans(facts: PageFacts, ctx: PageContext): Span[] {
   const consumed = ctx.consumed;
   return consumed ? facts.spans.filter((span) => !consumed.has(span)) : [...facts.spans];
@@ -590,8 +574,6 @@ function bandOfSpans(spans: readonly Span[], bands: readonly ColumnBand[]): numb
   return best;
 }
 
-/* ---------- §4.2 geometry path ---------- */
-
 export function blocksFromGeometry(facts: PageFacts, ctx: PageContext): Block[] {
   const spans = bodySpans(facts, ctx);
   if (spans.length === 0) return [];
@@ -628,8 +610,6 @@ export function blocksFromGeometry(facts: PageFacts, ctx: PageContext): Block[] 
   classifyHeadings(out, ctx.body);
   return out;
 }
-
-/* ---------- §4.1 struct path ---------- */
 
 function tagLevelOf(block: StructBlock): HeadingLevel | null {
   for (const name of [block.producerTag, block.role]) {
@@ -752,8 +732,6 @@ export function blocksFromStruct(facts: PageFacts, ctx: PageContext): Block[] {
   return out;
 }
 
-/* ---------- §4.4 headings ---------- */
-
 const isMeasured = (block: ParaBlock): block is MeasuredPara =>
   'metrics' in block && typeof (block as MeasuredPara).metrics === 'object';
 
@@ -761,8 +739,7 @@ function scoreHeading(m: BlockMetrics, body: BodyMetrics): HeadingLevel | null {
   if (m.baseKind !== 'paragraph' || m.lineCount > HEAD_MAX_LINES) return null;
   if (!m.notSentence && !m.allCaps) return null;
   const ratio = body.sizePt > 0 ? m.sizePt / body.sizePt : 1;
-  // Measured to the column's left edge, not the block's own width: 'TOTAL DUE  GBP 1,201.39'
-  // is only 157 pt wide but runs to the right margin, and §4.4 names it as a false positive.
+  // Measured to the column's left edge, not the block's own width: 'TOTAL DUE  GBP 1,201.39' runs to the margin.
   const shortLine = m.rightExtentPt < HEAD_SHORT * m.columnWidthPt;
   if (ratio >= HEAD_RATIO_1) return 1;
   if (ratio >= HEAD_RATIO_2) return 2;
