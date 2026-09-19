@@ -1,5 +1,3 @@
-'use client';
-
 import { forwardRef } from 'react';
 import { SquarePen } from 'lucide-react';
 import { cn } from '@/lib/cn';

@@ -1,5 +1,3 @@
-'use client';
-
 import { Table2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { plural } from '@/lib/format';

@@ -1,5 +1,3 @@
-'use client';
-
 import { useId } from 'react';
 import { Eraser, FileInput } from 'lucide-react';
 import { Button } from '@/components/ui/Button';

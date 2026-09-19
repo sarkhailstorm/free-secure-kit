@@ -1,5 +1,3 @@
-'use client';
-
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { CircleCheckBig, Download, Eye, EyeOff, KeyRound, LockOpen, RotateCcw } from 'lucide-react';
 import { useToast } from '@/components/ToastProvider';

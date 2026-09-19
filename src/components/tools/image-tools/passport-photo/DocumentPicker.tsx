@@ -1,5 +1,3 @@
-'use client';
-
 import { useId } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';

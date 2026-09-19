@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useRef } from 'react';
 import { Check, X } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';

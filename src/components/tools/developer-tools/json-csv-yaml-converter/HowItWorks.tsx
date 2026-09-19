@@ -1,5 +1,3 @@
-'use client';
-
 import { ChevronDown } from 'lucide-react';
 
 const RULES: readonly { term: string; body: string }[] = [

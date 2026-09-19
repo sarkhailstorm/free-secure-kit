@@ -1,5 +1,3 @@
-'use client';
-
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Download, RotateCcw, Square, Table2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';

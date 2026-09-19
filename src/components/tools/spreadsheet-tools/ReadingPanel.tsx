@@ -1,5 +1,3 @@
-'use client';
-
 import { Sparkles, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';

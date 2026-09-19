@@ -1,5 +1,3 @@
-'use client';
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Ban, FileArchive, Images, LoaderCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/components/ToastProvider';

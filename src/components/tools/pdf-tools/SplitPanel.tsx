@@ -1,5 +1,3 @@
-'use client';
-
 import { useCallback, useId, useMemo, useState } from 'react';
 import {
   CircleCheckBig,

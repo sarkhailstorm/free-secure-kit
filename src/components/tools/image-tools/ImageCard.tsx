@@ -1,5 +1,3 @@
-'use client';
-
 import { ArrowDown, Clock, Download, Equal, LoaderCircle, TriangleAlert, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';

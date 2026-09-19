@@ -1,5 +1,3 @@
-'use client';
-
 import { useMemo, useState } from 'react';
 import { Download, Eraser, RefreshCw, Trash2 } from 'lucide-react';
 import { downloadText } from '@/lib/download';

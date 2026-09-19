@@ -1,5 +1,3 @@
-'use client';
-
 import { Eye, FileText, LoaderCircle, TriangleAlert } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';

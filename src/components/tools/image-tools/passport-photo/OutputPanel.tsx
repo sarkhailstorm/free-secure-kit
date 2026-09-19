@@ -1,5 +1,3 @@
-'use client';
-
 import { useMemo, useState } from 'react';
 import { Download, Loader2, Printer, TriangleAlert } from 'lucide-react';
 import { useToast } from '@/components/ToastProvider';

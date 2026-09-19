@@ -1,5 +1,3 @@
-'use client';
-
 import { EyeOff } from 'lucide-react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { cn } from '@/lib/cn';

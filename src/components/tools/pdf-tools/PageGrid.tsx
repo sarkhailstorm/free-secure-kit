@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useRef } from 'react';
 import { Check, FileWarning, Scissors } from 'lucide-react';
 import { cn } from '@/lib/cn';

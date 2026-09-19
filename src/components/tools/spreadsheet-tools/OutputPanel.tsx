@@ -1,5 +1,3 @@
-'use client';
-
 import { Download, LoaderCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader } from '@/components/ui/Card';

@@ -1,5 +1,3 @@
-'use client';
-
 import { useMemo, useState } from 'react';
 import { CaseSensitive, CornerDownLeft, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/cn';

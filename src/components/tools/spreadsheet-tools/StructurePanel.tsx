@@ -1,5 +1,3 @@
-'use client';
-
 import { useId, useState } from 'react';
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';

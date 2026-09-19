@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import { ArrowLeft, Check, LoaderCircle, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';

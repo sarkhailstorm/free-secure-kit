@@ -1,5 +1,3 @@
-'use client';
-
 import { Card, CardHeader } from '@/components/ui/Card';
 import { Tabs } from '@/components/ui/Tabs';
 import { dateFormatLabels } from '@/lib/csv-cleaner/dates';

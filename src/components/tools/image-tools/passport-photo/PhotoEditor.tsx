@@ -1,5 +1,3 @@
-'use client';
-
 import { useCallback, useRef, useState } from 'react';
 import { cn } from '@/lib/cn';
 import type { Crop, Measurements } from '@/lib/passport-photo';
