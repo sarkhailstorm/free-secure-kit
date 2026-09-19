@@ -1,14 +1,17 @@
-# Model licences
+# Third-party licences
 
-This site ships three pre-trained models: two cut-out models used by the background
-remover and by the passport photo maker, and one face detector used by the passport
-photo maker.
+This site ships four large files that are not its own code: three pre-trained
+models, and one command-line tool compiled to WebAssembly.
 
-The two cut-out models are licensed under the **Apache License, Version 2.0** —
-<https://www.apache.org/licenses/LICENSE-2.0>. The face detector is **MIT**.
+| File | What it does | Licence |
+| --- | --- | --- |
+| MODNet | Cuts a person out of a photo | Apache-2.0 |
+| U²-Net (u2netp) | Cuts anything else out of a photo | Apache-2.0 |
+| YuNet | Finds a face, for passport photos | MIT |
+| qpdf | Takes the password off a PDF | Apache-2.0 |
 
-None of the three upstream projects distributes a `NOTICE` file, so clause 4(d) of
-the Apache licence does not apply to any of them.
+None of the upstream projects distributes a `NOTICE` file, so clause 4(d) of the
+Apache licence does not apply to any of them.
 
 SecureKit itself remains [MIT](LICENSE). Both licences permit commercial use and
 redistribution, and neither requires this project to change its own licence.
@@ -66,6 +69,32 @@ The MIT licence requires the copyright notice to travel with the file. The
 [upstream licence](https://github.com/opencv/opencv_zoo/blob/main/models/face_detection_yunet/LICENSE)
 is reproduced by this entry and its link.
 
+## qpdf (taking the password off a PDF)
+
+| | |
+| --- | --- |
+| Served as | `public/qpdf/qpdf-cbd81a24.wasm` |
+| Size | 1,274,647 bytes |
+| SHA-256 | `cbd81a244d622a39e3cf16f2e589a9a0d7cc51f588d35b3dd6b425a677cc3f99` |
+| Copied from | `node_modules/@jspawn/qpdf-wasm/qpdf.wasm` |
+| Package | <https://www.npmjs.com/package/@jspawn/qpdf-wasm> |
+| Original project | <https://github.com/qpdf/qpdf> |
+| Licence | Apache-2.0 |
+| Author | Jay Berkenbilt |
+
+qpdf is a command-line tool for transforming PDFs, compiled to WebAssembly by the
+`@jspawn/qpdf-wasm` package, which is itself Apache-2.0. The `.wasm` file is
+copied out of `node_modules` unmodified by `scripts/copy-qpdf.mjs`, which refuses
+to write a file whose SHA-256 does not match the one above.
+
+It is used for one job: `qpdf --decrypt --password=... in.pdf out.pdf`, run in the
+browser, so a password-protected bank statement is opened on the device that owns
+it rather than uploaded somewhere. The password is passed to qpdf inside the tab
+and is never stored or sent.
+
+qpdf releases before version 11 were under the Artistic Licence 2.0. The version
+packaged here is Apache-2.0, matching the project's current licence.
+
 ## What Apache-2.0 asks of this repository
 
 Clause 4 of the licence applies to anyone redistributing these files. In full, a
@@ -96,7 +125,7 @@ None of these may be added, and none may be pulled in as a transitive dependency
 
 ## Runtime
 
-All three models are run by [onnxruntime-web](https://github.com/microsoft/onnxruntime),
+The three models are run by [onnxruntime-web](https://github.com/microsoft/onnxruntime),
 which is MIT-licensed. Its runtime files are copied out of `node_modules` into
 `public/ort/` at build time by `scripts/copy-onnx-runtime.mjs`, so nothing is ever
 fetched from a CDN. The model files themselves are fetched once, at install time,

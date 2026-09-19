@@ -1,7 +1,6 @@
 import { MAX_SOURCE_PIXELS, segment } from '@/lib/background-remover/infer';
-import { bytesOutstanding, loadAssets } from '@/lib/onnx/assets';
+import { bytesOutstanding, loadAssets, type AssetId } from '@/lib/assets';
 import { getSession, releaseSessions } from '@/lib/onnx/runtime';
-import type { AssetId } from '@/lib/onnx/types';
 import { detectFaces } from './detect';
 import { backgroundSpread, measure, toMask } from './measure';
 import {
@@ -36,7 +35,7 @@ export {
   SPEC_ORDER,
   SPECS,
 } from './specs';
-export { clearDownloads } from '@/lib/onnx/assets';
+export { clearDownloads } from '@/lib/assets';
 export { PassportPhotoError } from './types';
 export type * from './types';
 
@@ -231,7 +230,7 @@ export async function release(): Promise<void> {
 /** Turn whatever was thrown into one sentence a person can act on. */
 export function describePassportError(err: unknown, filename?: string): string {
   if (err instanceof Error && err.name === 'PassportPhotoError') return err.message;
-  if (err instanceof Error && err.name === 'ModelDownloadError') return err.message;
+  if (err instanceof Error && err.name === 'DownloadError') return err.message;
   if (err instanceof Error && err.name === 'AbortError') return 'Cancelled.';
 
   const label = filename ? `“${filename}”` : 'That photo';

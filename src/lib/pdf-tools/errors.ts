@@ -4,7 +4,8 @@
  * Two failures dominate real-world use: the file is password-protected, and
  * the file is not really a PDF (renamed, truncated, or half-downloaded).
  * Both throw from deep inside pdf-lib / pdf.js with messages written for
- * developers, so they are translated here.
+ * developers, so they are translated here. The first now has an answer on this
+ * page rather than somewhere else, so the message points at it.
  */
 
 const ENCRYPTED =
@@ -33,7 +34,7 @@ export function describePdfError(err: unknown, filename?: string): string {
   const haystack = `${name} ${message}`;
 
   if (ENCRYPTED.test(haystack)) {
-    return `${label} is password-protected. Encrypted PDFs can’t be opened here — remove the password in your PDF reader, then try again.`;
+    return `${label} is password-protected. Take the password off it in the Unlock tab first, then come back.`;
   }
   if (CORRUPT.test(haystack)) {
     return `${label} doesn’t look like a readable PDF. It may be corrupt, truncated, or another kind of file with a .pdf name.`;

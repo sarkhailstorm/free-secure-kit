@@ -21,7 +21,7 @@ Four everyday file and data utilities, in one place, free and without an account
 
 | Tool | What it does |
 | --- | --- |
-| [PDF Tools](src/app/tools/pdf-tools/page.tsx) | Merge PDFs and reorder their pages, extract pages as PDFs or PNG/JPEG images, compress, build a PDF from images, convert a PDF to an editable Word document, and turn the tables in a PDF into an Excel spreadsheet |
+| [PDF Tools](src/app/tools/pdf-tools/page.tsx) | Merge PDFs and reorder their pages, extract pages as PDFs or PNG/JPEG images, compress, remove a known password (and the printing and copying restrictions) with qpdf, build a PDF from images, convert a PDF to an editable Word document, and turn the tables in a PDF into an Excel spreadsheet |
 | [Image Tools](src/app/tools/image-tools/page.tsx) | Passport photos: detects the face and the top of the hair, crops to the exact size and head height a document requires (UK, US, Schengen, India, Australia, Canada and the ICAO standards), flags what would get the photo rejected, and lays copies out on a 6 x 4, 7 x 5 or A4 print with cut marks. Also batch compress and resize JPEG, PNG and WebP, or cut the subject out of a photo and save it with a transparent or solid-colour background |
 | [Spreadsheet Tools](src/app/tools/spreadsheet-tools/page.tsx) | Detects the text encoding and separator, finds the real header row, removes duplicate and blank rows, strips invisible characters, normalises inconsistent date formats, clusters equivalent spellings for review, reports what cleaning cannot fix, shows every changed cell with per-row rescue, and cleans every sheet of a workbook |
 | [Developer Tools](src/app/tools/developer-tools/page.tsx) | Convert between JSON, CSV and YAML with nesting flattened to dot-notation columns and back; a live Markdown editor exporting to standalone HTML or PDF with themes; diff checker, case converter, whitespace cleaner and Base64 / URL / JWT encoding |
@@ -125,27 +125,30 @@ users supply. The vendor CDN serves the current, patched release.
 `scripts/copy-pdf-worker.mjs`, so it is served from this site's own origin instead of a CDN. That
 keeps the no-third-party-requests promise intact and lets the PDF tools work offline.
 
-### Models
+### Models and the PDF unlocker
 
-Image Tools needs files that are far too big to put in a JavaScript bundle: the models in
-`public/models/`, and the browser runtime that runs them in `public/ort/`.
+Two tools need files that are far too big to put in a JavaScript bundle: the models in
+`public/models/`, the browser runtime that runs them in `public/ort/`, and qpdf in
+`public/qpdf/`.
 
 | File | Used by | Licence |
 | --- | --- | --- |
 | `modnet-*.onnx` | Cut-outs of people, and the top of the head for passport photos | Apache-2.0 |
 | `u2netp-*.onnx` | Cut-outs of anything that is not a person | Apache-2.0 |
 | `yunet-*.onnx` | Finding the face and the eyes, for passport photos | MIT |
+| `qpdf-*.wasm` | Taking a known password off a PDF | Apache-2.0 |
 
-The runtime is copied out of `node_modules` by `scripts/copy-onnx-runtime.mjs`, exactly as the
-pdf.js worker is, and is not committed. The models **are** committed, because they come from
-other people's servers rather than from npm, and a build should not break the day one of those
-servers goes away. `scripts/fetch-models.mjs` fetches them once, checks the byte count and
-SHA-256 of each, and does nothing when they are already in place. See
-[MODEL-LICENCES.md](MODEL-LICENCES.md).
+The ONNX runtime and qpdf are copied out of `node_modules` by `scripts/copy-onnx-runtime.mjs` and
+`scripts/copy-qpdf.mjs`, exactly as the pdf.js worker is, and are not committed. The models **are**
+committed, because they come from other people's servers rather than from npm, and a build should
+not break the day one of those servers goes away. `scripts/fetch-models.mjs` fetches them once and
+checks the byte count and SHA-256 of each; `scripts/copy-qpdf.mjs` checks qpdf's the same way. See
+[THIRD-PARTY-LICENCES.md](THIRD-PARTY-LICENCES.md).
 
-None of it is fetched when the site loads, and the downloads are shared: `src/lib/onnx/` holds one
-Cache Storage entry per file, so a visitor who has already cut a person out of a photo pays only
-for the 232 KB face detector when they make a passport photo.
+None of it is fetched when the site loads, and the downloads are shared: `src/lib/assets.ts` holds
+one Cache Storage entry per file, so a visitor who has already cut a person out of a photo pays
+only for the 232 KB face detector when they make a passport photo, and qpdf is fetched only by
+someone who actually unlocks a PDF.
 
 ## Deploying
 

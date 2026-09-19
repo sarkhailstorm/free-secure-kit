@@ -8,6 +8,21 @@ const nextConfig = {
   // Emit /tools/csv-cleaner/index.html so static hosts resolve clean URLs.
   trailingSlash: true,
   reactStrictMode: true,
+  webpack(config, { isServer }) {
+    if (!isServer) {
+      // qpdf's Emscripten wrapper carries a Node branch it never takes in a
+      // browser. Without this, webpack tries to resolve `module`, `path` and
+      // `fs` for the client bundle and fails the build.
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        module: false,
+        path: false,
+        fs: false,
+        crypto: false,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;

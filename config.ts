@@ -121,15 +121,15 @@ export const tools: readonly Tool[] = [
     id: 'pdf-tools',
     name: 'PDF Tools',
     href: '/tools/pdf-tools',
-    blurb: 'Combine, reorder, split and shrink PDFs, or turn one into Word or Excel.',
+    blurb: 'Combine, split and shrink PDFs, unlock one, or turn it into Word or Excel.',
     description:
-      'Join PDFs and drag their pages into any order, pull out the pages you need as PDFs or pictures, shrink a file that is too big to email, turn photos into a PDF, convert one into an editable Word file, or turn the tables in a bank statement or invoice into a spreadsheet.',
+      'Join PDFs and drag their pages into any order, pull out the pages you need as PDFs or pictures, shrink a file that is too big to email, take the password off a locked bank statement, turn photos into a PDF, convert one into an editable Word file, or turn the tables in an invoice into a spreadsheet.',
     icon: 'FileStack',
     source: 'src/app/tools/pdf-tools/page.tsx',
     tags: [
       'Merge & reorder',
       'Extract pages',
-      'Pages to images',
+      'Unlock a locked PDF',
       'Images to PDF',
       'PDF to Word',
       'PDF to Excel',

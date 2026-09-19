@@ -1,8 +1,7 @@
-import { areAssetsReady, loadAssets as loadCached } from '@/lib/onnx/assets';
-import type { AssetId } from '@/lib/onnx/types';
+import { areAssetsReady, loadAssets as loadCached, type AssetId } from '@/lib/assets';
 import { BackgroundRemoverError, type ModelChoice, type ModelChoiceInfo } from './types';
 
-export { clearDownloads } from '@/lib/onnx/assets';
+export { clearDownloads } from '@/lib/assets';
 
 const CUTTERS: Record<ModelChoice, AssetId> = {
   anything: 'u2netp',

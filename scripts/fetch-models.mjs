@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-// Licences in MODEL-LICENCES.md. The hash is in the filename so a browser can
+// Licences in THIRD-PARTY-LICENCES.md. The hash is in the filename so a browser can
 // keep the file forever and never ask for it a second time.
 const models = [
   {

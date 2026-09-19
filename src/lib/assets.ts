@@ -1,14 +1,23 @@
-import { ModelDownloadError, type AssetId } from './types';
-
 /**
- * The one-time model downloads, and the Cache Storage copy that stops them
- * happening twice.
+ * The one-time downloads, and the Cache Storage copy that stops them happening
+ * twice.
  *
  * Nothing here runs until a tool actually needs a model. The site is on a fixed
  * monthly transfer allowance and is paused rather than billed when it runs out,
  * so a second download of the same bytes is not a small waste — it is the thing
  * most likely to take the whole site offline.
  */
+
+/** A big file this site serves from its own origin and only fetches once. */
+export type AssetId = 'engine' | 'modnet' | 'u2netp' | 'yunet' | 'qpdf';
+
+/** Something we needed could not be fetched. The message is fit to show. */
+export class DownloadError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'DownloadError';
+  }
+}
 
 // Named for the background remover because that is what first filled it.
 // Renaming it would make every existing visitor download everything again.
@@ -22,14 +31,17 @@ export interface Asset {
 }
 
 /**
- * Every model file this site serves. `prune` deletes anything not listed here,
- * so a file that is renamed rather than removed still frees its old copy.
+ * Every big file this site serves. `prune` deletes anything not listed here, so
+ * a file that is renamed rather than removed still frees its old copy.
  */
 export const ASSETS: Record<AssetId, Asset> = {
   engine: { url: '/ort/ort-wasm-simd-threaded.wasm', bytes: 14_239_897 },
   modnet: { url: '/models/modnet-7bad6522.onnx', bytes: 6_627_048 },
   u2netp: { url: '/models/u2netp-309c8469.onnx', bytes: 4_574_861 },
   yunet: { url: '/models/yunet-8f2383e4.onnx', bytes: 232_589 },
+  // Kept in step with scripts/copy-qpdf.mjs, which refuses to write a file
+  // whose hash does not match the name.
+  qpdf: { url: '/qpdf/qpdf-cbd81a24.wasm', bytes: 1_274_647 },
 };
 
 /** The engine alone can be loaded the ordinary way, so failing to fetch it here is survivable. */
@@ -110,7 +122,7 @@ async function download(
   // own cache is allowed to answer without asking the server first.
   const response = await fetch(asset.url, { signal, cache: 'force-cache' });
   if (!response.ok || !response.body) {
-    throw new ModelDownloadError(
+    throw new DownloadError(
       'That could not be downloaded. Check your connection and try again.',
     );
   }
@@ -133,7 +145,7 @@ async function download(
     at += chunk.byteLength;
   }
   if (bytes.byteLength !== asset.bytes) {
-    throw new ModelDownloadError(
+    throw new DownloadError(
       'That only downloaded part-way. Check your connection and try again.',
     );
   }
