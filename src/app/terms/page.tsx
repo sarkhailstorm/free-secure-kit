@@ -5,6 +5,7 @@ import {
   contactEmailConfigured,
   site,
   sourceUrl,
+  support,
   tools,
   traderName,
 } from '@/config';
@@ -108,9 +109,12 @@ export default function Page() {
         of the site.
       </p>
       <p>
-        Payments are handled by Razorpay. We never see or hold your card or bank details. If you
-        want a contribution back, the <a href="/refunds">Refunds page</a> sets out the window, what
-        to send us and how long it takes.
+        To contribute you leave this site for {support.platform}, which hosts the page you land on.
+        The payment itself is taken by {support.processor}, and the money goes straight to us. There
+        is no payment widget here, so nothing to do with money ever runs on a page holding your
+        files. We never see or hold your card or bank details. If you want a contribution back, the{' '}
+        <a href="/refunds">Refunds page</a> sets out the window, what to send us and how long it
+        takes.
       </p>
 
       <h2>Changes to these terms</h2>

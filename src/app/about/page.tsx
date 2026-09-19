@@ -1,7 +1,15 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalPage } from '@/components/LegalPage';
-import { site, author, business, legalNameConfigured, tools } from '@/config';
+import {
+  site,
+  author,
+  business,
+  legalNameConfigured,
+  support,
+  donationsConfigured,
+  tools,
+} from '@/config';
 
 export const metadata: Metadata = {
   title: 'About',
@@ -9,14 +17,12 @@ export const metadata: Metadata = {
     'SecureKit is a free, open-source suite of file tools that run entirely in your browser, built by one developer in India.',
 };
 
-const udyamConfigured: boolean = (business.udyam as string).length > 0;
-
 export default function AboutPage() {
   return (
     <LegalPage id="about" updated="16 September 2026">
       <h2>What SecureKit is</h2>
       <p>
-        SecureKit is software: a web application that gives you six free tools for everyday file
+        SecureKit is software: a web application that gives you {tools.length} free tools for everyday file
         work &mdash; PDFs, spreadsheets, images, structured data, Markdown and plain text. There is
         nothing to install and nothing to sign up for. You open a page, drop in a file, and get the
         result back.
@@ -61,12 +67,6 @@ export default function AboutPage() {
           proprietorship registered in India.
         </p>
       ) : null}
-      {udyamConfigured ? (
-        <p>
-          It is registered as a micro enterprise under Udyam registration number{' '}
-          <strong>{business.udyam}</strong>.
-        </p>
-      ) : null}
 
       <h2>Open source</h2>
       <p>
@@ -102,6 +102,18 @@ export default function AboutPage() {
         priority. The <Link href="/pricing">Pricing page</Link> sets out exactly what is free and
         what a contribution is.
       </p>
+      {donationsConfigured ? (
+        <p>
+          Contributions are handled away from this site. The button takes you out to{' '}
+          {support.platform}, and {support.processor} takes the payment there, in your own currency.
+          Nothing is embedded here and no payment code runs on a page that is handling your files.
+        </p>
+      ) : (
+        <p>
+          There is no contribution page open at the moment. When one opens it will be a link out to{' '}
+          {support.platform}, with {support.processor} taking the payment there.
+        </p>
+      )}
 
       <h2>Getting in touch</h2>
       <p>

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/LegalPage';
-import { business, contactEmailConfigured, site } from '@/config';
+import { business, contactEmailConfigured, site, support } from '@/config';
 
 export const metadata: Metadata = {
   title: 'Refunds',
@@ -19,7 +19,9 @@ export default function Page() {
       </p>
       <p>
         The only payment on this site is a voluntary contribution. It is a one-off payment, never
-        recurring, and it buys nothing. This page is about getting one of those back.
+        recurring, and it buys nothing. {support.platform} hosts the page you started from and{' '}
+        {support.processor} took the payment, so your receipt came from one of those two. This page
+        is about getting that money back.
       </p>
 
       <h2>You can have it back within 7 days</h2>
@@ -51,16 +53,17 @@ export default function Page() {
       </p>
       <ul>
         <li>the date of the payment;</li>
-        <li>the amount and the currency;</li>
+        <li>the amount, and the currency you paid in;</li>
+        <li>the name and email address you gave {support.platform} when you paid;</li>
         <li>
-          the <strong>last four digits</strong> of the payment reference shown on your Razorpay
-          receipt.
+          the payment or transaction reference on your {support.processor} receipt, if you still
+          have the email.
         </li>
       </ul>
       <p>
-        Those three things are enough to find the payment. Please do not send your full card number,
-        your CVV, your bank login or any one-time password &mdash; we never need them and we will
-        never ask for them.
+        That is enough to find the payment. Please do not send your full card number, your CVV,
+        your bank login or any one-time password &mdash; we never need them and we will never ask
+        for them.
       </p>
 
       <h2>How long it takes</h2>
@@ -70,8 +73,8 @@ export default function Page() {
           that the refund is going ahead.
         </li>
         <li>
-          <strong>Within 5 to 7 business days:</strong> an approved refund is issued through
-          Razorpay to the original payment method &mdash; the same card, account or UPI ID the money
+          <strong>Within 5 to 7 business days:</strong> an approved refund is sent through{' '}
+          {support.processor}, back to however you paid &mdash; the same card or account the money
           came from. We cannot send it anywhere else.
         </li>
         <li>

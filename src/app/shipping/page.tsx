@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/LegalPage';
-import { business, contactEmailConfigured, site } from '@/config';
+import { business, contactEmailConfigured, site, support } from '@/config';
 
 export const metadata: Metadata = {
   title: 'Delivery',
@@ -29,8 +29,8 @@ export default function Page() {
       <h2>No delivery charges, anywhere</h2>
       <p>
         Because nothing is shipped, there are no shipping costs, no customs or import charges, and
-        no delivery timeline &mdash; in India or anywhere else in the world. There is no order to
-        track and no dispatch to wait for.
+        no delivery timeline &mdash; anywhere in the world. There is no order to track and no
+        dispatch to wait for.
       </p>
 
       <h2>Contributions do not trigger a delivery</h2>
@@ -39,9 +39,9 @@ export default function Page() {
         not buying a product, so nothing is dispatched and nothing changes on the site.
       </p>
       <p>
-        Razorpay sends a receipt to the email address you give at checkout. That receipt is the only
-        thing you receive. If you would like the
-        contribution back, the <a href="/refunds">Refunds page</a> explains how.
+        A receipt is emailed to you by {support.platform} or {support.processor}. That receipt is the
+        only thing you receive. If you would like the contribution back, the{' '}
+        <a href="/refunds">Refunds page</a> explains how.
       </p>
 
       <h2>If something does not load</h2>

@@ -64,8 +64,8 @@ getting it right. If a dependency ever tried to phone home, the request would si
 
 No analytics, no tracking pixels, no cookies, no error reporting service, no fonts or scripts
 fetched from a third-party CDN at runtime. The support button is a plain outbound link to a hosted
-Razorpay Payment Page rather than an embedded payment widget, specifically so that no third-party
-script runs on this site and no payment code ever touches a page that handles your files.
+Ko-fi page rather than an embedded payment widget, specifically so that no third-party script runs
+on this site and no payment code ever touches a page that handles your files.
 
 The only data stored at all is in your own browser: your light/dark theme preference, the Markdown
 editor's draft so a refresh does not lose your work, and a flag recording that you dismissed the
@@ -165,18 +165,22 @@ than a domain root, set `basePath` in [`next.config.mjs`](next.config.mjs) to ma
 
 Everything site-specific lives in one file: **[`config.ts`](config.ts)**.
 
-Donations run through a hosted Razorpay Payment Page, so there is no server and no API key in this
+Donations run through a hosted Ko-fi page, so there is no server and no API key in this
 repository. To point them at your own account, set the one value:
 
 ```ts
 export const support = {
-  url: '',   // ← your Razorpay Payment Page URL, e.g. https://rzp.io/rzp/abc1234
+  url: '',   // ← your Ko-fi page, e.g. https://ko-fi.com/yourname
   ...
 };
 ```
 
 The header button, the footer callout and the post-download message all read from it. While it is
 empty, the donation UI hides itself rather than linking to a dead page.
+
+The same block names the platform and the payment processor (`support.platform`,
+`support.processor`). The legal pages read those rather than hardcoding a company name, so moving
+to a different provider is a change in this one file plus the two privacy-policy links beside it.
 
 The same file holds the site name, URL, repository link and the tool registry that drives the
 landing page and navigation.

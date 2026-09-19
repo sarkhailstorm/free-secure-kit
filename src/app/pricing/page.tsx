@@ -6,7 +6,7 @@ import { support, donationsConfigured, tools } from '@/config';
 export const metadata: Metadata = {
   title: 'Pricing',
   description:
-    'Every SecureKit tool is free. Contributions are voluntary, in Indian Rupees, and buy nothing.',
+    'Every SecureKit tool is free. Contributions are voluntary, in your own currency, and buy nothing.',
 };
 
 export default function PricingPage() {
@@ -53,18 +53,25 @@ export default function PricingPage() {
         exactly that: <strong>a voluntary gift towards the developer&rsquo;s time and the cost of
         running the site</strong>. It is not a purchase, and nothing is delivered in return.
       </p>
+      <p>
+        Two companies are involved. {support.platform} hosts the page you land on, but never holds
+        or handles the money. {support.processor} takes the payment, and is the only one that sees
+        your card or bank details. The money goes straight from you into the developer&rsquo;s own
+        account at {support.processor}.
+      </p>
       <ul>
         <li>
-          <strong>Currency.</strong> Indian Rupees (INR).
+          <strong>Currency.</strong> You pay in your own currency. {support.processor} converts it.
         </li>
         <li>
           <strong>Amount.</strong> Whatever you think is right. You type the amount yourself; there
           are no fixed prices or packages.
         </li>
         <li>
-          <strong>Where you enter it.</strong> On a payment page hosted by Razorpay, our payment
-          processor. Card and banking details are entered on Razorpay&rsquo;s page, never on this
-          site.
+          <strong>Where you enter it.</strong> On a page hosted by {support.platform}, which asks
+          for a name and an email address and lets you leave a message, and then on{' '}
+          {support.processor}, which asks for whatever it needs to take the payment. Neither page
+          is on this site.
         </li>
         <li>
           <strong>How often.</strong> A one-off payment. Nothing recurring is set up, and there is
@@ -72,8 +79,18 @@ export default function PricingPage() {
         </li>
       </ul>
       <p>
-        The amount charged is the amount you enter. We add no fee, no tax on top and no processing
-        charge at checkout.
+        This site only links out to {support.platform}. There is no donate widget and no payment
+        script anywhere on SecureKit, so no payment code ever runs on a page that is handling your
+        files. That is deliberate.
+      </p>
+      <p>
+        We never see your card or bank details. We see only what {support.platform} and{' '}
+        {support.processor} show us: a name, an email address, an amount, and a message if you left
+        one.
+      </p>
+      <p>
+        We add nothing on top of the amount you type in: no fee, no tax and no processing charge of
+        our own.
       </p>
 
       <h2>What a contribution does not buy</h2>
@@ -106,21 +123,22 @@ export default function PricingPage() {
           <a href={support.url} target="_blank" rel="noopener noreferrer">
             {support.label}
           </a>{' '}
-          link, which is also in the footer of every page. It opens a payment page hosted by
-          Razorpay, where you choose the amount and pay.
+          link, which is also in the footer of every page. It opens a page on {support.platform},
+          where you choose the amount and pay through {support.processor}.
         </p>
       ) : (
         <p>
-          There is no contribution page open at the moment, so nothing on this site can take a
-          payment today. When one opens, the link will appear in the footer of every page and it
-          will lead to a payment page hosted by Razorpay, where you choose the amount yourself.
+          There is no contribution page open at the moment, so there is nothing to contribute to
+          today. When one opens, the link will appear in the footer of every page. It will
+          lead to a page on {support.platform}, where you choose the amount yourself and pay
+          through {support.processor}.
         </p>
       )}
       <p>
         If a payment goes wrong &mdash; a duplicate charge, or one you did not mean to make &mdash;
-        the <Link href="/refunds">Refunds page</Link> explains what happens and how to ask. Because
-        nothing is sold, nothing is posted or delivered to you; the{' '}
-        <Link href="/shipping">Delivery page</Link> covers that.
+        the <Link href="/refunds">Refunds page</Link> explains what happens and how to ask. A refund
+        goes back through {support.processor}, to however you paid. Because nothing is sold, nothing
+        is posted or delivered to you; the <Link href="/shipping">Delivery page</Link> covers that.
       </p>
     </LegalPage>
   );

@@ -14,21 +14,41 @@ export const author = {
   since: 2026,
 } as const;
 
+/**
+ * Where contributions go.
+ *
+ * `url` is a Ko-fi page, linked to rather than embedded, so no payment script
+ * ever runs on a page that handles someone's files. While it is empty every
+ * donate button hides itself rather than pointing at a dead link.
+ *
+ * The platform and processor are named here rather than written into the legal
+ * pages, because those pages have to say who handles the money and this has
+ * already changed once.
+ */
 export const support = {
+  /** e.g. https://ko-fi.com/yourname */
   url: '',
   label: 'Buy me a coffee',
+  /** Used where the full label will not fit, such as a narrow phone header. */
+  shortLabel: 'Coffee',
   emoji: '☕',
+  /** The page a contributor lands on. */
+  platform: 'Ko-fi',
+  platformUrl: 'https://ko-fi.com',
+  platformPrivacyUrl: 'https://more.ko-fi.com/privacy',
+  /** Who actually takes the payment and sees the card details. */
+  processor: 'PayPal',
+  processorPrivacyUrl: 'https://www.paypal.com/uk/legalhub/privacy-full',
 } as const;
 
 export const donationsConfigured: boolean = (support.url as string).length > 0;
 
 /**
- * Real-world identity behind the site. Razorpay's activation review requires a
- * legal name, a street address and a working phone number; anything left empty
- * is omitted from the Contact page rather than shown as a placeholder.
+ * Real-world identity behind the site. Anything left empty is omitted from the
+ * Contact page rather than shown as a placeholder, so it is safe to fill in only
+ * what you are willing to publish.
  */
 export const business = {
-  /** Exactly as printed on the PAN card. */
   legalName: '',
   email: '',
   phone: '',
@@ -41,8 +61,6 @@ export const business = {
     postcode: '',
     country: 'India',
   },
-  /** Udyam/MSME registration number, if you have one. */
-  udyam: '',
 } as const;
 
 export const contactEmailConfigured: boolean = (business.email as string).length > 0;

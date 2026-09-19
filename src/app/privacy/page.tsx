@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/LegalPage';
-import { business, contactEmailConfigured, site } from '@/config';
+import { business, contactEmailConfigured, donationsConfigured, site, support } from '@/config';
 
 export const metadata: Metadata = {
   title: 'Privacy',
@@ -92,8 +92,9 @@ export default function Page() {
         </tbody>
       </table>
       <p>
-        The last one is only written if a contributions link is switched on, which it is not at the
-        moment. To remove all four, clear this site&rsquo;s data in your browser settings.
+        The last one is only written if a contributions link is switched
+        on{donationsConfigured ? '' : ', which it is not at the moment'}. To remove all four, clear
+        this site&rsquo;s data in your browser settings.
       </p>
 
       <h3>The Markdown draft, in plain terms</h3>
@@ -157,8 +158,9 @@ export default function Page() {
           or the issue tracker, at which point you are on GitHub&rsquo;s site under its rules.
         </li>
         <li>
-          <strong>Razorpay</strong> is involved only if you choose to make a contribution. See
-          below.
+          <strong>{support.platform}</strong> hosts the contribution page and{' '}
+          <strong>{support.processor}</strong> takes the payment. Neither is involved at all unless
+          you choose to contribute. See below.
         </li>
       </ul>
       <p>
@@ -176,27 +178,44 @@ export default function Page() {
 
       <h2>Contributions</h2>
       <p>
-        Nothing on SecureKit is for sale, and no feature is unlocked by paying. If you choose to
-        make a voluntary contribution, the payment is handled by Razorpay on Razorpay&rsquo;s own
-        page. Whatever you enter there &mdash; card, UPI or bank details, and any name or email
-        Razorpay asks for &mdash; is collected and held by Razorpay under{' '}
-        <a href="https://razorpay.com/privacy" rel="noopener noreferrer" target="_blank">
-          its privacy policy
-        </a>
-        , not by us.
+        Nothing on SecureKit is for sale, and no feature is unlocked by paying. A contribution is a
+        voluntary gift towards the time this takes. It buys nothing and unlocks nothing.
       </p>
       <p>
-        We never see or store card or bank details. All we receive is what the Razorpay dashboard
-        shows about a contribution: the amount, the date, the status, and the contact details you
-        gave Razorpay. We use that only to answer a question about a payment or to issue a refund,
-        and we do not add you to any mailing list.
+        There is no payment widget on this site and no payment code in any page. If you choose to
+        contribute, you follow a link out to {support.platform}, and everything after that happens
+        away from here. That is deliberate: no payment script ever runs on a page that is handling
+        your files.
+      </p>
+      <p>
+        Two companies are involved, and they do different things. {support.platform} hosts the page
+        you land on. It asks you for a name and an email address, and lets you leave a message, but
+        it never holds or processes the money. {support.processor} takes the payment, and is the
+        only one that sees your card or bank details. You pay in your own currency and{' '}
+        {support.processor} converts it. The money goes straight into our {support.processor}{' '}
+        account. Each company holds what it collects under its own privacy policy:{' '}
+        <a href={support.platformPrivacyUrl} rel="noopener noreferrer" target="_blank">
+          {support.platform}
+        </a>{' '}
+        and{' '}
+        <a href={support.processorPrivacyUrl} rel="noopener noreferrer" target="_blank">
+          {support.processor}
+        </a>
+        .
+      </p>
+      <p>
+        We never see or store card or bank details. All we ever see is what {support.platform} and{' '}
+        {support.processor} show us: a name, an email address, an amount, and any message that was
+        left. We use that only to answer a question about a contribution or to make a refund, which
+        goes back through {support.processor} to however you paid. We do not add you to any mailing
+        list.
       </p>
 
       <h2>Children</h2>
       <p>
         The tools are suitable for anyone, and there is no account to create. We do not knowingly
         collect personal information from a child; the only personal details that ever reach us are
-        the ones a contributor gives Razorpay.
+        the name, email address and any message a contributor gives {support.platform}.
       </p>
 
       <h2>Changes to this policy</h2>
