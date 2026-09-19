@@ -26,8 +26,9 @@ export const author = {
  * already changed once.
  */
 export const support = {
-  /** e.g. https://ko-fi.com/yourname */
-  url: '',
+  // A stand-in so the button is visible while the real page is being set up.
+  // Replace with your own page, e.g. https://ko-fi.com/yourname.
+  url: 'https://ko-fi.com',
   label: 'Buy me a coffee',
   /** Used where the full label will not fit, such as a narrow phone header. */
   shortLabel: 'Coffee',
