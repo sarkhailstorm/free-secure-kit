@@ -6,6 +6,8 @@ export const site = {
   url: 'https://freesecurekit.vercel.app',
   repo: 'https://github.com/sarkhailstorm/securekit',
   repoBranch: 'main',
+  /** Proves ownership to Google Search Console. Public by design, not a secret. */
+  googleSiteVerification: 'Iz86_A8DptnCMtIBfnGT6zrl_6rq_5RTk2A29wXSvNM',
 } as const;
 
 export const author = {

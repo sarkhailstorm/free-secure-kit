@@ -40,6 +40,7 @@ export const metadata: Metadata = {
     description: site.description,
   },
   robots: { index: true, follow: true },
+  verification: { google: site.googleSiteVerification },
 };
 
 export const viewport: Viewport = {
