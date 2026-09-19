@@ -4,8 +4,8 @@
 
 **Private file tools that never leave your browser.**
 
-Clean spreadsheets, convert data formats, compress images and edit PDFs —
-all processed locally, with nothing uploaded to a server.
+Merge PDFs and reorder their pages, tidy a messy spreadsheet, and crop a photo
+to the exact passport size a country asks for. Nothing is uploaded.
 
 [Live site](https://freesecurekit.vercel.app) · [Report an issue](https://github.com/sarkhailstorm/securekit/issues)
 
@@ -95,7 +95,7 @@ Vercel, Cloudflare Pages, Netlify or GitHub Pages, and stays free regardless of 
 Requires Node.js 18.18 or newer.
 
 ```bash
-git clone https://github.com/your-username/securekit.git
+git clone https://github.com/sarkhailstorm/securekit.git
 cd securekit
 npm install
 npm run dev
