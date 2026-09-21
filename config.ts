@@ -29,14 +29,14 @@ export const author = {
  */
 export const support = {
   // A stand-in so the button is visible while the real page is being set up.
-  // Replace with your own page, e.g. https://ko-fi.com/yourname.
-  url: 'https://ko-fi.com',
+  // Replace with your own page, e.g. https://razorpay.com/yourname.
+  url: 'https://rzp.io/rzp/OKGOxtcO',
   label: 'Buy me a coffee',
   emoji: '☕',
   /** The page a contributor lands on. */
-  platform: 'Ko-fi',
-  platformUrl: 'https://ko-fi.com',
-  platformPrivacyUrl: 'https://more.ko-fi.com/privacy',
+  platform: 'Razorpay',
+  platformUrl: 'https://razorpay.com',
+  platformPrivacyUrl: 'https://razorpay.com/privacy',
   /** Who actually takes the payment and sees the card details. */
   processor: 'PayPal',
   processorPrivacyUrl: 'https://www.paypal.com/uk/legalhub/privacy-full',
