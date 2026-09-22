@@ -16,20 +16,7 @@ export const author = {
   since: 2026,
 } as const;
 
-/**
- * Where contributions go.
- *
- * `url` is a Ko-fi page, linked to rather than embedded, so no payment script
- * ever runs on a page that handles someone's files. While it is empty every
- * donate button hides itself rather than pointing at a dead link.
- *
- * The platform and processor are named here rather than written into the legal
- * pages, because those pages have to say who handles the money and this has
- * already changed once.
- */
 export const support = {
-  // A stand-in so the button is visible while the real page is being set up.
-  // Replace with your own page, e.g. https://razorpay.com/yourname.
   url: 'https://rzp.io/rzp/OKGOxtcO',
   label: 'Buy me a coffee',
   emoji: '☕',
@@ -44,11 +31,6 @@ export const support = {
 
 export const donationsConfigured: boolean = (support.url as string).length > 0;
 
-/**
- * Real-world identity behind the site. Anything left empty is omitted from the
- * Contact page rather than shown as a placeholder, so it is safe to fill in only
- * what you are willing to publish.
- */
 export const business = {
   legalName: '',
   email: '',

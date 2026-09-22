@@ -70,9 +70,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta httpEquiv="Content-Security-Policy" content={csp} />
       </head>
       <body className="min-h-screen antialiased">
-        {/* Sets the theme class before anything paints. Kept out of <head>:
-            browser extensions inject scripts there, which shifts React's
-            hydration and reports a mismatch against whatever we put first. */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="/theme.js" />
         <a

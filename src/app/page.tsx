@@ -53,8 +53,6 @@ export default function HomePage() {
         <div className="hero-grid pointer-events-none absolute inset-0" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-6 sm:px-6 sm:py-28">
           <div className="max-w-2xl">
-            {/* Phones have no donate button in the bar, so it sits here instead,
-                close under it rather than adrift in the middle of the fold. */}
             <div className="mb-8 flex justify-center sm:hidden">
               <SupportButton />
             </div>
