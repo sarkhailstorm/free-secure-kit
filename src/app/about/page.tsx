@@ -14,15 +14,15 @@ import {
 export const metadata: Metadata = {
   title: 'About',
   description:
-    'SecureKit is a free, open-source suite of file tools that run entirely in your browser, built by one developer.',
+    'FreeSecureKit is an open-source set of free file tools that run entirely in your browser, built by one developer.',
 };
 
 export default function AboutPage() {
   return (
     <LegalPage id="about" updated="16 September 2026">
-      <h2>What SecureKit is</h2>
+      <h2>What FreeSecureKit is</h2>
       <p>
-        SecureKit is software: a web application that gives you {tools.length} free tools for everyday file
+        FreeSecureKit is software: a web application that gives you {tools.length} free tools for everyday file
         work &mdash; PDFs, spreadsheets, images, structured data, Markdown and plain text. There is
         nothing to install and nothing to sign up for. You open a page, drop in a file, and get the
         result back.
@@ -44,7 +44,7 @@ export default function AboutPage() {
         handing your spreadsheet, your scanned document or your photos to someone else.
       </p>
       <p>
-        SecureKit is built the other way round. All the code that does the work is ordinary
+        FreeSecureKit is built the other way round. All the code that does the work is ordinary
         JavaScript running inside your own browser, on your own machine, so{' '}
         <strong>your files are never uploaded</strong>. There is no server to upload them to: the
         site is a set of static files with no application code running behind it, and no database.
@@ -57,7 +57,7 @@ export default function AboutPage() {
 
       <h2>Who runs it</h2>
       <p>
-        SecureKit is built and maintained by {author.name}, an independent software developer, and
+        FreeSecureKit is built and maintained by {author.name}, an independent software developer, and
         has been online since {author.since}. It is a one-person project: there is no team, no
         investors and no company behind it.
       </p>
@@ -78,7 +78,7 @@ export default function AboutPage() {
         <a href={site.repo} target="_blank" rel="noopener noreferrer">
           {site.repo}
         </a>
-        . SecureKit is copyright {author.since} {author.name}, released under the{' '}
+        . FreeSecureKit is copyright {author.since} {author.name}, released under the{' '}
         <a
           href={`${site.repo}/blob/${site.repoBranch}/LICENSE`}
           target="_blank"
@@ -91,7 +91,7 @@ export default function AboutPage() {
 
       <h2>How it is paid for</h2>
       <p>
-        SecureKit is free and stays free. Nothing is sold here, nothing is locked behind a payment,
+        This site is free and stays free. Nothing is sold here, nothing is locked behind a payment,
         and there are no adverts. The running costs are small because there is no server doing work
         for you, and the real cost is the developer&rsquo;s time.
       </p>

@@ -5,7 +5,7 @@ import { business, contactEmailConfigured, site, support } from '@/config';
 export const metadata: Metadata = {
   title: 'Refunds',
   description:
-    'Nothing is sold on SecureKit. If you contributed and want the money back, here is the window, the process and the timeline.',
+    'Nothing is sold on FreeSecureKit. If you contributed and want the money back, here is the window, the process and the timeline.',
 };
 
 export default function Page() {
@@ -13,7 +13,7 @@ export default function Page() {
     <LegalPage id="refunds" updated="16 September 2026">
       <h2>There is nothing to cancel</h2>
       <p>
-        SecureKit is free. There is no product, no subscription, no order and no account, so there
+        The tools are free. There is no product, no subscription, no order and no account, so there
         is no purchase to cancel and no plan to stop. Every tool stays available whether you pay
         anything or not.
       </p>

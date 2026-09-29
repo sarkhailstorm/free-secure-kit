@@ -14,7 +14,7 @@ import {
 
 export const metadata: Metadata = {
   title: 'Contact',
-  description: 'How to reach the developer of SecureKit, and which route suits which question.',
+  description: 'How to reach the developer of FreeSecureKit, and which route suits which question.',
 };
 
 const hoursConfigured: boolean = (business.hours as string).length > 0;
@@ -32,7 +32,7 @@ export default function ContactPage() {
     <LegalPage id="contact" updated="16 September 2026">
       <h2>Who you are contacting</h2>
       <p>
-        SecureKit is built and maintained by {author.name}, an independent software developer. It
+        FreeSecureKit is built and maintained by {author.name}, an independent software developer. It
         is a one-person project, so every message is read by the same person who writes the code.
       </p>
       {legalNameConfigured ? (
@@ -76,7 +76,7 @@ export default function ContactPage() {
 
       <h2>GitHub issue tracker</h2>
       <p>
-        SecureKit is open source, and its issue tracker is open to everyone. This is the best place
+        FreeSecureKit is open source, and its issue tracker is open to everyone. This is the best place
         for anything to do with the software itself:{' '}
         <a href={`${site.repo}/issues`} target="_blank" rel="noopener noreferrer">
           {site.repo}/issues
@@ -117,7 +117,7 @@ export default function ContactPage() {
 
       <h2>There is no account, so there is nothing to recover</h2>
       <p>
-        SecureKit has no sign-up, no login and no password. That means there is no account to
+        FreeSecureKit has no sign-up, no login and no password. That means there is no account to
         recover, no subscription to cancel and no login support for us to provide. If a tool stops
         working for you, it is a bug in the software rather than a problem with your account, and
         the issue tracker is the right place for it.

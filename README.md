@@ -1,6 +1,6 @@
 <div align="center">
 
-# SecureKit
+# FreeSecureKit
 
 **Private file tools that never leave your browser.**
 
@@ -37,7 +37,7 @@ sending the result back. That means your spreadsheet of customer records, your s
 your private photos land on a machine you do not control, subject to a retention policy you did not
 read.
 
-SecureKit does the processing in **the page you already have open**. When you drop a file onto a tool,
+FreeSecureKit does the processing in **the page you already have open**. When you drop a file onto a tool,
 the browser reads it into memory with the standard `File` API and the conversion runs in JavaScript
 on your own machine. The result is handed back to you as an in-memory blob. There is no upload step
 because there is no server to upload to — the whole site is static files.
@@ -187,7 +187,7 @@ landing page and navigation.
 
 ## Support
 
-SecureKit is free and open source, and every feature works without paying. If it saved you some time,
+FreeSecureKit is free and open source, and every feature works without paying. If it saved you some time,
 you are welcome to chip in via the support link in the footer — entirely optional, and nothing is
 gated behind it.
 

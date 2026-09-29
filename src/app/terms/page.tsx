@@ -12,7 +12,7 @@ import {
 
 export const metadata: Metadata = {
   title: 'Terms',
-  description: 'The terms you agree to when you use SecureKit, a free set of browser-based file tools.',
+  description: 'The terms you agree to when you use FreeSecureKit, a set of free browser-based file tools.',
 };
 
 export default function Page() {
@@ -20,18 +20,18 @@ export default function Page() {
     <LegalPage id="terms" updated="16 September 2026">
       <h2>Who runs this site</h2>
       <p>
-        SecureKit is run by {traderName()}, an individual, from{' '}
+        FreeSecureKit is run by {traderName()}, an individual, from{' '}
         <a href={site.url}>{site.url}</a>. In these terms &ldquo;we&rdquo; and &ldquo;us&rdquo; mean
-        the person who runs SecureKit, and &ldquo;you&rdquo; means anyone using the site.
+        the person who runs FreeSecureKit, and &ldquo;you&rdquo; means anyone using the site.
       </p>
       <p>
-        By using SecureKit you accept these terms. If you do not accept them, please do not use the
+        By using FreeSecureKit you accept these terms. If you do not accept them, please do not use the
         site.
       </p>
 
-      <h2>What SecureKit is</h2>
+      <h2>What FreeSecureKit is</h2>
       <p>
-        SecureKit is a set of {tools.length} tools for everyday file jobs: PDFs, spreadsheets,
+        FreeSecureKit is a set of {tools.length} tools for everyday file jobs: PDFs, spreadsheets,
         images, data formats, Markdown and text. The tools run inside your own web browser on your
         own device. There is no server that processes your files, because the site is a set of
         static files with no application code running behind it.
@@ -52,7 +52,7 @@ export default function Page() {
 
       <h2>Provided as it is</h2>
       <p>
-        SecureKit is provided as it is, with no warranty of any kind. We do not promise that the
+        FreeSecureKit is provided as it is, with no warranty of any kind. We do not promise that the
         site will always be available, that a tool will handle every file you give it, or that the
         result will be correct for your purpose. Browsers differ, files differ, and a very large
         file can exhaust the memory your browser is willing to use.
@@ -76,13 +76,13 @@ export default function Page() {
 
       <h2>Acceptable use</h2>
       <ul>
-        <li>Do not use SecureKit to break the law or to infringe anyone else&rsquo;s rights.</li>
+        <li>Do not use FreeSecureKit to break the law or to infringe anyone else&rsquo;s rights.</li>
         <li>
           Do not attack the site, try to disrupt it for other people, or use it to distribute
           malicious files.
         </li>
         <li>
-          Do not present SecureKit as your own service, or suggest we endorse you, unless the MIT
+          Do not present FreeSecureKit as your own service, or suggest we endorse you, unless the MIT
           licence allows it.
         </li>
       </ul>
@@ -138,7 +138,7 @@ export default function Page() {
             monitored.
           </>
         )}{' '}
-        We aim to reply within 2 business days. SecureKit is maintained by one person in his own
+        We aim to reply within 2 business days. FreeSecureKit is maintained by one person in his own
         time, so a fix may take longer than a reply, and some requests will be declined.
       </p>
       <p>
@@ -149,7 +149,7 @@ export default function Page() {
 
       <h2>Governing law</h2>
       <p>
-        These terms are governed by the law of the country in which SecureKit is operated, and the
+        These terms are governed by the law of the country in which FreeSecureKit is operated, and the
         courts of that country have jurisdiction over any dispute arising from them or from your use
         of the site.
       </p>

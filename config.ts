@@ -1,8 +1,8 @@
 export const site = {
-  name: 'SecureKit',
-  tagline: 'Free file tools that never upload your files',
+  name: 'FreeSecureKit',
+  tagline: 'Tools that never upload your files',
   description:
-    'Free, open-source tools for spreadsheets, images, PDFs and text. Everything runs in your browser — your files are never uploaded.',
+    'Open-source tools for spreadsheets, images, PDFs and text, free to use. Everything runs in your browser — your files are never uploaded.',
   url: 'https://freesecurekit.vercel.app',
   repo: 'https://github.com/sarkhailstorm/securekit',
   repoBranch: 'main',
@@ -71,7 +71,7 @@ export const legalPages: readonly {
   title: string;
   blurb: string;
 }[] = [
-  { id: 'about', href: '/about', title: 'About', blurb: 'Who makes SecureKit, and why.' },
+  { id: 'about', href: '/about', title: 'About', blurb: 'Who makes FreeSecureKit, and why.' },
   { id: 'contact', href: '/contact', title: 'Contact', blurb: 'How to reach us.' },
   { id: 'pricing', href: '/pricing', title: 'Pricing', blurb: 'What it costs: nothing.' },
   { id: 'terms', href: '/terms', title: 'Terms', blurb: 'What you agree to by using the site.' },

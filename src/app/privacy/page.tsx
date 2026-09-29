@@ -5,7 +5,7 @@ import { business, contactEmailConfigured, donationsConfigured, site, support } 
 export const metadata: Metadata = {
   title: 'Privacy',
   description:
-    'What happens to your files, what SecureKit stores in your browser, and what our host can see.',
+    'What happens to your files, what FreeSecureKit stores in your browser, and what our host can see.',
 };
 
 export default function Page() {
@@ -178,7 +178,7 @@ export default function Page() {
 
       <h2>Contributions</h2>
       <p>
-        Nothing on SecureKit is for sale, and no feature is unlocked by paying. A contribution is a
+        Nothing on FreeSecureKit is for sale, and no feature is unlocked by paying. A contribution is a
         voluntary gift towards the time this takes. It buys nothing and unlocks nothing.
       </p>
       <p>
@@ -242,7 +242,7 @@ export default function Page() {
 
       <h2>Check it for yourself</h2>
       <p>
-        SecureKit is open source under the MIT licence. Every claim on this page can be checked
+        FreeSecureKit is open source under the MIT licence. Every claim on this page can be checked
         against the code, and so can the network tab of your own browser while you use a tool. The
         source is at{' '}
         <a href={site.repo} rel="noopener noreferrer" target="_blank">

@@ -75,7 +75,7 @@ export async function packDocument(
 ): Promise<Blob> {
   const { Document, Packer } = await import('docx');
   return Packer.toBlob(
-    new Document({ creator: 'SecureKit', styles: stylesFor(model), sections }),
+    new Document({ creator: 'FreeSecureKit', styles: stylesFor(model), sections }),
   );
 }
 

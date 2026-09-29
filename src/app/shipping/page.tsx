@@ -5,7 +5,7 @@ import { business, contactEmailConfigured, site, support } from '@/config';
 export const metadata: Metadata = {
   title: 'Delivery',
   description:
-    'SecureKit is software that runs in your browser. Nothing is posted, no address is collected, and every tool is available immediately.',
+    'FreeSecureKit is software that runs in your browser. Nothing is posted, no address is collected, and every tool is available immediately.',
 };
 
 export default function Page() {
@@ -13,7 +13,7 @@ export default function Page() {
     <LegalPage id="shipping" updated="16 September 2026">
       <h2>Nothing is posted to you</h2>
       <p>
-        SecureKit is software that runs inside your web browser. There is no physical product, no
+        FreeSecureKit is software that runs inside your web browser. There is no physical product, no
         packaging and no parcel, so there is nothing to ship &mdash; to any address, in any country.
         We use no courier and no postal service, and we never ask for a delivery address.
       </p>
