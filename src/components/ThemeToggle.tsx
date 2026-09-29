@@ -16,7 +16,7 @@ export function ThemeToggle() {
     setTheme(next);
     document.documentElement.classList.toggle('dark', next === 'dark');
     try {
-      localStorage.setItem('securekit:theme', next);
+      localStorage.setItem('free-secure-kit:theme', next);
     } catch {
     }
   }

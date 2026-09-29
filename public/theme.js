@@ -1,8 +1,18 @@
 (function () {
-  // Dark is the default; only an explicit choice of light opts out.
-  var light = false;
+  var KEY = 'free-secure-kit:theme';
+  var LEGACY = 'securekit:theme';
+  var choice = null;
   try {
-    light = localStorage.getItem('securekit:theme') === 'light';
+    choice = localStorage.getItem(KEY);
+    if (choice === null) {
+      // Saved before the rename, so a returning visitor keeps their choice.
+      choice = localStorage.getItem(LEGACY);
+      if (choice !== null) {
+        localStorage.setItem(KEY, choice);
+        localStorage.removeItem(LEGACY);
+      }
+    }
   } catch (e) {}
-  if (!light) document.documentElement.classList.add('dark');
+  // Dark is the default; only an explicit choice of light opts out.
+  if (choice !== 'light') document.documentElement.classList.add('dark');
 })();

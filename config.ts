@@ -4,7 +4,7 @@ export const site = {
   description:
     'Open-source tools for spreadsheets, images, PDFs and text, free to use. Everything runs in your browser — your files are never uploaded.',
   url: 'https://freesecurekit.vercel.app',
-  repo: 'https://github.com/sarkhailstorm/securekit',
+  repo: 'https://github.com/sarkhailstorm/free-secure-kit',
   repoBranch: 'main',
   /** Proves ownership to Google Search Console. Public by design, not a secret. */
   googleSiteVerification: 'WOX1L5jSTNu4UD1pxP5jF9KDokyG2cRlziKz1Cqxbb0',

@@ -1,7 +1,7 @@
 export type ThemeId = 'minimal' | 'github' | 'serif';
 
 export const PREVIEW_ROOT_CLASS = 'md-doc';
-export const PRINT_ROOT_ID = 'securekit-md-print';
+export const PRINT_ROOT_ID = 'free-secure-kit-md-print';
 export const PRINT_BODY_CLASS = 'md-body';
 
 export interface DocTheme {

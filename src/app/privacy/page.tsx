@@ -10,15 +10,15 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <LegalPage id="privacy" updated="16 September 2026">
+    <LegalPage id="privacy" updated="29 September 2026">
       <h2>The short version</h2>
       <ul>
         <li>Your files are processed inside your browser. They are never uploaded to us.</li>
         <li>There is no account, no sign-up and no contact form.</li>
         <li>We run no analytics and set no cookies.</li>
         <li>
-          Four small things are saved in your own browser. They are named below, and one of them is
-          the text you type into the Markdown Converter.
+          Five things are saved in your own browser. They are named below. One is the text you
+          type into the Markdown Converter; one is a set of tool files that can reach about 25 MB.
         </li>
         <li>
           Our host, Vercel, logs every request for the pages themselves &mdash; as every website
@@ -52,7 +52,7 @@ export default function Page() {
 
       <h2>What is stored on your device</h2>
       <p>
-        Four things, all kept by your browser for this site alone. None of them is an identifier,
+        Five things, all kept by your browser for this site alone. None of them is an identifier,
         and we cannot read any of them, because nothing is ever sent back to us.
       </p>
       <table>
@@ -67,25 +67,34 @@ export default function Page() {
         <tbody>
           <tr>
             <td>Light or dark mode</td>
-            <td>securekit:theme</td>
+            <td>free-secure-kit:theme</td>
             <td>The word light or dark</td>
             <td>Until you clear this site&rsquo;s data</td>
           </tr>
           <tr>
             <td>Your Markdown draft</td>
-            <td>securekit:markdown-converter:doc</td>
+            <td>free-secure-kit:markdown-converter:doc</td>
             <td>The full text you have typed or pasted into the Markdown Converter</td>
             <td>Until you clear the editor, or clear this site&rsquo;s data</td>
           </tr>
           <tr>
             <td>Markdown export style</td>
-            <td>securekit:markdown-converter:theme</td>
+            <td>free-secure-kit:markdown-converter:theme</td>
             <td>The name of the style you picked for exports</td>
             <td>Until you clear this site&rsquo;s data</td>
           </tr>
           <tr>
+            <td>Downloaded tool files</td>
+            <td>free-secure-kit-assets-v1 (Cache Storage)</td>
+            <td>
+              The model and engine files the Background Remover, Passport Photo and PDF unlock
+              tools need, kept so they are not fetched again. About 25 MB if you use all of them.
+            </td>
+            <td>Until you remove them in the tool, or clear this site&rsquo;s data</td>
+          </tr>
+          <tr>
             <td>Support message flag</td>
-            <td>securekit:support-nudge-seen</td>
+            <td>free-secure-kit:support-nudge-seen</td>
             <td>A single 1, so a thank-you message can appear at most once</td>
             <td>Until you close the tab</td>
           </tr>
@@ -93,8 +102,13 @@ export default function Page() {
       </table>
       <p>
         The last one is only written if a contributions link is switched
-        on{donationsConfigured ? '' : ', which it is not at the moment'}. To remove all four, clear
+        on{donationsConfigured ? '' : ', which it is not at the moment'}. To remove all five, clear
         this site&rsquo;s data in your browser settings.
+      </p>
+      <p>
+        The tool files are the only large item, and they are our code rather than anything of
+        yours. Once the Background Remover has downloaded them it shows a link to remove them from
+        this browser, which clears them for every tool that shares them.
       </p>
 
       <h3>The Markdown draft, in plain terms</h3>
@@ -109,9 +123,9 @@ export default function Page() {
         Clear the editor before you walk away.
       </p>
       <p>
-        No other tool keeps anything between visits. No file name, file size or file content is
-        written to storage anywhere, and the site uses no cookies, no offline cache and no database
-        in your browser.
+        Apart from the tool files listed above, no other tool keeps anything between visits. No
+        file name, file size or file content is written to storage anywhere, and the site sets no
+        cookies and uses no database in your browser.
       </p>
 
       <h2>What we collect</h2>

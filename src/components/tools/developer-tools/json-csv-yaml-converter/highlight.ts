@@ -67,10 +67,10 @@ export async function highlightToHtml(text: string, format: DataFormat): Promise
 }
 
 export const HIGHLIGHT_THEME_CSS = `
-.securekit-hl .hljs-attr,.securekit-hl .hljs-attribute{color:rgb(var(--accent))}
-.securekit-hl .hljs-string,.securekit-hl .hljs-quote{color:rgb(var(--ok))}
-.securekit-hl .hljs-number,.securekit-hl .hljs-literal,.securekit-hl .hljs-keyword{color:rgb(var(--warn))}
-.securekit-hl .hljs-bullet,.securekit-hl .hljs-meta,.securekit-hl .hljs-type,.securekit-hl .hljs-tag{color:rgb(var(--muted))}
-.securekit-hl .hljs-comment{color:rgb(var(--faint));font-style:italic}
-.securekit-hl .hljs-punctuation{color:rgb(var(--faint))}
+.free-secure-kit-hl .hljs-attr,.free-secure-kit-hl .hljs-attribute{color:rgb(var(--accent))}
+.free-secure-kit-hl .hljs-string,.free-secure-kit-hl .hljs-quote{color:rgb(var(--ok))}
+.free-secure-kit-hl .hljs-number,.free-secure-kit-hl .hljs-literal,.free-secure-kit-hl .hljs-keyword{color:rgb(var(--warn))}
+.free-secure-kit-hl .hljs-bullet,.free-secure-kit-hl .hljs-meta,.free-secure-kit-hl .hljs-type,.free-secure-kit-hl .hljs-tag{color:rgb(var(--muted))}
+.free-secure-kit-hl .hljs-comment{color:rgb(var(--faint));font-style:italic}
+.free-secure-kit-hl .hljs-punctuation{color:rgb(var(--faint))}
 `.trim();

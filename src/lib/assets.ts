@@ -8,9 +8,10 @@ export class DownloadError extends Error {
   }
 }
 
-// Renaming these would make every existing visitor download everything again.
-const CACHE_NAME = 'securekit-background-remover-v1';
-const CACHE_PREFIX = 'securekit-background-remover-';
+const CACHE_NAME = 'free-secure-kit-assets-v1';
+const CACHE_PREFIX = 'free-secure-kit-assets-';
+/** What the cache was called before the rename. Adopted, never re-downloaded. */
+const LEGACY_PREFIX = 'securekit-background-remover-';
 
 export interface Asset {
   url: string;
@@ -42,9 +43,37 @@ function absolute(url: string): string {
 async function openCache(): Promise<Cache | null> {
   try {
     if (typeof caches === 'undefined') return null;
-    return await caches.open(CACHE_NAME);
+    const cache = await caches.open(CACHE_NAME);
+    await adoptLegacy(cache);
+    return cache;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Moves anything stored under the pre-rename cache across. Without this the
+ * rename alone would cost every returning visitor the whole download again.
+ */
+async function adoptLegacy(cache: Cache): Promise<void> {
+  try {
+    for (const name of await caches.keys()) {
+      if (!name.startsWith(LEGACY_PREFIX)) continue;
+      const old = await caches.open(name);
+      for (const request of await old.keys()) {
+        if (!(await cache.match(request))) {
+          const hit = await old.match(request);
+          if (!hit) continue;
+          await cache.put(request, hit);
+        }
+        // Dropped only once the copy is across, so an interrupted pass still
+        // frees what it managed rather than leaving both copies on disk.
+        await old.delete(request);
+      }
+      await caches.delete(name);
+    }
+  } catch {
+    // Best effort. The only cost of failing is a download that happens again.
   }
 }
 
@@ -197,7 +226,9 @@ export async function clearDownloads(): Promise<void> {
   try {
     if (typeof caches === 'undefined') return;
     for (const name of await caches.keys()) {
-      if (name.startsWith(CACHE_PREFIX)) await caches.delete(name);
+      if (name.startsWith(CACHE_PREFIX) || name.startsWith(LEGACY_PREFIX)) {
+        await caches.delete(name);
+      }
     }
   } catch {
     // Nothing to clear, or storage is blocked.

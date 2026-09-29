@@ -12,6 +12,7 @@ import {
 import { CheckCircle2, AlertTriangle, X, Info } from 'lucide-react';
 import { support, donationsConfigured } from '@/config';
 import { cn } from '@/lib/cn';
+import { readSession } from '@/lib/storage';
 import { CoffeeIcon } from './CoffeeIcon';
 
 type ToastKind = 'success' | 'error' | 'info';
@@ -32,7 +33,8 @@ interface ToastApi {
 
 const ToastContext = createContext<ToastApi | null>(null);
 
-const NUDGE_KEY = 'securekit:support-nudge-seen';
+const NUDGE_KEY = 'free-secure-kit:support-nudge-seen';
+const LEGACY_NUDGE_KEY = 'securekit:support-nudge-seen';
 
 export function useToast(): ToastApi {
   const ctx = useContext(ToastContext);
@@ -85,7 +87,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const api = useMemo<ToastApi>(() => {
     const alreadySeen = () => {
       try {
-        return sessionStorage.getItem(NUDGE_KEY) === '1';
+        return readSession(NUDGE_KEY, LEGACY_NUDGE_KEY) === '1';
       } catch {
         return false;
       }
