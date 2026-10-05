@@ -34,10 +34,15 @@ Because every tool already runs in the browser, there is nothing left that needs
 except the site itself. So your browser keeps a copy of it: visit once, and after that the pages,
 styling and code load from your own machine rather than the network. About 7 MB.
 
-Chrome and Edge will then offer to install it; on Safari or Firefox you add it yourself from the
-browser menu. Either way it behaves like any other app on your phone or desktop. The models and the PDF unlocker are not part of that 6.5 MB &mdash; they are fetched the
-first time you use the tool that needs them, and kept from then on, so a tool you have used online
-once works offline afterwards and one you never have does not.
+How far that goes is up to the browser, not to us. Chrome and Edge offer a real install, and it
+then sits with your other apps. Some browsers offer only a home-screen shortcut, which opens the
+site but is not an installed app &mdash; Brave does this deliberately, because a real install on
+Android means fetching a package from Google. Others, Firefox on the desktop among them, offer
+nothing at all. On an iPhone it is Share, then Add to Home Screen.
+
+The models and the PDF unlocker are not part of that 7 MB &mdash; they are fetched the first time
+you use the tool that needs them, and kept from then on, so a tool you have used online once works
+offline afterwards and one you never have does not.
 
 When a new version is published your browser fetches it and offers a Reload. That matters: without
 it, a saved copy would keep people on an old version with no way to send them a fix.
