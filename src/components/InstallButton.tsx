@@ -24,24 +24,35 @@ function isStandalone(): boolean {
 
 function isIosSafari(): boolean {
   const ua = navigator.userAgent;
-  const ios = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const ios =
+    /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   // Chrome and Firefox on iOS cannot install either, and say CriOS/FxiOS
   return ios && !/CriOS|FxiOS|EdgiOS/.test(ua);
 }
 
-export function InstallButton({ className }: { className?: string }) {
+export function InstallButton({
+  compact = false,
+  iosHint = true,
+  className,
+}: {
+  /** Icon only until there is room for the label. For the header. */
+  compact?: boolean;
+  /** iPhones have no install API, so they get a sentence instead. No room for one in the header. */
+  iosHint?: boolean;
+  className?: string;
+}) {
   const [prompt, setPrompt] = useState<InstallPromptEvent | null>(null);
-  const [showIosHint, setShowIosHint] = useState(false);
+  const [onIos, setOnIos] = useState(false);
 
   useEffect(() => {
     if (isStandalone()) return;
     if (isIosSafari()) {
-      setShowIosHint(true);
+      setOnIos(true);
       return;
     }
 
     const onPrompt = (event: Event) => {
-      // Stops Chrome's own strip so the button is the only ask
+      // Stops Chrome's own strip so our button is the only ask
       event.preventDefault();
       setPrompt(event as InstallPromptEvent);
     };
@@ -55,7 +66,8 @@ export function InstallButton({ className }: { className?: string }) {
     };
   }, []);
 
-  if (showIosHint) {
+  if (onIos) {
+    if (!iosHint) return null;
     return (
       <p className={cn('inline-flex items-center gap-1.5 text-[13px] text-muted', className)}>
         <Share className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -69,6 +81,8 @@ export function InstallButton({ className }: { className?: string }) {
   return (
     <button
       type="button"
+      aria-label="Install this site as an app"
+      title="Install this site as an app"
       onClick={async () => {
         // The event is single-use, so drop it either way
         setPrompt(null);
@@ -76,16 +90,17 @@ export function InstallButton({ className }: { className?: string }) {
           await prompt.prompt();
           await prompt.userChoice;
         } catch {
-          // Already used or dismissed by the browser
+          // Already used, or the browser dismissed it
         }
       }}
       className={cn(
-        'inline-flex h-10 items-center gap-2 whitespace-nowrap rounded-xl border border-line bg-surface px-4 text-sm font-medium text-ink shadow-sm transition-colors hover:bg-elevated',
+        'inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-line bg-surface font-medium text-ink shadow-sm transition-colors hover:bg-elevated',
+        compact ? 'h-9 w-9 text-[13px] sm:w-auto sm:px-3' : 'h-10 px-4 text-sm',
         className,
       )}
     >
-      <Download className="h-4 w-4 shrink-0" aria-hidden />
-      Install app
+      <Download className={compact ? 'h-4 w-4 shrink-0' : 'h-4 w-4 shrink-0'} aria-hidden />
+      <span className={compact ? 'hidden sm:inline' : undefined}>Install{compact ? '' : ' app'}</span>
     </button>
   );
 }

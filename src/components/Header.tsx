@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Github, Menu, ShieldCheck, X } from 'lucide-react';
 import { site, tools } from '@/config';
 import { SupportButton } from './SupportButton';
+import { InstallButton } from './InstallButton';
 import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
@@ -47,6 +48,7 @@ export function Header() {
             <Github className="h-4 w-4" aria-hidden />
           </a>
           <ThemeToggle />
+          <InstallButton compact iosHint={false} />
           <div className="hidden sm:block">
             <SupportButton size="sm" />
           </div>
