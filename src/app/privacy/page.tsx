@@ -219,21 +219,20 @@ export default function Page() {
         .
       </p>
       <p>
-        We never see or store card or bank details. The {india.provider} page asks for your email
-        address and your phone number, and both are required &mdash; there is no name box and no
-        message box. So on that route we can see your email address, your phone number, the amount,
-        the date and whether the payment went through, and we can export that list. On{' '}
-        {world.provider} we see its usual record of the payment. We use any of it only to answer a
-        question about a contribution or to make a refund, which goes back through whichever company
-        took the payment, to however you paid. We do not add you to any mailing list.
+        We never see or store card or bank details. On the {india.provider} page you type an
+        amount and may leave a short note if you want to; {india.provider} then asks for whatever it
+        needs to take the payment. On {world.provider} the same applies. From either we can see the
+        amount, the date, whether the payment went through, any note you left, and whatever contact
+        details that company passes on to us, and we can export that list. We use it only to answer
+        a question about a contribution or to make a refund, which goes back through whichever
+        company took the payment, to however you paid. We do not add you to any mailing list.
       </p>
 
       <h2>Children</h2>
       <p>
         The tools are suitable for anyone, and there is no account to create. We do not knowingly
-        collect personal information from a child; the only personal details that ever reach us are
-        the email address and phone number a contributor gives {india.provider}, and the record{' '}
-        {world.provider} keeps of a payment.
+        collect personal information from a child; the only personal details that ever reach us
+        are whatever {india.provider} or {world.provider} passes on about a payment.
       </p>
 
       <h2>Changes to this policy</h2>

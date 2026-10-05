@@ -83,10 +83,10 @@ export default function PricingPage() {
         deliberate.
       </p>
       <p>
-        We never see your card or bank details. Razorpay&rsquo;s page asks for your email address
-        and your phone number, and both are required, so we can see those along with the amount, the
-        currency, the date and whether the payment went through. It has no name box and no message
-        box. On PayPal we see the usual record of the payment.
+        We never see your card or bank details. On either page you type the amount yourself and
+        may leave a short note. We can see the amount, the currency, the date, whether the payment
+        went through, any note you left, and whatever contact details the payment company passes on
+        to us.
       </p>
       <p>
         We add nothing on top of the amount you type in: no fee, no tax and no processing charge of

@@ -52,7 +52,7 @@ export const support = {
     },
     {
       id: 'india',
-      url: 'https://rzp.io/rzp/OKGOxtcO',
+      url: 'https://razorpay.me/@freesecurekit',
       title: 'Tip in rupees',
       who: 'India',
       provider: 'Razorpay',

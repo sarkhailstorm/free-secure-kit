@@ -57,8 +57,7 @@ export default function Page() {
         <li>the date of the payment;</li>
         <li>the amount, and the currency you paid in;</li>
         <li>
-          the email address you gave when you paid, and the phone number too if you were asked for
-          one;
+          any contact details you gave when you paid, so the payment can be matched to you;
         </li>
         <li>the payment or transaction reference on your receipt, if you still have the email.</li>
       </ul>
