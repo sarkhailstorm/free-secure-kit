@@ -2,11 +2,14 @@ import Link from 'next/link';
 import { Github, Lock } from 'lucide-react';
 import { site, tools, author, donationsConfigured, legalPages } from '@/config';
 import { SupportButton } from './SupportButton';
+import { InstallButton } from './InstallButton';
 
 export function Footer() {
   return (
     <footer className="no-print mt-20 border-t border-line bg-surface">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+        <InstallButton className="mb-6" />
+
         {donationsConfigured ? (
           <div className="mb-10 flex flex-col items-start gap-4 rounded-2xl border border-line bg-bg p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
