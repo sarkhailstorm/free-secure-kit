@@ -10,7 +10,14 @@ const OUT = 'out';
 // The big binaries are already kept in Cache Storage by src/lib/assets.ts and
 // are fetched on demand. Precaching them would download ~26MB up front and
 // store a second copy.
-const SKIP = [/^\/ort\//, /^\/qpdf\//, /^\/models\//, /\.wasm$/, /^\/sw\.js$/];
+const SKIP = [
+  /^\/ort\//,
+  /^\/qpdf\//,
+  /^\/models\//,
+  /\.wasm$/,
+  /^\/sw\.js$/,
+  /^\/404(\.html|\/)?$/,
+];
 
 function walk(dir, acc = []) {
   for (const name of readdirSync(dir)) {
@@ -22,9 +29,10 @@ function walk(dir, acc = []) {
 }
 
 const files = walk(OUT)
-  .filter((p) => !SKIP.some((re) => re.test(p)))
   // index.html is served at the directory URL, which is what a navigation asks for
   .map((p) => (p.endsWith('/index.html') ? p.slice(0, -'index.html'.length) : p))
+  // after the rewrite, so a rule can match the URL rather than the file path
+  .filter((p) => !SKIP.some((re) => re.test(p)))
   .sort();
 
 const hash = createHash('sha256');
@@ -51,7 +59,21 @@ const SHELL = ${JSON.stringify(files)};
 const REDIRECTS = ${JSON.stringify(REDIRECTS)};
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE);
+      await Promise.all(
+        SHELL.map(async (url) => {
+          try {
+            const res = await fetch(url, { cache: 'reload' });
+            if (res.ok) await cache.put(url, res);
+          } catch {
+            // One unreachable path must not abandon the rest
+          }
+        }),
+      );
+    })(),
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -101,8 +123,10 @@ self.addEventListener('fetch', (event) => {
       try {
         return await fetch(request);
       } catch {
-        const offline = await caches.match('/404.html');
-        if (offline) return offline;
+        if (request.mode === 'navigate') {
+          const home = await caches.match('/', { ignoreSearch: true });
+          if (home) return home;
+        }
         return new Response('Offline', { status: 503, statusText: 'Offline' });
       }
     })(),
