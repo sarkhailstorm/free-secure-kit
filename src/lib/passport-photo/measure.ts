@@ -2,19 +2,19 @@ import type { Stencil } from '@/lib/background-remover/infer';
 import { eyeLine } from './detect';
 import type { FaceDetection, MaskData, Measurements } from './types';
 
-/** Alpha above this counts as part of the person. */
+// Alpha above this counts as part of the person
 const SOLID = 128;
 
-/** A row needs this share of the band filled before it counts as the head. */
+// A row needs this share of the band filled before it counts as the head
 const ROW_SHARE = 0.06;
 
-/** How far either side of the face box to look for the top of the hair. */
+// How far either side of the face box to look for the top of the hair
 const BAND_SPREAD = 0.25;
 
-/** Where the chin sits below the bottom of a YuNet box, as a share of box height. */
+// Where the chin sits below the bottom of a YuNet box, as a share of box height
 const CHIN_DROP = 0.04;
 
-/** Where the crown sits above a face box when there is no cut-out to ask. */
+// Where the crown sits above a face box when there is no cut-out to ask
 const CROWN_RISE = 0.34;
 
 export function toMask(stencil: Stencil): MaskData {
@@ -28,7 +28,7 @@ function clamp(value: number, low: number, high: number): number {
   return value < low ? low : value > high ? high : value;
 }
 
-/** Topmost row of the cut-out inside the band, in source pixels; null when nothing solid is there. */
+// Source pixels; null when nothing solid sits in the band
 export function findCrown(
   mask: MaskData,
   sourceWidth: number,
@@ -69,7 +69,7 @@ export function measure(
     ? findCrown(mask, sourceWidth, sourceHeight, face.x - spread, face.x + face.width + spread)
     : null;
 
-  // A crown below the eyes means the cut-out found something other than a head.
+  // A crown below the eyes means the cut-out found something other than a head
   const usable = fromMask != null && fromMask < eyes.y - face.height * 0.1;
   const crownY = usable ? fromMask : face.y - face.height * CROWN_RISE;
 
@@ -93,14 +93,14 @@ function withoutFace(
   return {
     crownY,
     chinY: crownY + headHeight,
-    // Roughly where eyes sit in a head: a little above halfway.
+    // Roughly where eyes sit in a head: a little above halfway
     eyeY: crownY + headHeight * 0.55,
     centreX: sourceWidth / 2,
     origin: 'estimated',
   };
 }
 
-/** How much the background varies, 0 to 1, and its average colour. */
+// `spread` runs 0 to 1
 export function backgroundSpread(
   pixels: ImageData,
   mask: MaskData,
@@ -119,7 +119,7 @@ export function backgroundSpread(
     const maskRow = Math.min(mask.height - 1, Math.floor(y * scaleY)) * mask.width;
     for (let x = 0; x < pixels.width; x += step) {
       const maskCol = Math.min(mask.width - 1, Math.floor(x * scaleX));
-      // Anything with a trace of the person in it is an edge, not background.
+      // Anything with a trace of the person in it is an edge, not background
       if (mask.alpha[maskRow + maskCol] > 8) continue;
       const p = (y * pixels.width + x) * 4;
       sumR += pixels.data[p];
@@ -138,7 +138,7 @@ export function backgroundSpread(
   const deviation = Math.sqrt(variance / count);
 
   return {
-    // 40 levels of spread is already a visibly busy wall; treat that as the top.
+    // 40 levels of deviation is already a visibly busy wall, so treat that as the top
     spread: Math.min(1, deviation / 40),
     colour: [sumR / count, sumG / count, sumB / count],
     sampled: count,

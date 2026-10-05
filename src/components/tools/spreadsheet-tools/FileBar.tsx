@@ -7,7 +7,6 @@ import { formatBytes, plural } from '@/lib/format';
 
 export interface FileBarProps {
   filename: string;
-  /** Bytes of the file as it arrived. */
   size: number;
   rows: number;
   columns: number;

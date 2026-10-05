@@ -25,7 +25,7 @@ export type {
   TablePath,
 } from './types';
 
-/** Both halves in one call, for a caller that does not need the preview. */
+// Both halves in one call, for a caller that does not need the preview
 export async function pdfToExcel(
   source: LoadedPdf,
   options: ExcelOptions,

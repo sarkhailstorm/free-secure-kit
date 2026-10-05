@@ -38,7 +38,7 @@ export function formatLabel(mime: string): string {
   return LABEL_BY_TYPE[mime] ?? (mime.split('/')[1] ?? mime).toUpperCase();
 }
 
-/** "Keep original" falls back to PNG when the source is a type the canvas can't write. */
+// "Keep original" falls back to PNG when the source is a type the canvas can't write
 export function resolveOutputType(sourceType: string, format: OutputFormat): EncodableType {
   if (format !== 'original') return format;
   const match = ENCODABLE.find((t) => t === sourceType);
@@ -50,7 +50,7 @@ export function outputFilename(originalName: string, type: string): string {
   return safeFilename(`${baseName(originalName)}.${ext}`, `image.${ext}`);
 }
 
-/** PNG has no lossy mode: the encoder spends quality as a colour budget, not detail. */
+// PNG has no lossy mode: the encoder spends quality as a colour budget, not detail
 export function qualityEffect(type: string): 'detail' | 'colours' {
   return type === 'image/png' ? 'colours' : 'detail';
 }
@@ -58,7 +58,7 @@ export function qualityEffect(type: string): 'detail' | 'colours' {
 export interface ResizePreset {
   id: ResizePresetId;
   label: string;
-  /** Longest-edge cap in pixels, or `null` when the preset has no fixed cap. */
+  // Longest-edge cap in pixels; null when the preset has no fixed cap
   max: number | null;
   detail: string;
 }
@@ -71,7 +71,6 @@ export const RESIZE_PRESETS: readonly ResizePreset[] = [
   { id: 'custom', label: 'Custom', max: null, detail: 'Your size' },
 ];
 
-/** Clamped to 1–20000 px; `null` when the box is blank or holds no usable number. */
 export function parsePixelInput(raw: string): number | null {
   const trimmed = raw.trim();
   if (trimmed === '') return null;
@@ -80,7 +79,7 @@ export function parsePixelInput(raw: string): number | null {
   return Math.min(Math.round(n), 20000);
 }
 
-/** Longest-edge cap in the source's own pixels; `undefined` when nothing should be resized. */
+// Longest-edge cap in the source's own pixels; undefined means leave the size alone
 export function resolveMaxDimension(
   source: Dimensions,
   resize: ResizeSettings,
@@ -118,7 +117,6 @@ export function describeResize(resize: ResizeSettings): string {
   return `Longest edge capped at ${preset.max} px`;
 }
 
-/** De-duplicates case-insensitively: a second "photo.jpg" becomes "photo (2).jpg". */
 export function uniqueNames(names: readonly string[]): string[] {
   const taken = new Set<string>();
   return names.map((name) => {

@@ -39,7 +39,7 @@ export async function findTables(
     const sheets = buildSheets(found.tables, baseName(source.name));
     for (const sheet of sheets) {
       applyBalance(sheet, findBalance(sheet));
-      // applyBalance only flags, so the confidence has to be taken after it.
+      // applyBalance only flags, so the confidence has to be taken after it
       sheet.confidence = sheetConfidence(sheet);
     }
 
@@ -70,7 +70,7 @@ export async function writeTables(
 
   throwIfAborted(options.signal);
   onProgress({ stage: 'writing', done: 0, total: sheets.length });
-  // The spreadsheet is built in one synchronous go, so the label has to land before it starts.
+  // The spreadsheet is built in one synchronous go, so the label has to land before it starts
   await tick();
 
   if (options.format === 'csv') {

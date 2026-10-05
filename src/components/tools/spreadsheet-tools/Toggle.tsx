@@ -6,7 +6,6 @@ export interface ToggleProps {
   checked: boolean;
   onChange: (next: boolean) => void;
   disabled?: boolean;
-  /** Indent an option that only makes sense under the one above it. */
   nested?: boolean;
 }
 

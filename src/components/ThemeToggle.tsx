@@ -18,6 +18,7 @@ export function ThemeToggle() {
     try {
       localStorage.setItem('free-secure-kit:theme', next);
     } catch {
+      // localStorage throws in some private windows; the theme just won't stick
     }
   }
 

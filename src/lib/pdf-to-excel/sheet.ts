@@ -3,7 +3,7 @@ import type { DetectedTable } from './detect/tables';
 import { dropRepeatedHeader, groupCellRows, type RawRow } from './rows';
 import type { Cell, Row, Sheet, SheetNote } from './types';
 
-/** A first row with no amount anywhere in it and something in at least two cells. */
+// A header row has no amount anywhere in it and something in at least two cells
 function looksLikeHeader(row: RawRow | undefined): boolean {
   if (!row) return false;
   const filled = row.cells.filter((cell) => cell.trim() !== '');
@@ -21,7 +21,7 @@ export const sheetConfidence = (sheet: Sheet): number =>
   sheet.rows.length === 0 ? 1 : sheet.rows.filter((row) => row.ok).length / sheet.rows.length;
 
 function buildOne(table: DetectedTable, id: string, title: string): Sheet {
-  // Money columns decide where a record starts; only the column rung knows them from geometry.
+  // Money columns decide where a record starts; only the column rung knows them from geometry
   const moneyCols =
     table.moneyCols ??
     typeColumns(table.rows, null, null)
@@ -79,7 +79,7 @@ function buildOne(table: DetectedTable, id: string, title: string): Sheet {
   return sheet;
 }
 
-/** Every detected table as a finished sheet, before the balance check runs over it. */
+// Sheets come back before the balance check has run over them
 export function buildSheets(tables: readonly DetectedTable[], documentName: string): Sheet[] {
   const sheets = tables.map((table, i) => buildOne(table, `sheet-${i + 1}`, `Table ${i + 1}`));
   if (sheets.length === 1 && documentName.trim() !== '') sheets[0].title = documentName.trim();

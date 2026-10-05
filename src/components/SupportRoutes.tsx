@@ -1,11 +1,7 @@
 import { support } from '@/config';
 import { cn } from '@/lib/cn';
 
-/**
- * Both ways to contribute, side by side. The order comes from the config and is
- * not sorted here: PayPal's merchant terms ask for placement at least equal to
- * any other method, so the two tiles are deliberately identical.
- */
+// Don't sort: PayPal's merchant terms ask for placement at least equal to other methods
 export function SupportRoutes({ className }: { className?: string }) {
   return (
     <div className={cn('grid gap-3 sm:grid-cols-2', className)}>

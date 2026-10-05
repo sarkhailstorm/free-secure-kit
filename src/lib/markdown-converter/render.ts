@@ -2,9 +2,8 @@ import type { Config as PurifyConfig } from 'dompurify';
 import type { Marked, Tokens } from 'marked';
 
 export interface RenderResult {
-  /** Sanitised HTML, safe for `dangerouslySetInnerHTML`. Empty on failure. */
+  // Sanitised, so safe for `dangerouslySetInnerHTML`; empty on failure
   html: string;
-  /** Short, human explanation when rendering failed. */
   error: string | null;
 }
 
@@ -41,9 +40,9 @@ const SANITIZE_CONFIG: PurifyConfig = {
     'template',
     'portal',
   ],
-  // `style` is forbidden beyond DOMPurify's defaults: inline styles can paint over the whole app.
+  // `style` goes beyond DOMPurify's defaults: inline styles can paint over the whole app
   FORBID_ATTR: ['formaction', 'ping', 'srcdoc', 'style', 'background'],
-  // Absent from DOMPurify's default allow-list, and `decorate` below adds them.
+  // Absent from DOMPurify's default allow-list, and `decorate` below adds them
   ADD_ATTR: ['target', 'referrerpolicy'],
   ALLOW_DATA_ATTR: false,
 };
@@ -64,7 +63,7 @@ async function loadEngine(): Promise<Engine> {
     silent: false,
     renderer: {
       code({ text, lang }: Tokens.Code): string {
-        // Info strings look like "ts", "ts title=x" or "" — take the first word.
+        // Info strings look like "ts", "ts title=x" or "", so take the first word
         const info = (lang ?? '').trim().split(/\s+/)[0].toLowerCase();
         let body: string | null = null;
         if (info && hljs.getLanguage(info)) {
@@ -89,7 +88,7 @@ async function loadEngine(): Promise<Engine> {
 function getEngine(): Promise<Engine> {
   if (!enginePromise) {
     enginePromise = loadEngine().catch((err: unknown) => {
-      // Cleared so a failed chunk load can be retried.
+      // Cleared so a failed chunk load can be retried
       enginePromise = null;
       throw err;
     });
@@ -97,7 +96,7 @@ function getEngine(): Promise<Engine> {
   return enginePromise;
 }
 
-// Runs on unsanitised HTML on purpose, so DOMPurify always gets the last word.
+// Runs before sanitising, so DOMPurify still gets the last word on what this adds
 function decorate(html: string): string {
   const doc = new DOMParser().parseFromString(html, 'text/html');
 
@@ -134,7 +133,7 @@ function friendlyError(err: unknown): string {
     : 'That Markdown could not be rendered.';
 }
 
-/** Render Markdown to sanitised HTML. Never throws. */
+// Never throws; failures come back in `error`
 export async function renderMarkdown(source: string): Promise<RenderResult> {
   if (!source.trim()) return { html: '', error: null };
   try {

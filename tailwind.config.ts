@@ -46,7 +46,6 @@ const config: Config = {
           from: { opacity: '0', transform: 'translateY(12px) scale(0.98)' },
           to: { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
-        // One wisp of steam: grows out of the cup, then thins away above it.
         steam: {
           '0%': { opacity: '0', transform: 'translateY(2px) scaleY(0.5)' },
           '30%': { opacity: '1', transform: 'translateY(0.5px) scaleY(1)' },

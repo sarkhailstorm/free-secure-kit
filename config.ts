@@ -6,7 +6,7 @@ export const site = {
   url: 'https://freesecurekit.vercel.app',
   repo: 'https://github.com/sarkhailstorm/free-secure-kit',
   repoBranch: 'main',
-  /** Proves ownership to Google Search Console. Public by design, not a secret. */
+  // Public token, not a secret: it ships in the page source
   googleSiteVerification: 'WOX1L5jSTNu4UD1pxP5jF9KDokyG2cRlziKz1Cqxbb0',
 } as const;
 
@@ -18,27 +18,18 @@ export const author = {
 
 export type SupportRoute = {
   id: string;
-  /** The provider's own hosted page. Linked to, never embedded. */
   url: string;
-  /** Button text. */
   title: string;
-  /** Who this one is for, in the reader's terms. */
   who: string;
   provider: string;
   providerUrl: string;
   privacyUrl: string;
 };
 
-/**
- * Two routes, because neither provider reaches everyone. PayPal cannot take a
- * payment from inside India at all, and Razorpay will not give an individual
- * account international cards. PayPal is listed first because its merchant
- * terms ask for placement at least equal to any other method.
- */
+// PayPal first: its merchant terms ask for placement at least equal to any other method
 export const support = {
   label: 'Buy me a coffee',
   emoji: '☕',
-  /** The page holding both links; nothing leaves the site until a link is clicked. */
   href: '/support',
   routes: [
     {
@@ -64,7 +55,6 @@ export const support = {
 
 export const donationsConfigured: boolean = support.routes.some((r) => r.url.length > 0);
 
-/** Every provider a contributor could meet, for the legal pages to name. */
 export const supportProviders: readonly string[] = support.routes.map((r) => r.provider);
 
 export const business = {
@@ -87,7 +77,6 @@ export const contactPhoneConfigured: boolean = (business.phone as string).length
 export const addressConfigured: boolean = (business.address.line1 as string).length > 0;
 export const legalNameConfigured: boolean = (business.legalName as string).length > 0;
 
-/** Who the site belongs to in policy copy. Falls back to the display name. */
 export function traderName(): string {
   return legalNameConfigured ? business.legalName : author.name;
 }
@@ -213,5 +202,4 @@ export function getTool(id: ToolId): Tool {
   return tool;
 }
 
-/** Shown on every tool page. */
 export const privacyBadge = 'Everything happens on your device — your files are never uploaded';

@@ -30,7 +30,7 @@ import type {
 const SAFE_MARGIN: Pt = 72;
 /** Equal gaps either side within this are a picture the author centred. */
 const CENTRE_TOL: Pt = 6;
-/** Past half the pages, handing back the remainder would be pretending. */
+/** Past this share of pages failing, the remainder isn't worth handing back. */
 const FAILURE_SHARE = 0.5;
 
 interface Picture {
@@ -61,7 +61,7 @@ async function encodePictures(
   pdfBytes: Uint8Array,
   tally: ImageTally,
 ): Promise<Picture[]> {
-  // A picture of the whole page already holds every image on it, and a scan's bitmap stays out of Editable mode.
+  // A whole-page picture already holds every image on it, and a scan's bitmap stays out of Editable mode.
   if (facts.raster || facts.cls !== 'text' || facts.images.length === 0) return [];
 
   const page = await doc.getPage(facts.pageNumber);
@@ -103,7 +103,7 @@ async function readOnePage(
   const exact = options.mode === 'exact';
   const lines = exact ? buildLines(facts.spans, facts.bodySize) : [];
 
-  // §6: more boxes than Word can place is a page to photograph, not to rebuild.
+  // More boxes than Word can place: photograph the page rather than rebuild it.
   if (exact && boxCount(lines, fonts) > MAX_FRAMES_PER_PAGE && !facts.raster) {
     const page = await doc.getPage(pageNumber);
     facts.raster = await rasterPage(

@@ -1,12 +1,12 @@
 import type { Crop, Layout, Measurements, PhotoSpec } from './types';
 
-/** Share of the leftover height above the crown when the spec sets no eye line. */
+// Share of the leftover height that goes above the crown when the spec sets no eye line
 const CROWN_SHARE = 0.3;
 
 export interface LayoutOptions {
-  /** Chin-to-crown height to aim for. Clamped to what the spec allows. */
+  // Chin-to-crown height to aim for, clamped to what the spec allows
   headMm?: number;
-  /** Move the subject within the frame. Positive is right and down, in mm. */
+  // Positive is right and down, in mm
   offsetXMm?: number;
   offsetYMm?: number;
 }
@@ -23,13 +23,13 @@ export function preferredHeadMm(spec: PhotoSpec): number {
   return (spec.headMinMm + spec.headMaxMm) / 2;
 }
 
-/** The middle of the allowed eye band, or null when the spec sets none. */
+// Null when the spec sets no eye band
 export function preferredEyeMm(spec: PhotoSpec): number | null {
   if (spec.eyeMinMm == null || spec.eyeMaxMm == null) return null;
   return (spec.eyeMinMm + spec.eyeMaxMm) / 2;
 }
 
-/** The crop is allowed to fall outside the source, which is how a too-tight photo is caught. */
+// The crop may fall outside the source, which is how a too-tight photo is caught
 export function planLayout(
   spec: PhotoSpec,
   measurements: Measurements,
@@ -78,7 +78,7 @@ export function planLayout(
   };
 }
 
-/** How far the crop runs past each edge of the photo, in source pixels. */
+// How far the crop runs past each edge, in source pixels
 export function overhang(
   crop: Crop,
   width: number,
@@ -95,7 +95,7 @@ export function headInRange(spec: PhotoSpec, layout: Layout): boolean {
   return layout.headMm >= spec.headMinMm - 0.05 && layout.headMm <= spec.headMaxMm + 0.05;
 }
 
-/** True when the eyes land where the spec says, or when it does not say. */
+// Also true when the spec sets no eye band at all
 export function eyesInRange(spec: PhotoSpec, layout: Layout): boolean {
   if (spec.eyeMinMm == null || spec.eyeMaxMm == null) return true;
   return layout.eyeMm >= spec.eyeMinMm - 0.05 && layout.eyeMm <= spec.eyeMaxMm + 0.05;

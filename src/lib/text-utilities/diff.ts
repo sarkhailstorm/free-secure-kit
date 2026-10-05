@@ -4,10 +4,9 @@ export type DiffMode = 'lines' | 'words' | 'chars';
 
 export interface DiffOptions {
   mode: DiffMode;
-  /** Ignore leading/trailing whitespace when deciding whether two lines match. */
   ignoreWhitespace: boolean;
   ignoreCase: boolean;
-  /** Skips the size ceiling; the timeout still applies. */
+  // Skips the size ceiling; the timeout still applies
   allowOversize?: boolean;
 }
 
@@ -18,16 +17,16 @@ export interface InlineSpan {
 
 export interface DiffRow {
   kind: 'same' | 'add' | 'del';
-  /** 1-based line number in the original, or null for added lines. */
+  // 1-based, null for an added line
   oldNumber: number | null;
-  /** 1-based line number in the changed text, or null for removed lines. */
+  // 1-based, null for a removed line
   newNumber: number | null;
   text: string;
-  /** Word-level detail, present only on the two halves of a modified pair. */
+  // Only set on the two halves of a modified pair
   spans: InlineSpan[] | null;
 }
 
-/** Placeholder standing in for a run of collapsed, unchanged lines. */
+// Stands in for a run of collapsed unchanged lines
 export interface GapRow {
   kind: 'gap';
   count: number;
@@ -40,9 +39,9 @@ export interface DiffStats {
   removed: number;
   modified: number;
   unchanged: number;
-  /** True when nothing differs *under the current ignore options*. */
+  // Nothing differs under the current ignore options
   identical: boolean;
-  /** True when the two inputs are byte-for-byte the same. */
+  // The two inputs are byte-for-byte the same
   exact: boolean;
 }
 
@@ -50,7 +49,7 @@ export interface LineDiffResult {
   kind: 'lines';
   rows: DiffRow[];
   stats: DiffStats;
-  /** True when the intra-line word highlighting was skipped to stay responsive. */
+  // Word-level highlighting was skipped to stay responsive
   inlineSkipped: boolean;
 }
 
@@ -63,30 +62,29 @@ export interface InlineDiffResult {
 
 export type DiffResult = LineDiffResult | InlineDiffResult;
 
-/** Total characters across both sides, above which we refuse rather than freeze the tab. */
+// Total characters across both sides, above which it refuses rather than freezing the tab
 export const DIFF_LIMITS: Readonly<Record<DiffMode, number>> = {
   lines: 400_000,
   words: 150_000,
   chars: 30_000,
 };
 
-/** Milliseconds after which the diff algorithm gives up instead of hanging. */
 const DIFF_TIMEOUT_MS = 5_000;
 
-/** How many changed line pairs get word-level highlighting before we stop. */
+// Changed line pairs that get word-level highlighting before it gives up
 const INLINE_PAIR_BUDGET = 600;
-/** Lines longer than this are not word-diffed against their counterpart. */
+// Lines longer than this are not word-diffed against their counterpart
 const INLINE_LINE_MAX = 3_000;
-/** Share of shared characters needed before two lines count as "modified". */
+// Share of shared characters needed before two lines count as modified
 const SIMILARITY_THRESHOLD = 0.25;
 
-/** Returns the exceeded limit for this mode, or null when the input is fine. */
+// Returns the limit that was exceeded, or null when the input is fine
 export function diffSizeLimit(a: string, b: string, mode: DiffMode): number | null {
   const limit = DIFF_LIMITS[mode];
   return a.length + b.length > limit ? limit : null;
 }
 
-/** Split into lines without inventing a trailing empty line for empty input. */
+// No trailing empty line for empty input
 export function splitLines(text: string): string[] {
   if (text.length === 0) return [];
   return text.split(/\r\n|\n|\r/);
@@ -105,7 +103,7 @@ type Block = {
   count: number;
 };
 
-/** Throws an `Error` whose message is written to be shown to the user as-is. */
+// Throws errors whose messages are already fit to show the user
 export async function computeDiff(
   original: string,
   changed: string,
@@ -127,7 +125,7 @@ export async function computeDiff(
     let parts: ChangeObject<string>[] | undefined;
     if (options.mode === 'words') {
       parts = diffWords(left, right, { ignoreCase: options.ignoreCase, timeout: DIFF_TIMEOUT_MS });
-      // `diffWords` ignores whitespace, so its parts do not always add back up to the input.
+      // `diffWords` ignores whitespace, so its parts do not always add back up to the input
       if (parts && !rebuildsExactly(parts, left, right, options.ignoreCase)) {
         parts = diffWordsWithSpace(left, right, {
           ignoreCase: options.ignoreCase,
@@ -216,7 +214,7 @@ export async function computeDiff(
 
     const next = blocks[i + 1];
     if (block.kind === 'del' && next && next.kind === 'add') {
-      // A removal immediately followed by an insertion is almost always an edit.
+      // A removal immediately followed by an insertion is almost always an edit
       const pairCount = Math.min(block.count, next.count);
       const delSpans: (InlineSpan[] | null)[] = new Array(block.count).fill(null);
       const addSpans: (InlineSpan[] | null)[] = new Array(next.count).fill(null);
@@ -227,7 +225,7 @@ export async function computeDiff(
         const after = newLines[next.newStart + j] ?? '';
 
         if (inlineBudget <= 0 || before.length > INLINE_LINE_MAX || after.length > INLINE_LINE_MAX) {
-          // Too much work to highlight precisely — still count it as an edit.
+          // Too much work to highlight precisely, but still counts as an edit
           inlineSkipped = true;
           modifiedHere += 1;
           continue;
@@ -235,14 +233,14 @@ export async function computeDiff(
 
         inlineBudget -= 1;
         let parts = diffWords(before, after, { ignoreCase: options.ignoreCase });
-        // Same whitespace caveat: re-run exact when the round trip does not hold.
+        // Same whitespace caveat: re-run exact when the round trip does not hold
         if (!rebuildsExactly(parts, before, after, options.ignoreCase)) {
           parts = diffWordsWithSpace(before, after, { ignoreCase: options.ignoreCase });
         }
         if (!isSimilar(parts, before, after)) continue;
 
         modifiedHere += 1;
-        // Sliced from the real inputs, so each side reads back exactly as typed.
+        // Sliced from the real inputs, so each side reads back exactly as typed
         const sliced = spansFromParts(parts, before, after);
         if (sliced) {
           delSpans[j] = sliced.del;
@@ -351,7 +349,6 @@ function toBlocks(changes: ChangeObject<string[]>[]): Block[] {
   return blocks;
 }
 
-/** Do these change objects add back up to the two strings that produced them? */
 function rebuildsExactly(
   parts: ChangeObject<string>[],
   before: string,
@@ -370,7 +367,7 @@ function rebuildsExactly(
   );
 }
 
-/** Null when the token lengths do not line up with the sources. */
+// Null when the token lengths do not line up with the sources
 function spansFromParts(
   parts: ChangeObject<string>[],
   before: string,
@@ -411,7 +408,6 @@ function isSimilar(parts: ChangeObject<string>[], before: string, after: string)
   return shared / longest >= SIMILARITY_THRESHOLD;
 }
 
-/** `context` lines of unchanged text are kept around every change. */
 export function collapseUnchanged(rows: DiffRow[], context: number): RenderRow[] {
   const keep: boolean[] = new Array(rows.length).fill(false);
 
@@ -457,7 +453,6 @@ export function unitForMode(mode: DiffMode, count: number): string {
   return count === 1 ? word : `${word}s`;
 }
 
-/** "+12 added, −4 removed, 3 modified" — or a plain-English "no differences". */
 export function summariseStats(stats: DiffStats): string {
   if (stats.identical) return 'No differences';
   const bits: string[] = [];

@@ -73,7 +73,6 @@ const viewTabs = [
   { id: 'original' as const, label: 'Original' },
 ];
 
-/** Rows drawn in the preview, and the size of one page of removed rows. */
 const PAGE = 100;
 
 interface SheetState {
@@ -345,7 +344,7 @@ export function SpreadsheetTools() {
   const checks = useMemo(() => {
     if (!deferredCheckInput) return null;
     const report = runChecks(deferredCheckInput);
-    // The checks stand their own scan down for a workbook, so error cells are carried over here.
+    // runChecks does not rescan for error cells, so carry the parse-time ones over
     if (report.findings.some((finding) => finding.kind === 'excel-error-cells')) return report;
     const carried = deferredCheckInput.sheet.issues
       .filter((issue) => issue.kind === 'excel-error-cells' && issue.count > 0)

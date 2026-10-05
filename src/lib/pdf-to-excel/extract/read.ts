@@ -15,7 +15,7 @@ import type {
 } from '@/lib/pdf-to-word/types';
 import type { ExcelOptions } from '../types';
 
-/** One page, reduced to what a table needs. The page's own facts are released immediately. */
+// One page reduced to what a table needs; the page's own facts are released as soon as this is built
 export interface PageRead {
   pageNumber: number;
   cls: PageClass;
@@ -26,7 +26,7 @@ export interface PageRead {
   struct: StructIndex;
   rules: RuleSeg[];
   fills: FillBox[];
-  /** True when the tree tags every character on the page. */
+  // True when the tree tags every character on the page
   tagged: boolean;
 }
 
@@ -46,7 +46,7 @@ export async function readPages(
     await tick();
 
     try {
-      // No page is ever turned into a picture: this tool has no use for one.
+      // No page is ever turned into a picture: this tool has no use for one
       const facts = await readPage(doc, n, fonts, {
         mode: 'editable',
         imagesForScannedPages: false,

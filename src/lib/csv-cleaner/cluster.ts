@@ -240,7 +240,7 @@ export type UnsuitableReason =
 export interface ColumnSuitability extends ColumnRef {
   values: number;
   distinctValues: number;
-  /** distinct / values. Low means the column repeats itself, which is the point. */
+  /** distinct / values. Low means the column repeats itself. */
   ratio: number;
   suitable: boolean;
   reason: UnsuitableReason | null;
@@ -757,7 +757,7 @@ export function clusterTallyLoosely(
     distinctValues: tally.counts.size,
     totalValues: tally.values,
     clusters: clusters.slice(0, max),
-    // Empty by design: the exact pass has already offered every reordering this pass can see.
+    // The exact pass has already offered every reordering this pass can see.
     wordOrderClusters: [],
     truncated: false,
     clustersTruncated: clusters.length > max,

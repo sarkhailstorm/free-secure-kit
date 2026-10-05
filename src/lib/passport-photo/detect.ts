@@ -35,7 +35,7 @@ function letterbox(source: ImageBitmap): Letterbox {
     canvas.width = SIZE;
     canvas.height = SIZE;
     const context = context2d(canvas);
-    // Mid grey, not black: a hard edge against the padding pulls false detections to the border.
+    // Mid grey, not black: a hard edge against the padding pulls false detections to the border
     context.fillStyle = '#808080';
     context.fillRect(0, 0, SIZE, SIZE);
     context.drawImage(source, offsetX, offsetY, width, height);
@@ -46,7 +46,7 @@ function letterbox(source: ImageBitmap): Letterbox {
   }
 }
 
-/** Raw 0-255 values in the channel order the model was trained on, which is BGR. */
+// Raw 0-255 values in BGR, the channel order YuNet was trained on
 function toInput(pixels: Uint8ClampedArray): Float32Array {
   const count = SIZE * SIZE;
   const data = new Float32Array(3 * count);
@@ -74,7 +74,7 @@ function overlap(a: FaceDetection, b: FaceDetection): number {
   return total > 0 ? shared / total : 0;
 }
 
-/** Every face in `source`, best first, in source pixels. An empty list is a normal answer. */
+// Best first, in source pixels; an empty list is a normal answer
 export async function detectFaces(
   session: InferenceSession,
   source: ImageBitmap,
@@ -144,7 +144,7 @@ export async function detectFaces(
   return kept;
 }
 
-/** Midpoint between the eyes, and how far off level they are, in degrees. */
+// Tilt is in degrees
 export function eyeLine(face: FaceDetection): { x: number; y: number; tiltDegrees: number } {
   const [right, left] = face.points;
   const x = (right[0] + left[0]) / 2;
@@ -153,7 +153,7 @@ export function eyeLine(face: FaceDetection): { x: number; y: number; tiltDegree
   return { x, y, tiltDegrees: tilt };
 }
 
-/** Sideways nose drift as a share of the gap between the eyes; 0 is straight on. */
+// Sideways nose drift as a share of the gap between the eyes; 0 is straight on
 export function turn(face: FaceDetection): number {
   const [right, left, nose] = face.points;
   const span = Math.hypot(left[0] - right[0], left[1] - right[1]);

@@ -32,7 +32,7 @@ const QUALITY_DPI: Record<QualityId, number | null> = {
   smaller: 96,
 };
 
-/** A forced re-encode is invisible to the user, so it must not be where artefacts appear. */
+/** High enough that a forced re-encode is not where artefacts come from. */
 const REENCODE_QUALITY = 0.82;
 /** iOS caps total canvas area and returns a blank canvas rather than throwing. */
 const MAX_RASTER_PIXELS = 16_777_216;
@@ -243,7 +243,7 @@ export async function readImage(file: File): Promise<LoadedImage> {
       height = probe.height;
     }
   } catch {
-    // Dimensions are optional here.
+    // Dimensions are optional; a failed probe just leaves them at 0.
   }
 
   return {
@@ -311,7 +311,7 @@ interface Placement {
   boxH: number;
 }
 
-/** Keep "match each image" inside something a printer can conceive of. */
+/** Keeps "match each image" inside a page size a printer can handle. */
 const FIT_MAX = PAGE_POINTS.a3[1];
 const FIT_MIN = 72;
 

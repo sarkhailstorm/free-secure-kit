@@ -28,7 +28,7 @@ export const MODEL_CHOICES: Record<ModelChoice, ModelChoiceInfo> = {
 export const DEFAULT_MODEL: ModelChoice = 'anything';
 
 export interface DownloadedAssets {
-  /** Null when the engine could not be fetched here and must be loaded the usual way. */
+  // Null when the engine could not be fetched here and must be loaded the usual way
   engine: Uint8Array | null;
   cutter: Uint8Array;
 }

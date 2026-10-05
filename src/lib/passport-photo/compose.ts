@@ -38,7 +38,7 @@ function fallbackColour(spec: PhotoSpec): string {
   return spec.background.swatches[0] ?? '#ffffff';
 }
 
-/** Only the part of `crop` inside `source` is drawn: browsers differ on a rectangle that runs outside. */
+// Clipped to `source` first: browsers differ on a source rectangle that runs outside
 function paintCrop(
   context: CanvasRenderingContext2D,
   source: ImageBitmap | HTMLCanvasElement,
@@ -70,7 +70,7 @@ function paintCrop(
   );
 }
 
-/** White everywhere with coverage in alpha, so scaling it up cannot fringe the edges. */
+// White everywhere with coverage in alpha, so scaling it up cannot fringe the edges
 function toStencil(mask: MaskData): ImageData {
   const stencil = new ImageData(mask.width, mask.height);
   const out = stencil.data;
@@ -96,7 +96,6 @@ function inMaskPixels(crop: Crop, bitmap: ImageBitmap, mask: MaskData): Crop {
   };
 }
 
-/** Paint the finished photo into `target`, resizing it to the output size first. */
 export function drawPhoto(
   target: HTMLCanvasElement,
   bitmap: ImageBitmap,
@@ -110,7 +109,7 @@ export function drawPhoto(
   target.height = layout.outputHeight;
   const context = context2d(target);
 
-  // An unreadable colour leaves fillStyle as it was, so start from white not black.
+  // An unreadable colour leaves fillStyle as it was, so start from white not black
   context.fillStyle = '#ffffff';
   context.fillStyle = swap ? swap.colour : fallbackColour(options.spec);
   context.fillRect(0, 0, layout.outputWidth, layout.outputHeight);
@@ -163,7 +162,7 @@ export async function renderPhoto(
   options: RenderOptions,
   mask: MaskData | null,
 ): Promise<RenderedPhoto> {
-  // toBlob answers null for an empty canvas as well as an oversized one, so catch the small case here.
+  // toBlob answers null for an empty canvas as well as an oversized one, so catch the small case here
   if (options.layout.outputWidth < 1 || options.layout.outputHeight < 1) {
     throw new PassportPhotoError(
       'That size is too small to save. Check the width and height you asked for.',
@@ -194,7 +193,7 @@ export async function renderPhoto(
   }
 }
 
-/** Each line as a share of the photo's height from the top; outside 0 to 1 means it falls off the photo. */
+// Shares of the photo's height from the top; outside 0–1 means the line falls off the photo
 export function guideOverlay(
   layout: Layout,
   spec: PhotoSpec,
@@ -203,7 +202,7 @@ export function guideOverlay(
   return {
     crownRatio: layout.crownMm / height,
     chinRatio: (layout.crownMm + layout.headMm) / height,
-    // The eye line is the one measurement taken up from the bottom edge.
+    // The eye line is the one measurement taken up from the bottom edge
     eyeRatio: (height - layout.eyeMm) / height,
   };
 }

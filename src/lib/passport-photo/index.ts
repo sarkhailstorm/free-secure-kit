@@ -48,20 +48,19 @@ const SUPPORTED = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 export function isSupportedPhoto(file: File): boolean {
   if (SUPPORTED.has(file.type)) return true;
-  // Some file pickers hand over an empty type; fall back to the name.
+  // Some file pickers hand over an empty type, so fall back to the name
   return file.type === '' && /\.(jpe?g|png|webp)$/i.test(file.name);
 }
 
-/** True when nothing needs downloading and picking a photo is instant. */
 export async function isReady(): Promise<boolean> {
   return (await bytesOutstanding(NEEDED)) === 0;
 }
 
-/** "about 9 MB", or null when there is nothing left to fetch. */
+// Null when there is nothing left to fetch
 export async function downloadSize(): Promise<string | null> {
   const bytes = await bytesOutstanding(NEEDED);
   if (bytes === 0) return null;
-  // Everything is served compressed, and these compress to roughly 45%.
+  // Everything is served compressed, and these compress to roughly 45%
   return `about ${Math.max(1, Math.round((bytes * 0.45) / 1_000_000))} MB`;
 }
 
@@ -123,7 +122,6 @@ function smallCopy(bitmap: ImageBitmap): ImageData {
   }
 }
 
-/** Find the face, cut the person out and measure the head. The models download on the first call. */
 export async function analysePhoto(
   file: File,
   signal?: AbortSignal,
@@ -169,7 +167,7 @@ export async function analysePhoto(
     }
 
     report('starting', null, 'Starting the photo checker…');
-    // Both sessions stay open together: a crop needs the eyes and the hairline.
+    // Both sessions stay open together: a crop needs the eyes and the hairline
     await releaseSessions([CUTTER_KEY, FACE_KEY]);
     const faceSession = await getSession(FACE_KEY, assets.yunet, assets.engine);
     const cutterSession = await getSession(CUTTER_KEY, assets.modnet);
@@ -185,7 +183,7 @@ export async function analysePhoto(
       mask = toMask(await segment(cutterSession, 'person', bitmap, signal));
     } catch (err) {
       if (signal?.aborted) throw err;
-      // Without a cut-out the crown is a guess; not worth failing the whole photo.
+      // Without a cut-out the crown is a guess, which beats failing the whole photo
     }
     throwIfAborted(signal);
 
@@ -207,7 +205,6 @@ export async function analysePhoto(
   }
 }
 
-/** Let the models go. Everything downloads again only if the cache was cleared. */
 export async function release(): Promise<void> {
   await releaseSessions();
 }
@@ -221,7 +218,7 @@ export function describePassportError(err: unknown, filename?: string): string {
   const message = err instanceof Error ? err.message : String(err);
   const name = err instanceof Error ? err.name : '';
 
-  // A tab left open across a new deploy asks for chunks that no longer exist.
+  // A tab left open across a new deploy asks for chunks that no longer exist
   if (
     name === 'ChunkLoadError' ||
     /loading chunk .*failed|importing a module script failed|dynamically imported module/i.test(

@@ -4,7 +4,7 @@ export type Confidence = 'high' | 'medium' | 'low';
 
 export type Severity = 'info' | 'warning' | 'serious';
 
-/** A rectangular sheet of strings. Every row is padded to `header.length`. */
+/** Every row is padded to `header.length`. */
 export interface Grid {
   header: string[];
   rows: string[][];
@@ -103,11 +103,10 @@ export type ReadIssueKind =
 export interface ReadIssue {
   kind: ReadIssueKind;
   severity: Severity;
-  /** How many rows/cells/sheets are affected — the number the UI quotes. */
+  /** Rows, cells or sheets affected, depending on `kind`. */
   count: number;
   /** ORIGINAL row indexes, capped at MAX_LINKED_ROWS. Empty when not row-bound. */
   rowIndexes: number[];
-  /** Original column index when the issue belongs to one column. */
   columnIndex?: number;
   sheetIndex?: number;
   samples: string[];
@@ -132,7 +131,7 @@ export type SourceKind = 'delimited' | 'workbook';
 export interface ParsedFile {
   filename: string;
   kind: SourceKind;
-  /** Lower-case, no dot. Kept for wording: 'csv', 'xlsx', 'ods', 'numbers'… */
+  /** Lower-case, no dot: 'csv', 'xlsx', 'ods', 'numbers'… */
   extension: string;
   sheets: ParsedSheet[];
   /** Delimited files only; null for workbooks. */
@@ -181,7 +180,7 @@ export interface FooterRowCandidate {
 }
 
 export interface StructureReport {
-  /** Suggested header row, or null when the sheet appears to have no header. */
+  /** Null when the sheet appears to have no header. */
   headerRowIndex: number | null;
   confidence: Confidence;
   /** Scores for the first HEADER_SCAN_ROWS rows, in row order. */
@@ -316,7 +315,7 @@ export function withDefaults(input: LegacyCleanOptions = {}): CleanOptions {
 export interface CleanStats {
   /** Every row in the sheet as read, header and preamble included. */
   sourceRows: number;
-  /** Data rows once the header choice is applied — the "before" the UI shows. */
+  /** Data rows once the header choice is applied. */
   rowsBefore: number;
   rowsAfter: number;
   columnsBefore: number;
@@ -437,7 +436,6 @@ export interface RowDiff {
   /** ORIGINAL row index. */
   index: number;
   cells: CellChange[];
-  /** Set when this row is not in the result. */
   removedBecause: RemovalReason | null;
 }
 
@@ -475,15 +473,14 @@ export type CheckKind =
 export interface CheckFinding {
   kind: CheckKind;
   severity: Severity;
-  /** Rows or cells affected — the number the UI quotes. */
+  /** Rows or cells affected, depending on `kind`. */
   count: number;
-  /** ORIGINAL row indexes, capped at MAX_LINKED_ROWS, so the UI can link through. */
+  /** ORIGINAL row indexes, capped at MAX_LINKED_ROWS. */
   rowIndexes: number[];
   /** True when `rowIndexes` was capped and `count` is the honest total. */
   truncated: boolean;
-  /** Original column index when the finding belongs to one column. */
   columnIndex?: number;
-  /** Header text at the time of the check, for wording. */
+  /** Header text at the time of the check. */
   columnName?: string;
   samples: string[];
 }

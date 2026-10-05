@@ -26,7 +26,7 @@ import type {
 import { findColumns, type ColumnBand } from './columns';
 import { applyJustification, buildLines, fragmentRunTexts } from './lines';
 
-/** DocModel['body'] — passed in so a page can be laid out against the document's body text. */
+/** Mirrors DocModel['body']: the document-wide body text a page is measured against. */
 export interface BodyMetrics {
   family: string;
   sizePt: Pt;
@@ -36,7 +36,7 @@ export interface BodyMetrics {
 export interface PageContext {
   fonts: ReadonlyMap<string, FontInfo>;
   body: BodyMetrics;
-  /** Spans already claimed by a running header or footer (§4.8). */
+  /** Spans already claimed by a running header or footer. */
   consumed?: ReadonlySet<Span>;
   /** Pre-computed bands; findColumns runs when this is absent. */
   columns?: readonly ColumnBand[];
@@ -61,7 +61,7 @@ export interface BlockMetrics {
   tagLevel: HeadingLevel | null;
   baseKind: Kind;
   markerX: Pt | null;
-  /** Right edge measured from the column's left, which is what §4.4's shortLine tests. */
+  /** Right edge measured from the column's left, which is what shortLine tests. */
   rightExtentPt: Pt;
   /** First baseline, so model.ts can put a page's pictures back where the page drew them. */
   topPt: Pt;
@@ -73,15 +73,15 @@ export interface MeasuredPara extends ParaBlock {
 
 const HEAD_MAX_LINES = 2;
 const HEAD_SHORT = 0.7;
-/** §4.2 size-change break; also the size bucket for the leading history and heading ranks. */
+/** Size-change break; also the size bucket for the leading history and heading ranks. */
 const SIZE_TOL: Pt = 0.6;
 const LEAD_FALLBACK = 1.15;
 const GAP_HISTORY = 5;
-/** §4.2 short previous line, in ems of the block's own size. */
+/** Short previous line, in ems of the block's own size. */
 const SHORT_TAIL = 2.5;
-/** §4.1 split a struct block whose internal gap runs away. */
+/** Split a struct block whose internal gap runs away. */
 const STRUCT_SPLIT = 2.5;
-/** §4.5 gap after the marker, and how far a continuation line may stray from textX. */
+/** Gap after the marker, and how far a continuation line may stray from textX. */
 const MARKER_GAP = 1.2;
 const CONTINUATION_TOL: Pt = 2;
 const MAX_LIST_DEPTH = 3;
@@ -94,7 +94,7 @@ const SINGLE_CENTRE_WIDTH = 0.8;
 const FIRST_LINE_TOL: Pt = 1;
 const RIGHT_INDENT_MIN = 1;
 const TAB_STOP_TOL: Pt = 2;
-/** §4.10 line-end hyphens. U+2013/U+2014 are deliberately not here. */
+/** Line-end hyphens; U+2013/U+2014 are dashes, not hyphens, so they stay out. */
 const HYPHEN_RE = /[-\u2010\u00ad]$/;
 const SOFT_HYPHEN_RE = /\u00ad/g;
 const HEAD_TAG_RE = /^(?:h\s*([1-6])|heading\s*([1-6]))$/i;
@@ -255,7 +255,7 @@ const runsText = (runs: readonly Run[]): string =>
 const isLower = (ch: string): boolean => ch !== '' && ch.toLowerCase() === ch && /\p{L}/u.test(ch);
 const isUpper = (ch: string): boolean => ch !== '' && ch.toUpperCase() === ch && /\p{L}/u.test(ch);
 
-/** §4.10: a single space between lines, unless a line-end hyphen says otherwise. */
+/** A single space between lines, unless a line-end hyphen says otherwise. */
 function joinLine(out: Run[], previousText: string, nextText: string): void {
   let index = out.length - 1;
   while (index >= 0 && (out[index].tab === true || out[index].text.length === 0)) index -= 1;
@@ -424,7 +424,7 @@ function makePara(segment: Segment, facts: PageFacts, ctx: PageContext): Measure
   return block;
 }
 
-/** §4.5: depth is the rank of markerX among the page's distinct marker positions. */
+/** Depth is the rank of markerX among the page's distinct marker positions. */
 function rankListDepths(blocks: readonly MeasuredPara[]): void {
   const items = blocks.filter((block) => block.metrics.markerX !== null);
   const positions: Pt[] = [];
@@ -506,7 +506,7 @@ function segment(lines: readonly Line[], bodySize: Pt): Line[][] {
   return groups;
 }
 
-/** §4.1: a struct block whose own gap runs away is two paragraphs the tag failed to separate. */
+/** A struct block whose own gap runs away is two paragraphs the tag failed to separate. */
 function splitStructLines(lines: readonly Line[], bodySize: Pt): Line[][] {
   if (lines.length < 3) return [[...lines]];
   const gaps: Pt[] = [];
@@ -683,7 +683,7 @@ export function blocksFromStruct(facts: PageFacts, ctx: PageContext): Block[] {
     let mine = byBlock.get(index) ?? [];
     let marker: Marker | null = null;
 
-    // §4.1: Lbl carries the glyph, LBody the text; one paragraph with a hanging indent.
+    // Lbl carries the glyph, LBody the text; emit one paragraph with a hanging indent.
     const next = facts.struct.blocks[indices[i + 1] ?? -1];
     if (next && pairsWith(struct, next)) {
       const label = mine.filter(isInk);

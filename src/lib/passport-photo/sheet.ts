@@ -1,7 +1,7 @@
 import { pxPerMm } from './layout';
 import { PassportPhotoError, type SheetSpec } from './types';
 
-/** iOS caps total canvas area and hands back a blank canvas rather than throwing. */
+// iOS caps total canvas area and hands back a blank canvas rather than throwing
 const MAX_SHEET_PIXELS = 16_777_216;
 
 const DEFAULT_DPI = 300;
@@ -11,7 +11,7 @@ const DEFAULT_MARGIN_MM = 4;
 const MIN_DPI = 72;
 const DPI_STEP = 25;
 
-/** How far a cut mark reaches out from the corner of a photo. */
+// How far a cut mark reaches out from the corner of a photo
 const TICK_MM = 2.5;
 const HAIRLINE_MM = 0.1;
 const CUT_MARK_COLOUR = '#b0b0b0';
@@ -41,7 +41,7 @@ interface Settings {
   cutMarks: boolean;
 }
 
-/** In millimetres, on the sheet turned whichever way fits more copies. */
+// In millimetres, on the sheet turned whichever way fits more copies
 interface Grid {
   columns: number;
   rows: number;
@@ -59,7 +59,7 @@ interface Placement {
   gapY: number;
   originX: number;
   originY: number;
-  /** How far a cut mark may reach between two photos, and out into the border. */
+  // How far a cut mark may reach between two photos, and out into the border
   innerReachX: number;
   innerReachY: number;
   outerReachX: number;
@@ -84,7 +84,7 @@ function settle(options: SheetOptions): Settings {
   };
 }
 
-/** Rescues a row that fits exactly: the decimal sum lands a hair under the whole number. */
+// Rescues a row that fits exactly, where the decimal sum lands a hair under the whole number
 const HAIR = 1e-9;
 
 function countAcross(spaceMm: number, itemMm: number, gapMm: number): number {
@@ -115,7 +115,6 @@ function plan(
   return turned.copies > upright.copies ? turned : upright;
 }
 
-/** How many copies fit on one sheet, trying it both ways round. */
 export function sheetCapacity(
   sheet: SheetSpec,
   photoWidthMm: number,
@@ -137,7 +136,7 @@ function fitDpi(dpi: number, widthMm: number, heightMm: number): number {
   }
   value = Math.max(MIN_DPI, value);
 
-  // Better grainy than blank, so the MIN_DPI floor gives way if it has to.
+  // Better grainy than blank, so the MIN_DPI floor gives way if it has to
   while (value > 1 && area(value) > MAX_SHEET_PIXELS) {
     value -= value > MIN_DPI ? DPI_STEP : 1;
   }
@@ -152,7 +151,7 @@ function context2d(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   return context;
 }
 
-/** Sizes round down, never up: rounded up, a row eats the margin and shaves the last photo. */
+// Sizes round down, never up: rounded up, a row eats the margin and shaves the last photo
 function place(
   grid: Grid,
   photoWidthMm: number,
@@ -207,7 +206,7 @@ function drawPhotos(context: CanvasRenderingContext2D, photo: ImageBitmap, spot:
   }
 }
 
-/** Ticks reach only into the space beside a photo, so nothing is ever drawn over one. */
+// Ticks reach only into the space beside a photo, so nothing is ever drawn over one
 function drawCutMarks(context: CanvasRenderingContext2D, spot: Placement): void {
   context.fillStyle = CUT_MARK_COLOUR;
   const half = spot.thickness / 2;
@@ -261,7 +260,7 @@ function toJpeg(canvas: HTMLCanvasElement): Promise<Blob> {
   });
 }
 
-/** Fill a sheet with copies of one finished photo. The blob is a JPEG. */
+// The blob comes back as a JPEG
 export async function renderSheet(
   photo: Blob,
   photoWidthMm: number,

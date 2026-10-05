@@ -10,7 +10,7 @@ export interface Detection {
 
 const TABLE_DELIMITERS = [',', '\t', ';', '|'];
 
-/** A YAML-looking line; never matches across a comma/semicolon/pipe, so `Ada,10:30` is not counted. */
+// Never matches across a comma, semicolon or pipe, so `Ada,10:30` is not counted as YAML
 const YAML_LINE_RE = /^\s*(?:#|-{3}\s*$|\.{3}\s*$|-(?:\s|$)|[^\s,;|][^,;|]{0,200}?:(?:\s|$))/;
 
 const EXTENSION_FORMAT: Record<string, DataFormat> = {
@@ -26,7 +26,7 @@ function hintFormat(hint?: string): DataFormat | null {
   return EXTENSION_FORMAT[hint.toLowerCase()] ?? null;
 }
 
-// Cut at a line boundary, so field counts stay honest.
+// Cut at a line boundary, so field counts stay honest
 function sampleLines(text: string, limit: number): string {
   if (text.length <= limit) return text;
   const cut = text.slice(0, limit);
@@ -35,7 +35,7 @@ function sampleLines(text: string, limit: number): string {
 }
 
 interface LineShape {
-  /** Fraction, 0 to 1, of sampled lines that look like YAML. */
+  // Fraction 0–1 of sampled lines that look like YAML
   ratio: number;
   count: number;
   first: string;
@@ -51,7 +51,7 @@ function lineShape(text: string): LineShape {
   return { ratio: matches / lines.length, count: lines.length, first: lines[0].trim() };
 }
 
-/** A lone column name is a short, space-free token — `email`, `sku`. Prose is not. */
+// A lone column name is a short, space-free token like `email`; prose is not
 function looksLikeLoneHeader(line: string): boolean {
   return line !== '' && line.length <= 64 && !/\s/.test(line);
 }
@@ -87,7 +87,7 @@ function looksLikeTable(text: string, papa: PapaModule, lenient: boolean): boole
 
 interface YamlProbe {
   ok: boolean;
-  /** True when the document collapsed to one string — what YAML does to a single-column CSV. */
+  // Collapsed to one string, which is what YAML does to a single-column CSV
   foldedScalar: boolean;
 }
 
@@ -134,26 +134,26 @@ export function detectFormat(
   const lenient = preferred === 'csv';
   const tabular = looksLikeTable(text, papa, lenient);
 
-  // CSV must come before YAML, because CSV usually parses as YAML too.
+  // CSV must come before YAML, because CSV usually parses as YAML too
   if (tabular && yamlish < 0.5) {
     return { format: 'csv', confidence: yamlish < 0.2 ? 'high' : 'medium' };
   }
 
-  // Broken JSON: `{"a": 1,}` is also a legal YAML flow mapping, and YAML would swallow it.
+  // Broken JSON: `{"a": 1,}` is also a legal YAML flow mapping, and YAML would swallow it
   if (hasJsonShape(trimmed)) return { format: 'json', confidence: 'low' };
 
-  // A one-column .csv has no delimiter to find, so the extension is all we have.
+  // A one-column .csv has no delimiter to find, so the extension is all there is to go on
   if (preferred === 'csv' && yamlish < 0.5) {
     return { format: 'csv', confidence: 'medium' };
   }
 
-  // Skip the probe on very large documents; line shape is enough.
+  // Skip the probe on very large documents; line shape is enough
   if (text.length > 512_000) {
     if (yamlish >= 0.5) return { format: 'yaml', confidence: 'high' };
   } else {
     const probe = parsesAsYaml(text, yaml);
     if (probe.ok) {
-      // Valid YAML, but folding a one-column list into one string is never what was meant.
+      // Valid YAML, but folding a one-column list into one string is never what was meant
       if (
         probe.foldedScalar &&
         yamlish < 0.2 &&
@@ -167,7 +167,7 @@ export function detectFormat(
   }
 
   if (tabular) return { format: 'csv', confidence: 'low' };
-  // An opening brace or bracket almost always means truncated JSON, not YAML.
+  // An opening brace or bracket almost always means truncated JSON, not YAML
   if (trimmed[0] === '{' || trimmed[0] === '[') return { format: 'json', confidence: 'low' };
   return { format: preferred ?? 'yaml', confidence: 'low' };
 }

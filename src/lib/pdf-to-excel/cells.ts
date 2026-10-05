@@ -10,7 +10,7 @@ import type { Cell, CellValue, Column, ColumnAlign, ColumnKind, DateOrder } from
 export type Grouping = 'none' | 'plain' | 'indian' | 'european' | 'space';
 
 export interface Amount {
-  /** Signed: DR, brackets and a leading or trailing minus all make it negative. */
+  // Signed: DR, brackets and a leading or trailing minus all make it negative
   value: number;
   negative: boolean;
   currency: string | null;
@@ -22,7 +22,7 @@ export interface Amount {
 const SYMBOL = /[£$€₹¥₨]/g;
 const CODE = /(?:\b(?:GBP|USD|EUR|INR|AUD|CAD|SGD|AED)\b|\bRs\.?|\bINR\.?)/gi;
 const SPACE = /[\s   ]/g;
-/** 1 234 567,89 — here a space is a thousands separator and nothing else. */
+// 1 234 567,89 — here a space is a thousands separator and nothing else
 const GROUP_SPACE = /^\d{1,3}(?:[    ]\d{3})+(?:[.,]\d{1,2})?$/;
 const GROUP_PLAIN = /^\d{1,3}(?:,\d{3})+$/;
 const GROUP_INDIAN = /^\d{1,2}(?:,\d{2})+,\d{3}$/;
@@ -37,7 +37,7 @@ function currencyOf(raw: string): string | null {
   return code ? code[0].toUpperCase().replace(/\.$/, '') : null;
 }
 
-/** Anything genuinely ambiguous returns null rather than a guess. */
+// Anything genuinely ambiguous returns null rather than a guess
 export function parseAmount(input: string): Amount | null {
   if (typeof input !== 'string') return null;
   let s = input.replace(/[−–—]/g, '-').trim();
@@ -105,7 +105,7 @@ export function parseAmount(input: string): Amount | null {
   let grouping: Grouping = 'none';
 
   if (dots > 0 && commas > 0) {
-    // The separator nearer the end is the decimal point.
+    // The separator nearer the end is the decimal point
     const at = Math.max(s.lastIndexOf('.'), s.lastIndexOf(','));
     const decimal = s.lastIndexOf('.') > s.lastIndexOf(',') ? '.' : ',';
     int = s.slice(0, at);
@@ -123,7 +123,7 @@ export function parseAmount(input: string): Amount | null {
     }
   } else if (dots === 1) {
     const [head, tail] = s.split('.');
-    // 1.234 is a thousands group in one country and a decimal in another.
+    // 1.234 is a thousands group in one country and a decimal in another
     if (!/^\d{1,2}$/.test(tail)) return null;
     int = head;
     frac = tail;
@@ -199,7 +199,7 @@ const D_MONTH_Y = /^(\d{1,2})[-/. ]([A-Za-z]{3,9})[-/. ](\d{2,4})$/;
 const MONTH_D_Y = /^([A-Za-z]{3,9})[-/. ](\d{1,2}),?[-/. ](\d{2,4})$/;
 const NUMERIC = /^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})$/;
 
-/** `order` settles a numeric date whose first two parts are both 12 or under. */
+// `order` settles a numeric date whose first two parts are both 12 or under
 export function parseDate(input: string, order: DateOrder | null = null): DateRead | null {
   if (typeof input !== 'string') return null;
   const s = input.trim().replace(/ /g, ' ');
@@ -242,7 +242,7 @@ export function parseDate(input: string, order: DateOrder | null = null): DateRe
   return null;
 }
 
-/** One unambiguous date in the column settles every other date in it. */
+// One unambiguous date in the column settles every other date in it
 export function columnDateOrder(values: readonly string[]): DateOrder | null {
   let dmy = 0;
   let mdy = 0;
@@ -256,7 +256,7 @@ export function columnDateOrder(values: readonly string[]): DateOrder | null {
   return dmy >= mdy ? 'dmy' : 'mdy';
 }
 
-/** Nothing to vote with, but the column holds numeric dates: read them day first and say so. */
+// Nothing to vote with, so numeric dates are read day first and marked ambiguous
 function resolveOrder(values: readonly string[]): DateOrder | null {
   const voted = columnDateOrder(values);
   if (voted) return voted;
@@ -338,7 +338,7 @@ export function typeColumns(
       index: i,
       x0: geometry?.x0 ?? 0,
       x1: geometry?.x1 ?? 0,
-      // Without a profile the kind decides it, the way a spreadsheet would.
+      // Without a profile the kind decides it, the way a spreadsheet would
       align: geometry?.align ?? (kind === 'money' || kind === 'number' ? 'right' : 'left'),
       kind,
       header: (header?.[i] ?? '').trim(),
@@ -357,7 +357,7 @@ export function typeColumns(
   return columns;
 }
 
-/** A cell that does not match its column keeps its page text and is marked, never blanked. */
+// A cell that does not match its column keeps its page text and is marked, never blanked
 export function typeCell(raw: string, column: Column): Cell {
   const text = raw.trim();
   if (text === '') return { raw, value: { kind: 'empty' }, offType: false };

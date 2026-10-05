@@ -39,13 +39,13 @@ export async function readDimensions(blob: Blob): Promise<Dimensions> {
       bitmap.close();
       return dimensions;
     } catch {
-      // Fall through to the <img> path (older Safari, odd colour profiles).
+      // Fall through to the <img> path (older Safari, odd colour profiles)
     }
   }
   return readDimensionsViaElement(blob);
 }
 
-/** `file` must be the user's original: re-runs re-encode from the source, never from a result. */
+// `file` must be the user's original; re-encoding a previous result compounds the loss
 export async function compressImage(
   file: File,
   source: Dimensions,
@@ -58,9 +58,9 @@ export async function compressImage(
   const maxWidthOrHeight = resolveMaxDimension(source, settings.resize);
 
   const compressed = await imageCompression(file, {
-    // Leave false: the library's worker path fetches a script from a CDN at runtime.
+    // Leave false: the library's worker path fetches a script from a CDN at runtime
     useWebWorker: false,
-    // Quality-driven, not size-driven, so there is no size budget to iterate towards.
+    // Quality-driven, not size-driven, so there is no size budget to iterate towards
     maxSizeMB: Number.POSITIVE_INFINITY,
     maxIteration: 1,
     alwaysKeepResolution: true,
@@ -84,7 +84,7 @@ export async function compressImage(
   };
 }
 
-/** `worker` must swallow its own failures — one rejection would abandon the rest of the batch. */
+// `worker` must swallow its own failures, or one rejection abandons the rest of the batch
 export async function runWithConcurrency<T>(
   items: readonly T[],
   limit: number,

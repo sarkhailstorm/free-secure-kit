@@ -8,7 +8,7 @@ export function downloadBlob(blob: Blob, filename: string): void {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  // Give the browser a tick to start the download before releasing the URL.
+  // Revoking straight away can cancel the download before it starts
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
@@ -16,7 +16,6 @@ export function downloadText(text: string, filename: string, mime = 'text/plain'
   downloadBlob(new Blob([text], { type: `${mime};charset=utf-8` }), filename);
 }
 
-/** Copy text to the clipboard, falling back for older/insecure contexts. */
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     if (navigator.clipboard && window.isSecureContext) {
@@ -24,7 +23,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       return true;
     }
   } catch {
-    // fall through to the legacy path
+    // fall through to the execCommand path
   }
   try {
     const ta = document.createElement('textarea');

@@ -10,7 +10,7 @@ const hasAmount = (cells: readonly string[]): boolean =>
 
 const filled = (cells: readonly string[]): number => cells.filter((cell) => cell !== '').length;
 
-/** First to last line holding an amount in a right-aligned column, plus a header row and wrapped tails. */
+// First to last line holding an amount in a right-aligned column, plus header and wrapped tails
 export function tableBand(
   profile: ColumnProfile,
   pages: readonly PageRead[],

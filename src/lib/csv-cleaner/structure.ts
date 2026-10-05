@@ -60,7 +60,7 @@ type CellType = 'blank' | 'number' | 'date' | 'text';
 // Numbers as a spreadsheet writes them: 1,234.50, -12, (99), 45%, 1.234,56.
 const NUMBER_LIKE =
   /^[-+(]?\s*[£$€¥]?\s*(?:\d{1,3}(?:[ .,]\d{3})+|\d+)(?:[.,]\d+)?\s*[)%]?$/;
-/** A clock time with no date, which `inspectDate` deliberately refuses. */
+/** A clock time with no date; `inspectDate` refuses these. */
 const CLOCK_TIME = /^\d{1,2}:\d{2}(?::\d{2})?(?:\s?[ap]\.?m\.?)?$/i;
 const HAS_LETTER = /\p{L}/u;
 /** A bare whole number short enough to name a column: a year, a quarter, a code. */

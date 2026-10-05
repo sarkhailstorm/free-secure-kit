@@ -13,19 +13,19 @@ import type {
 
 const MAX_TILT_DEGREES = 5;
 
-/** Nose drift, as a share of the gap between the eyes. Past this the face is turned. */
+// Nose drift as a share of the gap between the eyes; past this the face is turned
 const MAX_TURN = 0.22;
 
 const MAX_SPREAD = 0.35;
 const MIN_SOURCE_PER_OUTPUT = 0.6;
 
-/** Plain RGB distance from the nearest allowed swatch before the wall is the wrong colour. */
+// Plain RGB distance from the nearest allowed swatch before the wall is the wrong colour
 const MAX_SWATCH_DISTANCE = 60;
 
-/** Half a source pixel: below this the crop is inside the photo bar rounding. */
+// Half a source pixel: below this the crop is inside the photo bar rounding
 const EDGE_SLACK = 0.5;
 
-/** A missing strip this share of the photo is thinner than the scissors are accurate. */
+// A missing strip this share of the photo is thinner than scissors can cut to
 const EDGE_TOLERANCE = 0.01;
 
 const RANK: Record<Severity, number> = { blocker: 0, warning: 1, note: 2 };
@@ -86,7 +86,7 @@ function missingRoom(
   return parts;
 }
 
-// The no-retouching rule lives in the spec's note text rather than a flag.
+// The no-retouching rule lives in the spec's note text rather than a flag
 function mentionsRetouching(notes: readonly string[] | undefined): boolean {
   return (notes ?? []).some((note) => /retouch/i.test(note));
 }
@@ -95,7 +95,7 @@ function lowerFirst(text: string): string {
   return text.charAt(0).toLowerCase() + text.slice(1);
 }
 
-/** Everything wrong with this photo, worst first. */
+// Worst first
 export function runChecks(input: CheckInput): Check[] {
   const { spec, layout, measurements, faces, background, fileBytes } = input;
   const checks: Check[] = [];
@@ -141,7 +141,7 @@ export function runChecks(input: CheckInput): Check[] {
     });
   }
 
-  // Both of these read the five landmarks, so a face without them is skipped.
+  // Both of these read the five landmarks, so a face without them is skipped
   const face = faces.length > 0 && faces[0].points.length >= 3 ? faces[0] : null;
   if (face) {
     const tilt = Math.abs(eyeLine(face).tiltDegrees);
@@ -215,7 +215,6 @@ export function runChecks(input: CheckInput): Check[] {
   return checks.sort((a, b) => RANK[a.severity] - RANK[b.severity]);
 }
 
-/** The worst thing found, or null when nothing was. */
 export function worstSeverity(checks: readonly Check[]): Severity | null {
   let worst: Severity | null = null;
   for (const check of checks) {

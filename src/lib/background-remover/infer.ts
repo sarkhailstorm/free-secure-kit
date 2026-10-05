@@ -3,10 +3,10 @@ import { getSession as openSession, loadOrt, releaseSessions } from '@/lib/onnx/
 import type { DownloadedAssets } from './model';
 import { BackgroundRemoverError, type ModelChoice } from './types';
 
-/** iOS caps total canvas area and hands back a blank canvas rather than throwing. */
+// iOS caps total canvas area and hands back a blank canvas rather than throwing
 export const MAX_SOURCE_PIXELS = 16_777_216;
 
-/** MODNet wants the shorter side at 512 and both sides a multiple of 32. */
+// MODNet wants the shorter side at 512 and both sides a multiple of 32
 const PERSON_SHORT_EDGE = 512;
 const PERSON_MAX_EDGE = 1024;
 const ANYTHING_EDGE = 320;
@@ -14,14 +14,14 @@ const ANYTHING_EDGE = 320;
 const ANYTHING_MEAN = [0.485, 0.456, 0.406];
 const ANYTHING_STD = [0.229, 0.224, 0.225];
 
-/** A cut-out before it is applied to anything: white, with coverage in the alpha channel. */
+// All-white pixels, with the coverage in the alpha channel
 export interface Stencil {
   image: ImageData;
   width: number;
   height: number;
 }
 
-/** Only one cutter is kept alive at a time — each holds several megabytes. */
+// Only one cutter stays alive at a time; each holds several megabytes
 export async function getSession(
   choice: ModelChoice,
   assets: DownloadedAssets,
@@ -130,7 +130,7 @@ function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) throw new DOMException('Cancelled.', 'AbortError');
 }
 
-/** The stencil comes back at the size the network saw, not the source's size. */
+// The stencil comes back at the size the network saw, not the source's size
 export async function segment(
   session: InferenceSession,
   choice: ModelChoice,
@@ -160,7 +160,7 @@ export async function segment(
     });
     throwIfAborted(signal);
 
-    // Both models put the full-size result first; the rest are coarser drafts.
+    // Both models put the full-size result first; the rest are coarser drafts
     const raw = results[session.outputNames[0]]?.data;
     if (!(raw instanceof Float32Array) || raw.length !== size.width * size.height) {
       throw new BackgroundRemoverError('The background remover returned something unreadable.');

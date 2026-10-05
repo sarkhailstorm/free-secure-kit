@@ -298,7 +298,7 @@ async function writeXlsx(
   const names: string[] = [];
 
   for (const sheet of sheets) {
-    // Every value is written as text on purpose, so leading zeros and long IDs survive Excel.
+    // Every value is written as text, so leading zeros and long IDs survive Excel.
     const ws = XLSX.utils.aoa_to_sheet([sheet.grid.header, ...sheet.grid.rows]);
     const name = uniqueSheetName(sheet.name, used);
     names.push(name);

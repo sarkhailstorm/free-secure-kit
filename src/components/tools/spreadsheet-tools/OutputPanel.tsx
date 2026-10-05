@@ -40,7 +40,7 @@ export interface OutputPanelProps {
   formulaRisks: number;
   /** `canWrite(sheets, format).reason` — shown instead of letting them save. */
   refusal?: string | null;
-  /** Sheets ticked to save. Nothing ticked disables the button. */
+  /** Sheets ticked to save, not the number in the file. */
   sheetCount: number;
   onSave: () => void;
   busy?: boolean;

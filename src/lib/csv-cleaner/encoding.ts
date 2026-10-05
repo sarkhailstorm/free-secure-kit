@@ -99,7 +99,7 @@ const CYRILLIC_VOWEL = /[\u0430\u0435\u0451\u0438\u043E\u0443\u044B\u044D\u044E\
 const GREEK_VOWEL =
   /[\u03B1\u03B5\u03B7\u03B9\u03BF\u03C5\u03C9\u03AC\u03AD\u03AE\u03AF\u03CC\u03CD\u03CE\u03CA\u03CB\u0390\u03B0\u0391\u0395\u0397\u0399\u039F\u03A5\u03A9\u0386\u0388\u0389\u038A\u038C\u038E\u038F]/;
 
-/** How likely a file is to be in each encoding before we look at it at all. */
+/** Starting likelihood per encoding, before any text is scored. */
 const PRIORS: Array<[EncodingId, number]> = [
   ['utf-8', 1],
   ['windows-1252', 1],
@@ -237,7 +237,7 @@ function sniffUtf16(bytes: Uint8Array): EncodingId | null {
   return oddZeros > evenZeros * 3 ? 'utf-16le' : evenZeros > oddZeros * 3 ? 'utf-16be' : null;
 }
 
-// Undoes a UTF-8 file read once as windows-1252; the strict re-read is its own safety net.
+// Undoes a UTF-8 file read as windows-1252; the strict re-decode rejects a false match.
 function undoMojibake(text: string): string | null {
   try {
     const repaired = new TextDecoder('utf-8', { fatal: true }).decode(encodeWindows1252(text, true));
@@ -458,7 +458,7 @@ function summarise(delimiter: string, label: string, t: Tally): ScoredDelimiter 
   let columns = 1;
   let best = 0;
   for (const [count, times] of tallies) {
-    // Ties go to the wider reading: two columns beat one every time.
+    // Ties go to the wider reading: two columns beat one.
     if (times > best || (times === best && count > columns)) {
       best = times;
       columns = count;

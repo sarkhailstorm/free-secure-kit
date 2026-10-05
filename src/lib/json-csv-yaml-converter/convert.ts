@@ -19,7 +19,7 @@ import {
 type PapaModule = typeof import('papaparse');
 type YamlModule = typeof import('js-yaml');
 
-/** Papaparse puts the overflow of a too-long row under this key. */
+// papaparse puts the overflow of a too-long row under this key
 const EXTRA_FIELD = '__parsed_extra';
 
 async function loadPapa(): Promise<PapaModule> {
@@ -39,7 +39,7 @@ interface NormaliseState {
   cyclic: boolean;
 }
 
-/** Flattens the Dates, Maps and YAML-anchor cycles that would break `JSON.stringify`. */
+// Flattens the Dates, Maps and YAML-anchor cycles that would break `JSON.stringify`
 function normalise(input: unknown, depth: number, onPath: Set<object>, state: NormaliseState): DataValue {
   if (input === null || input === undefined) return null;
 
@@ -94,7 +94,7 @@ function normalise(input: unknown, depth: number, onPath: Set<object>, state: No
 interface ParsedInput {
   value: DataValue;
   notes: string[];
-  /** Kept for csv → csv, so re-formatting never rewrites a single cell. */
+  // Kept for csv → csv, so re-formatting never rewrites a cell
   table: { fields: string[]; rows: string[][] } | null;
 }
 
@@ -154,7 +154,7 @@ function parseYaml(text: string, yaml: YamlModule): ParsedInput {
 }
 
 function parseCsv(text: string, papa: PapaModule, coerce: boolean): ParsedInput {
-  // papaparse renames a repeated header (`a`, `a_1`); keep the originals to notice.
+  // papaparse renames a repeated header (`a`, `a_1`); keep the originals to notice
   const headers: string[] = [];
   const result = papa.parse<Record<string, string>>(text, {
     header: true,
@@ -178,7 +178,7 @@ function parseCsv(text: string, papa: PapaModule, coerce: boolean): ParsedInput 
     notes.push('Two columns shared a name, so the later one was renamed to keep both.');
   }
 
-  // An unnamed column still holds data; the generated name must not collide.
+  // An unnamed column still holds data; the generated name must not collide
   const taken = new Set(fields);
   const pathFor = new Map<string, string>();
   fields.forEach((field, index) => {
@@ -216,7 +216,7 @@ function parseCsv(text: string, papa: PapaModule, coerce: boolean): ParsedInput 
     notes.push('The header row was read, but there are no data rows below it.');
   }
 
-  // Cache the "is this column an array index?" answer per column, not per cell.
+  // Cache the "is this column an array index?" answer per column, not per cell
   const indexColumn = new Map<string, boolean>();
   for (const field of fields) {
     indexColumn.set(field, endsWithIndex(pathFor.get(field) ?? field));
@@ -226,9 +226,9 @@ function parseCsv(text: string, papa: PapaModule, coerce: boolean): ParsedInput 
     const cells: Record<string, DataValue> = {};
     for (const field of fields) {
       const raw = row[field];
-      // Absent (the row was short) — leave the key out entirely.
+      // Absent because the row was short, so leave the key out entirely
       if (typeof raw !== 'string') continue;
-      // An empty cell under an array index is a gap, not an empty string.
+      // An empty cell under an array index is a gap, not an empty string
       if (coerce && raw === '' && indexColumn.get(field)) continue;
       cells[pathFor.get(field) ?? field] = coerceCell(raw, coerce);
     }
@@ -291,7 +291,6 @@ function mergeNotes(...groups: string[][]): string[] {
   return Array.from(new Set(groups.flat()));
 }
 
-/** Converting to the same format is a pretty-print; csv → csv never reinterprets a cell. */
 export async function convertText(request: ConvertRequest): Promise<ConvertOutcome> {
   const { text, source, target } = request;
   const explicit: DataFormat | null = source === 'auto' ? null : source;
@@ -354,7 +353,7 @@ export async function convertText(request: ConvertRequest): Promise<ConvertOutco
   }
 
   try {
-    // csv → csv: re-emit the original cells so "1.50" never becomes "1.5".
+    // csv → csv: re-emit the original cells so "1.50" never becomes "1.5"
     if (detected === 'csv' && target === 'csv' && parsed.table) {
       const { fields, rows } = parsed.table;
       const output = papa.unparse(

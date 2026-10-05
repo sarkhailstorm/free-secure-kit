@@ -41,7 +41,7 @@ export interface LayoutContext {
   notes: ConversionNote[];
 }
 
-/** §4.9: slack at the foot of a page this deep is an authored break, not reflow. */
+/** Slack this deep at the foot of a page is an authored break, not reflow. */
 const BREAK_LEADINGS = 3;
 const GUTTER_AGREE: Pt = 3;
 const COLUMN_WIDTH_TOL = 0.05;
@@ -54,7 +54,7 @@ const SIZE_TOL: Pt = 0.6;
 const FALLBACK_SIZE: Pt = 11;
 const FALLBACK_FAMILY = 'Calibri';
 const DEFAULT_LEADING = 1.15;
-/** §4.11 — Hebrew, Arabic, Syriac, Thaana, NKo and the presentation forms. */
+/** Hebrew, Arabic, Syriac, Thaana, NKo and the presentation forms. */
 const RTL_RE = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
 
 const isInk = (span: Span): boolean => span.text.trim().length > 0;
@@ -629,7 +629,7 @@ export function buildModel(
     exact,
   )) {
     const first = group[0].page.facts;
-    // §4.9 measures margins over the whole document, so every page of this size votes.
+    // Margins are measured over the whole document, so every page of this size votes.
     const key = `${first.width}x${first.height}`;
     let margins = measured.get(key);
     if (!margins) {

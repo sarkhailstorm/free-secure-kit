@@ -30,7 +30,7 @@ export function classifyPage(p: PageFacts): PageClass {
   return 'text';
 }
 
-/** Why a page was demoted, for the conversion notes. Undefined for a clean text page. */
+/** Why a page was demoted; undefined for a clean text page. */
 export function degradeReasonFor(p: PageFacts, cls: PageClass): DegradeReason | undefined {
   switch (cls) {
     case 'searchableScan':
@@ -72,7 +72,7 @@ export async function rasterPage(
     // A PDF page has no background of its own, and JPEG has no alpha.
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
-    // Rendering a scan is the longest single step in a conversion, so Stop has to reach inside it.
+    // Rendering is the longest single step in a conversion, so Stop has to reach inside it.
     const task = page.render({ canvasContext: context, viewport });
     const stop = (): void => task.cancel();
     signal?.addEventListener('abort', stop, { once: true });

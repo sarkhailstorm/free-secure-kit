@@ -109,7 +109,7 @@ function spend(n: number): boolean {
   return true;
 }
 
-/** Component count of a baseline, extended or progressive JPEG; null if it is none of those. */
+/** Component count; null unless this is a baseline, extended or progressive JPEG. */
 function jpegComponents(raw: Uint8Array): number | null {
   if (raw.length < 4 || raw[0] !== 0xff || raw[1] !== 0xd8) return null;
   let i = 2;

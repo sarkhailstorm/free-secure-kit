@@ -9,35 +9,34 @@ import {
 type Container = DataValue[] | { [key: string]: DataValue };
 
 export interface PathSegment {
-  /** The unescaped key. */
+  // Unescaped
   key: string;
-  /** Array index when the raw segment was bare digits, otherwise null. */
+  // Set when the raw segment was bare digits, otherwise null
   index: number | null;
 }
 
 export interface FlatTable {
   fields: string[];
   rows: Record<string, Primitive>[];
-  /** True when nesting was cut off at MAX_DEPTH. */
+  // Nesting was cut off at MAX_DEPTH
   truncated: boolean;
 }
 
 const EMPTY_OBJECT_CELL = '{}';
 const EMPTY_ARRAY_CELL = '[]';
 
-/** Bare, canonical digits — "0", "1", "42" but not "007" or "-1". */
+// Bare canonical digits: "0", "42", but not "007" or "-1"
 const INDEX_RE = /^(?:0|[1-9]\d*)$/;
 
 const ALL_DIGITS_RE = /^\d+$/;
 
-/** Escape one key so it survives a dot-notation path. */
 export function escapeSegment(key: string, isObjectKey: boolean): string {
   const escaped = key.replace(/\\/g, '\\\\').replace(/\./g, '\\.');
-  // An object key of "0" would otherwise be rebuilt as an array index.
+  // An object key of "0" would otherwise be rebuilt as an array index
   return isObjectKey && ALL_DIGITS_RE.test(escaped) ? `\\${escaped}` : escaped;
 }
 
-/** Split a dot path on its *unescaped* dots, unescaping each segment. */
+// Splits on unescaped dots only, unescaping each segment as it goes
 export function splitPath(path: string): PathSegment[] {
   const segments: PathSegment[] = [];
   let raw = '';
@@ -68,7 +67,7 @@ export function splitPath(path: string): PathSegment[] {
   return segments;
 }
 
-// `prefix` is null only at the root; an empty string is a real path, from the key `""`.
+// `prefix` is null only at the root; an empty string is a real path, from the key `""`
 function flattenInto(
   value: DataValue,
   out: Record<string, Primitive>,
@@ -90,7 +89,7 @@ function flattenInto(
     return;
   }
 
-  // Self-referencing structures are possible via YAML anchors.
+  // Self-referencing structures are possible via YAML anchors
   if (onPath.has(value)) {
     out[column] = null;
     return;
@@ -134,19 +133,18 @@ function flattenInto(
   onPath.delete(value);
 }
 
-/** Flatten a single record into `{ 'a.b': value }` form. */
+// Keys come out as dot paths: `{ 'a.b': value }`
 export function flattenRecord(value: DataValue): Record<string, Primitive> {
   const out: Record<string, Primitive> = {};
   flattenInto(value, out, null, 0, new Set<object>(), { truncated: false });
   return out;
 }
 
-/** Split a document into the records that become CSV rows. */
 export function toRecords(value: DataValue): DataValue[] {
   return Array.isArray(value) ? value : [value];
 }
 
-/** Columns are the union of every record's keys, in first-seen order. */
+// Columns are the union of every record's keys, in first-seen order
 export function flattenTable(value: DataValue): FlatTable {
   const state = { truncated: false };
   const rows = toRecords(value).map((record) => {
@@ -186,7 +184,7 @@ function writeSlot(container: Container, segment: PathSegment, value: DataValue)
       container[segment.index] = value;
       return;
     }
-    // Unreachable: the descent below never hands a named key to an array.
+    // Unreachable: the descent below never hands a named key to an array
     return;
   }
   container[segment.key] = value;
@@ -211,11 +209,11 @@ function assign(root: { [key: string]: DataValue }, segments: PathSegment[], val
     let child: Container;
     if (isContainer(existing)) {
       if (Array.isArray(existing) && !wantArray) {
-        // Same path used both `list.0` and `list.name` — keep both by widening.
+        // Same path used both `list.0` and `list.name`, so widen to keep both
         child = arrayToObject(existing);
         writeSlot(container, segment, child);
       } else {
-        // An object asked to hold an index simply stores the digit as a key.
+        // Index into an object: the digit becomes a plain key
         child = existing;
       }
     } else {
@@ -228,7 +226,7 @@ function assign(root: { [key: string]: DataValue }, segments: PathSegment[], val
   writeSlot(container, segments[segments.length - 1], value);
 }
 
-/** Never throws: conflicting shapes are widened rather than rejected. */
+// Never throws: conflicting shapes are widened rather than rejected
 export function unflattenRecord(cells: Record<string, DataValue>): DataValue {
   const holder: { [key: string]: DataValue } = {};
   const rootSegment: PathSegment = { key: '__root__', index: null };
@@ -244,16 +242,14 @@ export function unflattenRecord(cells: Record<string, DataValue>): DataValue {
   return root === undefined ? {} : root;
 }
 
-/** True when a dot path ends in an array index — `tags.1`, but not `a.b`. */
 export function endsWithIndex(path: string): boolean {
   const segments = splitPath(path);
   return segments[segments.length - 1].index !== null;
 }
 
-/** No leading zeros (so ZIP codes and IDs survive), no `+`, no hex, no `Infinity`. */
+// No leading zeros, so ZIP codes and IDs survive; no `+`, hex or `Infinity` either
 const NUMBER_RE = /^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?$/;
 
-/** With coercion off every cell stays a string. */
 export function coerceCell(raw: string, coerce: boolean): DataValue {
   if (!coerce || raw === '') return raw;
 
@@ -269,9 +265,9 @@ export function coerceCell(raw: string, coerce: boolean): DataValue {
   if (NUMBER_RE.test(text)) {
     const value = Number(text);
     if (Number.isFinite(value)) {
-      // Long integers (card numbers, snowflake ids) lose digits as doubles.
+      // Long integers (card numbers, snowflake ids) lose digits as doubles
       if (Number.isInteger(value) && !Number.isSafeInteger(value)) return raw;
-      // Long decimals can round; keep the exact text rather than lie.
+      // Long decimals can round, so keep the exact text instead
       if (text.length > 15 && String(value) !== text) return raw;
       return value;
     }
@@ -280,7 +276,7 @@ export function coerceCell(raw: string, coerce: boolean): DataValue {
   return raw;
 }
 
-/** A missing cell renders empty; a real null renders as the text "null". */
+// A missing cell renders empty; a real null renders as the text "null"
 export function cellToText(value: Primitive | undefined): string {
   if (value === undefined) return '';
   if (value === null) return 'null';

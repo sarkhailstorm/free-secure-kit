@@ -1,4 +1,4 @@
-/** Page numbers throughout this module are 1-based, the way they are shown to the user. */
+/** Page numbers here are 1-based throughout, the way they are shown. */
 export type RangeResult =
   | { ok: true; pages: number[] }
   | { ok: false; message: string };
@@ -82,7 +82,6 @@ function outOfBounds(page: number, pageCount: number): string | null {
   return null;
 }
 
-/** The inverse of {@link parsePageRanges}: [1,2,3,7] -> "1-3, 7". */
 export function formatPageRanges(pages: Iterable<number>): string {
   const sorted = [...new Set(pages)]
     .filter((n) => Number.isInteger(n) && n > 0)
@@ -99,7 +98,6 @@ export function formatPageRanges(pages: Iterable<number>): string {
   return parts.join(', ');
 }
 
-/** Short label for one output document, e.g. "pages 4-9" or "page 3". */
 export function describeGroup(pages: number[]): string {
   if (pages.length === 0) return 'no pages';
   if (pages.length === 1) return `page ${pages[0]}`;

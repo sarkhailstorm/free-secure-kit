@@ -85,7 +85,7 @@ export function indexStruct(
     return index;
   }
 
-  /** Row and column come from tree position only — V7 exposes no /ColSpan or /RowSpan. */
+  /** Row and column come from tree position only — pdf.js exposes no /ColSpan or /RowSpan. */
   function registerTable(node: StructTreeNode): void {
     const tableIndex = tables.length;
     const table: StructTable = { rows: 0, cols: 0, cellBlocks: [] };

@@ -173,7 +173,6 @@ export function WordPanel() {
       setResult({ name, size: bytes.byteLength, report });
       toast.celebrate(`Saved ${name}`);
     } catch (err) {
-      // Stopping is not a failure: no error card, no toast.
       if (controller.signal.aborted) setStopped(true);
       else {
         setActionError(describePdfError(err, file.name));

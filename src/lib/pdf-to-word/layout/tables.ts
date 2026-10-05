@@ -13,7 +13,7 @@ import type {
 } from '../types';
 import { components, dedupeFills } from './rules';
 
-/** §4.6c: gap starts agree within 3 pt over at least 3 consecutive lines. */
+/** Gap starts agree within 3 pt over at least 3 consecutive lines. */
 const TAB_ALIGN: Pt = 3;
 const TAB_RUN_MIN = 3;
 /** A text extent sits inside its cell, so grid matching needs more slack than SEG_TOL. */
@@ -42,7 +42,7 @@ export interface GridScore {
   ys: Pt[];
   rows: number;
   cols: number;
-  /** §4.6b: drawn boundary segments over the boundary segments a full grid would have. */
+  /** Drawn boundary segments over the boundary segments a full grid would have. */
   closed: number;
 }
 
@@ -68,7 +68,6 @@ const wraps = (outer: Box, inner: Box, slack: Pt): boolean =>
   outer.x1 >= inner.x1 - slack &&
   outer.y1 >= inner.y1 - slack;
 
-/** Cluster one axis's rules into the distinct grid positions they draw. */
 function axisPositions(rules: readonly RuleSeg[], axis: 'h' | 'v'): Pt[] {
   const ats = rules
     .filter((rule) => rule.axis === axis)
@@ -98,7 +97,7 @@ const drawn = (rules: readonly RuleSeg[], axis: 'h' | 'v', at: Pt, from: Pt, to:
 const touched = (rules: readonly RuleSeg[], axis: 'h' | 'v', at: Pt, from: Pt, to: Pt): boolean =>
   rules.some((rule) => onAxis(rule, axis, at) && rule.from < to - SEG_TOL && rule.to > from + SEG_TOL);
 
-/** §4.6b steps 2–3 for one connected component. Null when it draws no grid at all. */
+/** Null when the component draws no grid at all. */
 export function scoreGrid(component: readonly RuleSeg[]): GridScore | null {
   const xs = axisPositions(component, 'v');
   const ys = axisPositions(component, 'h');
@@ -119,7 +118,7 @@ export function scoreGrid(component: readonly RuleSeg[]): GridScore | null {
   return { xs, ys, rows, cols, closed: total > 0 ? painted / total : 0 };
 }
 
-/** §4.6b: a 1x1 component is a bordered paragraph, not a table. */
+/** A 1x1 component is a bordered paragraph, not a table. */
 export function singleCellBoxes(
   rules: readonly RuleSeg[],
 ): { rect: Rect; colour: string | null; thicknessPt: Pt }[] {
@@ -173,7 +172,7 @@ export function tablesFromRules(
   return out;
 }
 
-/** §4.6b: a line belongs to the cell containing (x0 + 2, y). */
+/** A line belongs to the cell containing (x0 + 2, y). */
 function insideGrid(grid: GridScore, line: Line): boolean {
   const x = line.x0 + 2;
   return (
@@ -362,7 +361,7 @@ function structTable(
   let gridPt = columnGrid(cells, rows, cols, rules, bands[0], bands[rows]);
   let span: Box = { x0: gridPt[0], y0: bands[0], x1: gridPt[cols], y1: bands[rows] };
 
-  // §4.6a measures the grid off the text, which sits a cell margin inside the ink; the ink is the true boundary.
+  // The grid is measured off the text, which sits a cell margin inside the ink; the ink is the true boundary.
   const frame = frameFor(frames, extent ?? span, span);
   if (frame) {
     if (frame.xs.length === cols + 1) gridPt = frame.xs.slice();
@@ -432,7 +431,7 @@ const spansColumn = (frame: Box, span: Box): boolean =>
   frame.x0 >= span.x0 - CELL_SLACK &&
   frame.x1 <= span.x1 + CELL_SLACK;
 
-/** §4.6a: aggregate per column index, never per row — a column's cells do not share an x0. */
+/** Aggregate per column index, never per row — a column's cells do not share an x0. */
 function columnGrid(
   cells: ReadonlyMap<string, Box>,
   rows: number,
@@ -511,7 +510,7 @@ function rowBands(cells: ReadonlyMap<string, Box>, rows: number, count: readonly
 const midway = (bottom: Pt, top: Pt): Pt =>
   Number.isFinite(bottom) && Number.isFinite(top) ? (bottom + top) / 2 : top;
 
-/** V7 gives no /RowSpan, so a cell merges down only when its own text fills the next band. */
+/** The struct tree gives no /RowSpan, so a cell merges down only when its own text fills the next band. */
 function rowSpans(
   cells: ReadonlyMap<string, Box>,
   count: readonly number[],
@@ -542,7 +541,7 @@ function rowSpans(
   return { span, covered };
 }
 
-/** Which cell of a short row carries the missing columns; §4.6a puts them on the last cell. */
+/** Which cell of a short row carries the missing columns: the one straddling them, else the last. */
 function deficitCell(
   cells: ReadonlyMap<string, Box>,
   row: number,
@@ -599,7 +598,7 @@ export function tabColumns(
   return out.length > 0 ? out : null;
 }
 
-/** A block too short for §4.6c's run still needs its stops, or Word's default grid mangles it. */
+/** A block too short to make a run still needs its stops, or Word's default grid mangles it. */
 function blockRun(lines: readonly Line[]): TabRun | null {
   if (lines.length === 0) return null;
   const stops = lines.map((line) => line.fragments.slice(1).map((fragment) => fragment.x0));

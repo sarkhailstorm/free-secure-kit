@@ -1,6 +1,6 @@
 import type { ConvertError } from './types';
 
-/** Translate a character offset into a 1-based line and column. */
+// Line and column come back 1-based
 export function lineColumnAt(text: string, index: number): { line: number; column: number } {
   const clamped = Math.max(0, Math.min(index, text.length));
   let line = 1;
@@ -24,7 +24,7 @@ interface Scanner {
   pos: number;
 }
 
-/** Deep enough for any real document, shallow enough not to blow our stack. */
+// Deep enough for any real document, shallow enough not to blow the stack
 const MAX_SCAN_DEPTH = 400;
 
 const VALID_ESCAPES = '"\\/bfnrtu';
@@ -233,7 +233,7 @@ function locateJsonFault(text: string): Fault | null {
 
 function tidy(message: string): string {
   const cleaned = message
-    // V8 sometimes echoes the whole document back: "…, "{…}" is not valid JSON".
+    // V8 sometimes echoes the whole document back: "…, "{…}" is not valid JSON"
     .replace(/,\s[\s\S]*?is not valid JSON\.?$/, '')
     .replace(/\s*is not valid JSON\.?$/, '')
     .replace(/^JSON\.parse:\s*/i, '')
@@ -254,7 +254,6 @@ function errorMessage(error: unknown): string {
   return 'Unknown parsing error';
 }
 
-/** Describe a `JSON.parse` failure, with a line and column wherever possible. */
 export function describeJsonError(error: unknown, text: string): ConvertError {
   const fault = locateJsonFault(text);
   if (fault) {
@@ -262,7 +261,7 @@ export function describeJsonError(error: unknown, text: string): ConvertError {
     return { message: fault.message, line, column };
   }
 
-  // Our scanner and the real parser disagree — trust the parser's words.
+  // The scanner above and the real parser disagree, so trust the parser's words
   const raw = errorMessage(error);
 
   const explicit = /line (\d+) column (\d+)/i.exec(raw);
@@ -284,7 +283,7 @@ interface YamlMark {
   column: number;
 }
 
-/** js-yaml throws a YAMLException; match it structurally, not by identity. */
+// js-yaml throws a YAMLException; match it structurally, not by identity
 function readYamlMark(error: unknown): { reason: string; mark: YamlMark | null } | null {
   if (typeof error !== 'object' || error === null) return null;
   const candidate = error as { reason?: unknown; mark?: unknown };
@@ -294,7 +293,7 @@ function readYamlMark(error: unknown): { reason: string; mark: YamlMark | null }
   if (typeof candidate.mark === 'object' && candidate.mark !== null) {
     const raw = candidate.mark as { line?: unknown; column?: unknown };
     if (typeof raw.line === 'number' && typeof raw.column === 'number') {
-      // js-yaml counts from zero.
+      // js-yaml counts from zero
       mark = { line: raw.line + 1, column: raw.column + 1 };
     }
   }
@@ -317,7 +316,6 @@ export function describeUnknownError(error: unknown): ConvertError {
   return { message: tidy(errorMessage(error)), line: null, column: null };
 }
 
-/** "line 4, column 3" / "line 4" / "" */
 export function formatPosition(error: ConvertError): string {
   if (error.line === null) return '';
   if (error.column === null) return `line ${error.line}`;

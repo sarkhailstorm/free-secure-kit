@@ -29,7 +29,7 @@ export const CASES: readonly CaseDefinition[] = [
   { id: 'toggle', label: 'iNVERT cASE', example: 'hELLO wORLD' },
 ] as const;
 
-/** "XMLHttpRequest" -> ["XML", "Http", "Request"]; digits stay with the letters they follow. */
+// "XMLHttpRequest" -> ["XML", "Http", "Request"]; digits stay with the letters they follow
 export function tokenize(input: string): string[] {
   return input
     // ACRONYMFollowed -> ACRONYM Followed
@@ -40,7 +40,7 @@ export function tokenize(input: string): string[] {
     .filter((part) => part.length > 0);
 }
 
-/** Short joining words that stay lowercase inside a title. */
+// Joining words that stay lowercase inside a title
 const SMALL_WORDS = new Set([
   'a', 'an', 'and', 'as', 'at', 'but', 'by', 'en', 'for', 'from', 'if', 'in',
   'nor', 'of', 'off', 'on', 'or', 'per', 'so', 'the', 'to', 'up', 'v', 'via',
@@ -54,7 +54,7 @@ function capitalise(word: string): string {
   return word[0].toUpperCase() + word.slice(1).toLowerCase();
 }
 
-// Leaves the original line terminators, and any CRLF/LF/CR mixture, exactly as they were.
+// Leaves the original line terminators, including a CRLF/LF/CR mixture, untouched
 function mapLines(text: string, fn: (line: string) => string): string {
   return text
     .split(/(\r\n|\n|\r)/)
@@ -68,7 +68,7 @@ function splitIndent(line: string): [string, string] {
   return [indent, line.slice(indent.length)];
 }
 
-// "XMLHttpRequest" becomes three words, while "don't" stays one.
+// "XMLHttpRequest" becomes three words, while "don't" stays one
 function expandWord(word: string): string[] {
   const looksLikeIdentifier =
     word.includes('_') ||
@@ -79,7 +79,7 @@ function expandWord(word: string): string[] {
   return parts.length > 0 ? parts : [word];
 }
 
-// Keeps punctuation and spacing intact; identifier-shaped words are expanded first.
+// Keeps punctuation and spacing intact; identifier-shaped words are expanded first
 function rewriteWords(
   line: string,
   transform: (word: string, index: number, total: number) => string,
@@ -87,7 +87,7 @@ function rewriteWords(
   const pattern = /[\p{L}\p{N}_'’]+/gu;
   const matches = Array.from(line.matchAll(pattern));
 
-  // Count the real words first so the transform knows about first/last.
+  // Count the real words first so the transform knows about first/last
   const expanded = matches.map((match) => expandWord(match[0]));
   const total = expanded.reduce((sum, parts) => sum + parts.length, 0);
 
@@ -120,7 +120,7 @@ function toTitleCase(text: string): string {
 function toSentenceCase(text: string): string {
   return mapLines(text, (line) => {
     const lowered = rewriteWords(line, (word) => word.toLowerCase());
-    // Each line starts a sentence; so does anything after . ! ? or an ellipsis.
+    // Each line starts a sentence; so does anything after . ! ? or an ellipsis
     return lowered
       .split(SENTENCE_BREAK)
       .map((chunk, index) => (index % 2 === 0 ? upperFirstLetter(chunk) : chunk))
@@ -128,7 +128,7 @@ function toSentenceCase(text: string): string {
   });
 }
 
-/** Uppercase the first letter in a chunk, skipping any leading punctuation. */
+// Skips any leading punctuation to find the first letter
 function upperFirstLetter(chunk: string): string {
   const match = /\p{L}/u.exec(chunk);
   if (!match || match.index === undefined) return chunk;
@@ -198,7 +198,7 @@ export interface TextCounts {
 
 const WORD_PATTERN = /[\p{L}\p{N}'’]+/gu;
 
-/** The characters JavaScript's `\s` matches, tested without building a string. */
+// The characters JavaScript's `\s` matches, tested without building a string
 function isSpaceCode(code: number): boolean {
   return (
     code === 0x20 ||
@@ -229,14 +229,14 @@ export function countText(text: string): TextCounts {
       lines += 1;
     } else if (code === 0x0d) {
       lines += 1;
-      // CRLF is one break, not two.
+      // CRLF is one break, not two
       if (text.charCodeAt(i + 1) === 0x0a) i += 1;
     } else if (!isSpaceCode(code)) {
       charactersNoSpaces += 1;
     }
   }
 
-  // Counted rather than collected: the array of words is the expensive part.
+  // Counted rather than collected: building the array of words is the expensive part
   let words = 0;
   WORD_PATTERN.lastIndex = 0;
   while (WORD_PATTERN.exec(text) !== null) words += 1;

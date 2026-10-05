@@ -9,7 +9,7 @@ export interface RawRow {
   flags: RowFlag[];
 }
 
-/** A band line with the page it came from: Line itself carries no page number. */
+// Line itself carries no page number
 export interface BandLine {
   line: Line;
   page: number;
@@ -18,7 +18,7 @@ export interface BandLine {
 export interface CellRow {
   cells: string[];
   page: number;
-  /** Text here was wider than its column. */
+  // Text here was wider than its column
   overflow?: boolean;
 }
 
@@ -34,7 +34,7 @@ function finish(row: RawRow): RawRow {
   return row;
 }
 
-/** A new record starts when the leftmost column is non-empty OR any money column is. */
+// A new record starts when the leftmost column is non-empty, or any money column is
 export function groupCellRows(rows: readonly CellRow[], moneyCols: readonly number[]): RawRow[] {
   const out: RawRow[] = [];
   for (const row of rows) {
@@ -64,7 +64,6 @@ function crossesBoundary(profile: ColumnProfile, line: Line): boolean {
   return lineRuns(line).some((run) => inner.some((at) => run.x < at && run.x + run.w > at));
 }
 
-/** Band lines cut into the profile's columns, before any grouping. */
 export function cellRowsOfLines(
   lines: readonly BandLine[],
   profile: ColumnProfile,
@@ -77,7 +76,7 @@ export function cellRowsOfLines(
   }));
 }
 
-/** The same rule over visual lines, in page order, so a record split by a page break rejoins. */
+// Lines must arrive in page order, so a record split by a page break rejoins
 export function groupRows(
   lines: readonly BandLine[],
   profile: ColumnProfile,

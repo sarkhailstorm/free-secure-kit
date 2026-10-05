@@ -7,7 +7,7 @@ import type { Block, ConversionNote, DocModel, WordOptions, WordReport } from '.
 /** Past six, a list of caveats stops being read. */
 const MAX_NOTES = 6;
 
-/** §9, most important first. A page that never made it ranks above any cosmetic caveat. */
+/** Most important first: a page that never made it outranks any cosmetic caveat. */
 const NOTE_ORDER: readonly ConversionNote['code'][] = [
   'scannedPages',
   'rasterPage',

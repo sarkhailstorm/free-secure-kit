@@ -3,8 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-// Plain CPU build only. The jsep, jspi and asyncify variants are for WebGPU and
-// stack switching, which this site cannot use, and cost another 60 MB.
+// CPU build only; the jsep/jspi/asyncify variants need WebGPU or stack switching and add 60 MB
 const names = ['ort-wasm-simd-threaded.wasm', 'ort-wasm-simd-threaded.mjs'];
 
 const sourceDir = join(root, 'node_modules/onnxruntime-web/dist');

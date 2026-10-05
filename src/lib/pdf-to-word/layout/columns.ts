@@ -7,7 +7,7 @@ export interface ColumnBand {
   x1: Pt;
 }
 
-/** §4.2: one split, then one more per half. */
+/** One split, then one more per half. */
 const MAX_COLUMNS = 3;
 const MAX_DEPTH = 2;
 const MIN_SPANS = 40;
@@ -102,7 +102,7 @@ function medianLeading(lines: readonly Line[]): Pt | null {
   return gaps[Math.floor(gaps.length / 2)];
 }
 
-/** The five §4.2 acceptance tests. All must hold; a miss means one column. */
+/** All five tests must hold; a miss means one column. */
 function accepted(left: readonly Span[], right: readonly Span[], bodySize: Pt): boolean {
   const leftLines = buildLines(left, bodySize);
   const rightLines = buildLines(right, bodySize);

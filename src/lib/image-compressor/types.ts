@@ -6,13 +6,13 @@ export type ResizePresetId = 'original' | 'web' | 'social' | 'thumb' | 'custom';
 
 export interface ResizeSettings {
   preset: ResizePresetId;
-  /** Only meaningful when `preset === 'custom'`. `null` means "unconstrained". */
+  // Only read when preset is 'custom'; null means unconstrained
   customWidth: number | null;
   customHeight: number | null;
 }
 
 export interface CompressSettings {
-  /** 10–100, passed to the encoder as 0.1–1.0. See `qualityEffect`. */
+  // 10–100, passed to the encoder as 0.1–1.0
   quality: number;
   resize: ResizeSettings;
   format: OutputFormat;
@@ -28,7 +28,7 @@ export type ItemStatus = 'queued' | 'compressing' | 'done' | 'failed';
 export interface CompressOutcome {
   blob: Blob;
   size: number;
-  /** Actual MIME type the encoder produced, which may differ from the one asked for. */
+  // What the encoder actually produced, which may differ from the type asked for
   type: string;
   filename: string;
   width: number;
@@ -36,21 +36,21 @@ export interface CompressOutcome {
 }
 
 export interface ItemResult extends CompressOutcome {
-  /** Must be revoked when the result is replaced, removed or unmounted. */
+  // Must be revoked when the result is replaced, removed or unmounted
   previewUrl: string;
 }
 
 export interface ImageItem {
   id: string;
-  /** The user's original file, kept so every re-run compresses from the source. */
+  // The original, kept so every re-run compresses from the source
   file: File;
   status: ItemStatus;
   error: string | null;
   source: Dimensions | null;
   result: ItemResult | null;
-  /** Fingerprint of the settings that produced `result`. */
+  // Fingerprint of the settings that produced `result`
   appliedKey: string | null;
-  /** Id of the batch run holding this item, so a cancelled run releases only its own. */
+  // Batch run that owns this item, so a cancelled run releases only its own
   runId: number | null;
 }
 

@@ -81,7 +81,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     try {
       sessionStorage.setItem(NUDGE_KEY, '1');
     } catch {
-
+      // sessionStorage throws in some private windows; worst case the nudge comes back
     }
   }, []);
 
@@ -104,6 +104,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         try {
           sessionStorage.setItem(NUDGE_KEY, '1');
         } catch {
+          // sessionStorage throws in some private windows; worst case the nudge comes back
         }
         setTimeout(() => setNudge(true), 700);
       },

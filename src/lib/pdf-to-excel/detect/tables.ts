@@ -14,10 +14,10 @@ export interface DetectedTable {
   path: TablePath;
   key: string;
   pages: number[];
-  /** One tree row, grid row or visual line each — never grouped. */
+  // One tree row, grid row or visual line each, never grouped
   rows: CellRow[];
   profile: ColumnProfile | null;
-  /** Right-aligned columns on the column rung; the other rungs decide by typing. */
+  // Right-aligned columns on the column rung; the other rungs decide by typing
   moneyCols: number[] | null;
   notes: SheetNote[];
   firstPage: number;
@@ -28,7 +28,7 @@ export interface Detection {
   skippedPages: number[];
 }
 
-/** A single-page table has no other page to confirm it, so it has to be obviously a table. */
+// A single-page table has no other page to confirm it, so it has to be obviously a table
 function singlePageIsSafe(
   rows: readonly CellRow[],
   profile: ColumnProfile,
@@ -67,7 +67,7 @@ function columnTable(pages: readonly PageRead[], all: readonly PageRead[]): Dete
     return { tables: [], skippedPages: pages.map((page) => page.pageNumber) };
   }
 
-  // A page whose layout disagrees with the document's is left out rather than guessed at.
+  // A page whose layout disagrees with the document's is left out rather than guessed at
   const skipped: number[] = [];
   const kepts: BandLine[] = [];
   for (const page of pages) {
@@ -111,7 +111,7 @@ function columnTable(pages: readonly PageRead[], all: readonly PageRead[]): Dete
   };
 }
 
-/** Consecutive pages drawing the same grid are one table, not one per page. */
+// Consecutive pages drawing the same grid are one table, not one per page
 function stitchRuled(tables: readonly DetectedTable[]): DetectedTable[] {
   const out: DetectedTable[] = [];
   for (const table of tables) {
@@ -131,7 +131,7 @@ function stitchRuled(tables: readonly DetectedTable[]): DetectedTable[] {
   return out;
 }
 
-/** The ladder: the tagged tree, then a ruled grid, then the column model; a page that fits none contributes nothing. */
+// Tagged tree first, then a ruled grid, then the column model; a page that fits none is skipped
 export function detectTables(pages: readonly PageRead[]): Detection {
   const readable = pages.filter((page) => page.cls === 'text' && page.lines.length > 0);
   const tables: DetectedTable[] = [];

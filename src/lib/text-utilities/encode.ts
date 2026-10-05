@@ -1,8 +1,8 @@
-// `btoa` only accepts code points up to U+00FF, so encode the UTF-8 bytes first.
+// `btoa` only accepts code points up to U+00FF, so encode the UTF-8 bytes first
 export function base64Encode(text: string, urlSafe: boolean): string {
   const bytes = new TextEncoder().encode(text);
   let binary = '';
-  // Chunked so a long string cannot blow the argument limit.
+  // Chunked so a long string cannot blow the argument limit
   const CHUNK = 0x8000;
   for (let i = 0; i < bytes.length; i += CHUNK) {
     binary += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
@@ -11,7 +11,7 @@ export function base64Encode(text: string, urlSafe: boolean): string {
   return urlSafe ? encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '') : encoded;
 }
 
-/** Decode base64 bytes. Accepts both the standard and URL-safe alphabets. */
+// Accepts both the standard and URL-safe alphabets
 export function base64DecodeBytes(input: string): Uint8Array {
   const compact = input.replace(/\s+/g, '').replace(/-/g, '+').replace(/_/g, '/');
   if (compact.length === 0) return new Uint8Array(0);
@@ -21,7 +21,7 @@ export function base64DecodeBytes(input: string): Uint8Array {
     if (bad) {
       throw new Error(`That isn't valid Base64 — it contains ${JSON.stringify(bad[0])}.`);
     }
-    // Only "=" can be left: padding in the wrong place, or too much of it.
+    // Only "=" can be left: padding in the wrong place, or too much of it
     throw new Error(
       "That isn't valid Base64 — the \"=\" padding has to be the last one or two characters, and nothing may follow it.",
     );
@@ -40,7 +40,6 @@ export function base64DecodeBytes(input: string): Uint8Array {
   return bytes;
 }
 
-/** Decode base64 to text, insisting the result is real UTF-8. */
 export function base64Decode(input: string): string {
   const bytes = base64DecodeBytes(input);
   if (bytes.length === 0) return '';
@@ -85,7 +84,7 @@ export function htmlEscape(text: string): string {
   return HTML_ESCAPES.reduce((acc, [pattern, replacement]) => acc.replace(pattern, replacement), text);
 }
 
-/** Named entities worth knowing. Anything unknown is left untouched. */
+// Partial list; an entity that is not here is left as written
 const NAMED_ENTITIES: Readonly<Record<string, string>> = {
   amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
   copy: '©', reg: '®', trade: '™', hellip: '…',
@@ -106,7 +105,7 @@ const NAMED_ENTITIES: Readonly<Record<string, string>> = {
   shy: '­', ensp: ' ', emsp: ' ', thinsp: ' ', zwj: '‍', zwnj: '‌',
 };
 
-/** Unescapes without the DOM, so untrusted markup never goes through the parser. */
+// Hand-rolled rather than via the DOM, so untrusted markup never reaches the parser
 export function htmlUnescape(text: string): string {
   return text.replace(/&(#[0-9]+|#[xX][0-9A-Fa-f]+|[A-Za-z][A-Za-z0-9]{1,31});/g, (match, body: string) => {
     if (body[0] === '#') {
@@ -126,9 +125,8 @@ export function htmlUnescape(text: string): string {
 
 export interface JwtClaim {
   name: string;
-  /** Raw value as it appears in the payload. */
   raw: string;
-  /** Human reading, e.g. a decoded timestamp. */
+  // Empty unless there is something to add, such as a decoded timestamp
   meaning: string;
 }
 
@@ -173,7 +171,6 @@ function formatTimestamp(seconds: number, now: number): string {
   return `${date.toLocaleString()} (${relativeTime(seconds * 1000 - now)})`;
 }
 
-/** "in 5 minutes" / "2 days ago". */
 export function relativeTime(deltaMs: number): string {
   const units: ReadonlyArray<[Intl.RelativeTimeFormatUnit, number]> = [
     ['year', 31_536_000_000],
@@ -192,7 +189,7 @@ export function relativeTime(deltaMs: number): string {
   return 'now';
 }
 
-/** A decoder only: the signature is never checked, so nothing here proves the token is genuine. */
+// Decoder only: the signature is never checked, so none of this proves the token is genuine
 export function decodeJwt(token: string, now: number): JwtResult {
   const trimmed = token.trim().replace(/^Bearer\s+/i, '');
   if (trimmed.length === 0) throw new Error('Paste a token to decode.');

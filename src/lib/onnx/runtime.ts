@@ -7,16 +7,15 @@ const held = new Map<string, InferenceSession>();
 
 export async function loadOrt(): Promise<OrtModule> {
   if (ort) return ort;
-  // The /wasm subpath only: the bare package drags in the WebGPU build for nothing.
+  // The /wasm subpath only: the bare package drags in the WebGPU build for nothing
   const loaded = await import('onnxruntime-web/wasm');
   loaded.env.wasm.wasmPaths = '/ort/';
-  // A static export can't be cross-origin isolated, so one thread is the only option.
+  // A static export can't be cross-origin isolated, so one thread is the only option
   loaded.env.wasm.numThreads = 1;
   ort = loaded;
   return loaded;
 }
 
-/** Hands back the session already running under `key`; each one pins its weights until released. */
 export async function getSession(
   key: string,
   model: Uint8Array,
@@ -35,7 +34,7 @@ export async function getSession(
     held.set(key, session);
     return session;
   } finally {
-    // Only read once, and holding it would pin 14 MB for the life of the page.
+    // Read once at create time; holding it would pin 14 MB for the life of the page
     runtime.env.wasm.wasmBinary = undefined;
   }
 }
@@ -48,7 +47,7 @@ export async function releaseSessions(keep: readonly string[] = []): Promise<voi
     try {
       await session.release();
     } catch {
-      // Already gone; nothing useful to do about it.
+      // Already gone; nothing useful to do about it
     }
   }
 }

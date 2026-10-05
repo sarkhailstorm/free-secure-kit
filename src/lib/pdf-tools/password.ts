@@ -56,7 +56,7 @@ interface Run {
 
 async function run(args: string[], bytes: Uint8Array, wantsOutput: boolean): Promise<Run> {
   const wasm = await compile();
-  // The .mjs entry passes its factory through `globalThis`, which a bundler rewrites away; the CommonJS build exports it properly.
+  // qpdf's .mjs entry hands its factory over through globalThis, which the bundler rewrites away; the CJS build exports it properly.
   const loaded = (await import('@jspawn/qpdf-wasm/qpdf.js')) as unknown as {
     default?: (options: QpdfOptions) => Promise<Qpdf>;
   };

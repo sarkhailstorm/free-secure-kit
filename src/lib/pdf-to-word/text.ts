@@ -11,7 +11,7 @@ const ASCII_ALNUM_RE = /^[0-9A-Za-z]+$/;
 export const MARKER_RE =
   /^(?:[•▪●◦⁃·–−o*\-]|\(?\d{1,3}[.)\]]|\(?[a-zA-Z][.)\]]|\(?[ivxlcIVXLC]{1,6}[.)\]])$/;
 
-/** Marker width ceiling from §4.5; the gap after it is the caller's test. */
+/** Marker width ceiling, in ems; the gap after it is the caller's test. */
 const MARKER_WIDTH = 1.6;
 
 const RANK: Record<Repair, number> = { ligature: 1, pua: 2, 'symbolic-dropped': 3 };

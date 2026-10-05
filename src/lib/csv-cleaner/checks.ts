@@ -55,7 +55,6 @@ export function wouldExcelChange(value: string): boolean {
   return a >= 1 && b >= 1 && a <= 31 && b <= 31 && (a <= 12 || b <= 12);
 }
 
-/** Names of the invisible characters in one value, for the UI to quote. */
 export function describeInvisible(value: string): string[] {
   const names: string[] = [];
   for (const char of value) {

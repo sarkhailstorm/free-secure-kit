@@ -8,25 +8,21 @@ export function formatBytes(bytes: number, decimals = 1): string {
   return `${value.toFixed(dp)} ${units[i]}`;
 }
 
-/** Signed percentage change between two sizes, e.g. -86% for a good squeeze. */
 export function percentChange(before: number, after: number): number {
   if (before <= 0) return 0;
   return Math.round(((after - before) / before) * 100);
 }
 
-/** "12 rows" / "1 row" */
 export function plural(count: number, singular: string, pluralForm?: string): string {
   const word = count === 1 ? singular : (pluralForm ?? `${singular}s`);
   return `${count.toLocaleString()} ${word}`;
 }
 
-/** Strip the extension from a filename: "report.final.csv" -> "report.final". */
 export function baseName(filename: string): string {
   const i = filename.lastIndexOf('.');
   return i > 0 ? filename.slice(0, i) : filename;
 }
 
-/** Lowercase extension without the dot, or '' when there is none. */
 export function extension(filename: string): string {
   const i = filename.lastIndexOf('.');
   return i > 0 ? filename.slice(i + 1).toLowerCase() : '';

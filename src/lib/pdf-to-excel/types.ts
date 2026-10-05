@@ -7,20 +7,20 @@ export type DateOrder = 'dmy' | 'mdy' | 'ymd';
 
 export interface Column {
   index: number;
-  /** Page-space interval this column occupies, left to right. */
+  // Page-space interval this column occupies, left to right
   x0: Pt;
   x1: Pt;
   align: ColumnAlign;
   kind: ColumnKind;
-  /** Header text, or '' when the table has no header row. */
+  // '' when the table has no header row
   header: string;
-  /** Decimals to show. number | money only. */
+  // Decimals to show; number and money only
   decimals: number;
-  /** How this document writes a numeric date. date only. */
+  // How this document writes a numeric date; date columns only
   dateOrder: DateOrder | null;
-  /** Its values are read as a running balance. */
+  // Values are read as a running balance
   balance: boolean;
-  /** How many cells decided `kind`, and how many agreed. */
+  // How many cells decided `kind`, and how many agreed
   sampled: number;
   agreed: number;
 }
@@ -38,10 +38,10 @@ export type CellValue =
   | { kind: 'date'; iso: string; ambiguous: boolean };
 
 export interface Cell {
-  /** Exactly as it reads on the page. Never discarded, never rewritten. */
+  // Exactly as it reads on the page, never rewritten
   raw: string;
   value: CellValue;
-  /** raw is not empty but did not match the column's kind. */
+  // raw is not empty but did not match the column's kind
   offType: boolean;
 }
 
@@ -54,12 +54,12 @@ export type RowFlag =
 
 export interface Row {
   cells: Cell[];
-  /** 1-based page the record starts on. */
+  // 1-based page the record starts on
   page: number;
-  /** Same as `page` unless the record continued onto the next one. */
+  // Same as `page` unless the record continued onto the next one
   endPage: number;
   flags: RowFlag[];
-  /** flags.length === 0 */
+  // flags.length === 0
   ok: boolean;
 }
 
@@ -78,16 +78,16 @@ export interface SheetNote {
 
 export interface Sheet {
   id: string;
-  /** 'Table 1', or the file's own name when there is only one. */
+  // 'Table 1', or the file's own name when there is only one
   title: string;
   path: TablePath;
   columns: Column[];
-  /** Header row text, or null when the table has no header. */
+  // Null when the table has no header
   header: string[] | null;
   rows: Row[];
-  /** 1-based pages this sheet drew from, ascending. */
+  // 1-based pages this sheet drew from, ascending
   pages: number[];
-  /** rows.filter(ok).length / rows.length, 1 when there are no rows. */
+  // rows.filter(ok).length / rows.length, 1 when there are no rows
   confidence: number;
   notes: SheetNote[];
 }
@@ -95,21 +95,21 @@ export interface Sheet {
 export interface ExcelWorkbook {
   sheets: Sheet[];
   pageCount: number;
-  /** Pages with no text on them at all — nothing can be read from these. */
+  // No text at all, so nothing can be read from these
   imagePages: number[];
-  /** Pages with text that produced no table. */
+  // Had text, but produced no table
   skippedPages: number[];
-  /** Pages that threw while being read. */
+  // Threw while being read
   failedPages: number[];
 }
 
 export type ExcelFormat = 'xlsx' | 'csv';
 
 export interface ExcelOptions {
-  /** Sheet ids to write. Empty or omitted means every sheet. */
+  // Empty or omitted means every sheet
   include?: readonly string[];
   format: ExcelFormat;
-  /** Add a trailing "Page" column on a sheet that spans more than one page. Default true. */
+  // Trailing "Page" column on a sheet spanning more than one page; default true
   pageColumn?: boolean;
   signal?: AbortSignal;
 }

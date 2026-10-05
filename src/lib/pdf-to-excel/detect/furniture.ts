@@ -7,7 +7,7 @@ import {
 } from '../constants';
 import type { PageRead } from '../extract/read';
 
-/** Digits normalised so "Page 2 of 3" and "Page 3 of 3" are the same line. */
+// Digits normalised so "Page 2 of 3" and "Page 3 of 3" are the same line
 export const lineShape = (text: string): string =>
   text.replace(/\d+/g, '#').replace(/\s+/g, ' ').trim();
 
@@ -16,7 +16,7 @@ function deviation(values: readonly Pt[]): Pt {
   return Math.sqrt(values.reduce((sum, v) => sum + (v - mean) ** 2, 0) / values.length);
 }
 
-/** Lines repeated at the same height on most pages: the running head and foot. */
+// Lines repeated at the same height on most pages: the running head and foot
 export function pageFurniture(pages: readonly PageRead[]): ReadonlySet<string> {
   if (pages.length < FURNITURE_MIN_PAGES) return new Set<string>();
 

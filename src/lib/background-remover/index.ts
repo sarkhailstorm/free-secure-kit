@@ -27,7 +27,7 @@ const SUPPORTED = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 export function isSupportedPhoto(file: File): boolean {
   if (SUPPORTED.has(file.type)) return true;
-  // Some file pickers hand over an empty type; fall back to the name.
+  // Some file pickers hand over an empty type, so fall back to the name
   return file.type === '' && /\.(jpe?g|png|webp)$/i.test(file.name);
 }
 
@@ -68,7 +68,6 @@ async function decode(file: File): Promise<{ bitmap: ImageBitmap; resized: boole
   }
 }
 
-/** The first call for a given choice downloads the remover; later calls reuse it. */
 export async function removeBackground(
   file: File,
   options: RemoveBackgroundOptions = {},

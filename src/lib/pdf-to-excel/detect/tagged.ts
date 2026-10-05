@@ -13,13 +13,13 @@ export interface TaggedCell {
   x1: Pt;
 }
 
-/** Bands may not line up to the point, so a cell edge this close is the same edge. */
+// Bands may not line up to the point, so a cell edge this close is the same edge
 const BAND_EDGE_TOL: Pt = 3;
 
 const isInk = (span: Span): boolean =>
   !span.synthetic && !span.artifact && span.text.trim().length > 0;
 
-/** The tree's own cells for one table on one page, with the x extent their text actually covers. */
+// The x extent is what the text actually covers, not what the tree declares
 export function taggedCells(page: PageRead, tableIndex: number): TaggedCell[] {
   const buckets = new Map<string, TaggedCell>();
   for (const line of page.lines) {
@@ -51,7 +51,7 @@ export function taggedCells(page: PageRead, tableIndex: number): TaggedCell[] {
   return [...buckets.values()];
 }
 
-/** Union of every cell's x extent across pages: LibreOffice omits an empty cell, shifting later ones left. */
+// Union across pages: LibreOffice omits an empty cell, which shifts later ones left
 export function columnBands(cells: readonly TaggedCell[]): [Pt, Pt][] {
   const sorted = [...cells].sort((a, b) => a.x0 - b.x0);
   const bands: [Pt, Pt][] = [];
@@ -110,7 +110,7 @@ const sameBands = (a: readonly [Pt, Pt][], b: readonly [Pt, Pt][]): boolean =>
       Math.abs(band[0] - b[i][0]) <= BAND_EDGE_TOL && Math.abs(band[1] - b[i][1]) <= BAND_EDGE_TOL,
   );
 
-/** A tree table with one row, one column, or one filled cell is a layout box, not a table. */
+// A tree table with one row, one column or one filled cell is a layout box, not a table
 function worthKeeping(rows: readonly CellRow[], bands: readonly [Pt, Pt][]): boolean {
   if (rows.length < 2 || bands.length < 2) return false;
   let filled = 0;
@@ -118,7 +118,7 @@ function worthKeeping(rows: readonly CellRow[], bands: readonly [Pt, Pt][]): boo
   return filled > 1;
 }
 
-/** Every tagged table in the document, stitched where the same table continues onto a page. */
+// Stitched where the same table continues onto the next page
 export function taggedTables(pages: readonly PageRead[]): DetectedTable[] {
   const out: DetectedTable[] = [];
   const width = Math.max(0, ...pages.map((page) => page.struct.tables.length));

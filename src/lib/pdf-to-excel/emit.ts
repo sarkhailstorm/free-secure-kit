@@ -7,7 +7,7 @@ export const XLSX_MIME =
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 export const CSV_MIME = 'text/csv;charset=utf-8';
 
-/** Days between Excel's epoch and the Unix epoch, with Excel's 1900 leap-year bug. */
+// Days between Excel's epoch and the Unix epoch, with Excel's 1900 leap-year bug
 const EXCEL_EPOCH_OFFSET = 25_569;
 const MS_PER_DAY = 86_400_000;
 
@@ -37,7 +37,7 @@ function throwIfAborted(signal: AbortSignal | undefined): void {
   if (signal?.aborted) throw new PdfToolsError('Cancelled.');
 }
 
-/** A date written through a Date object goes via the local timezone and can lose a day. */
+// A date written through a Date object goes via the local timezone and can lose a day
 function serial(iso: string): number {
   const [y, m, d] = iso.split('-').map(Number);
   return Math.round(Date.UTC(y, m - 1, d) / MS_PER_DAY) + EXCEL_EPOCH_OFFSET;
@@ -59,7 +59,7 @@ function rowReasons(row: Row): string {
     .join('; ');
 }
 
-/** The header row is also rows[0]; written once, it must not be written again as a record. */
+// The header row is also rows[0]; written once, it must not go out again as a record
 function bodyRows(sheet: Sheet): Row[] {
   const header = sheet.header;
   const first = sheet.rows[0];
@@ -82,7 +82,7 @@ function layoutOf(sheet: Sheet, options: ExcelOptions): Layout {
   return { header, rows, columnCount: sheet.columns.length, pageColumn, checkColumn };
 }
 
-/** What the cell says, as text. Numbers keep their own decimals, dates go ISO. */
+// Numbers keep their own decimals, dates go ISO
 function cellText(cell: Cell | undefined): string {
   if (!cell) return '';
   if (cell.offType) return cell.raw;
@@ -121,7 +121,7 @@ function uniqueName(title: string, used: Set<string>): string {
   return name;
 }
 
-/** SheetJS 0.20.3 ignores ws['!freeze'], so the pane is patched into the saved file. */
+// SheetJS 0.20.3 ignores ws['!freeze'], so the pane is patched into the saved file
 async function freezeHeaders(bytes: Uint8Array, count: number): Promise<Uint8Array> {
   const pane =
     '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>' +
@@ -143,7 +143,7 @@ async function freezeHeaders(bytes: Uint8Array, count: number): Promise<Uint8Arr
     }
     return await zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
   } catch {
-    // A header that does not stay put is a small loss; losing the file is not.
+    // A header that does not stay put is a small loss; losing the file is not
     return bytes;
   }
 }
@@ -166,7 +166,7 @@ export async function sheetsToXlsxBytes(
     const layout = layoutOf(sheet, options);
     const text = layout.rows.map((row) => rowText(layout, row));
 
-    // Strings, numbers and blanks first; aoa_to_sheet cannot carry a format.
+    // Strings, numbers and blanks first; aoa_to_sheet cannot carry a format
     const grid: (string | number | null)[][] = [[...layout.header]];
     for (let r = 0; r < layout.rows.length; r++) {
       const row = layout.rows[r];
@@ -234,7 +234,7 @@ export async function sheetToCsvText(sheet: Sheet, options: ExcelOptions): Promi
   const Papa = await import('papaparse');
   const layout = layoutOf(sheet, options);
   const grid = layout.rows.map((row) => rowText(layout, row));
-  // The BOM keeps Excel from mangling accented characters on Windows.
+  // The BOM keeps Excel from mangling accented characters on Windows
   return `﻿${Papa.unparse([layout.header, ...grid], { delimiter: ',', newline: '\r\n' })}`;
 }
 

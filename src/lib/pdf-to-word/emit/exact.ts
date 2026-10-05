@@ -26,7 +26,7 @@ const BASELINE_RATIO = 0.8;
 /** A substituted font sets wider than the PDF measured, and a narrow frame wraps rather than overflows. */
 const FRAME_SLACK = 1.25;
 const FRAME_PAD: Pt = 8;
-/** Enough flow content that the section does not produce a stray page, little enough that it cannot fill one. */
+/** Enough flow content to hold the section open, too little to spill onto a second page. */
 const FLOW_LINE: Pt = 1;
 /** Below this both renderers snap to their own hairline, so a thinner box gains nothing. */
 const MIN_RULE: Pt = 0.25;
@@ -238,7 +238,7 @@ function textFrames(docx: Docx, layout: PageLayout): Paragraph[] {
 
       out.push(
         new docx.Paragraph({
-          // Width is deliberately never clamped to the page: clamping is what makes the text wrap.
+          // Never clamp the width to the page: clamping is what makes the text wrap.
           frame: frameFor(
             {
               x: box.x0,
@@ -340,7 +340,7 @@ function sectionFor(docx: Docx, layout: PageLayout, opts: WordOptions): ISection
   const { facts } = layout;
   const pictures = picturesFor(layout, opts);
   const frameCount = boxCount(layout.lines, layout.fonts) + facts.rules.length + facts.fills.length;
-  // Thousands of frames is the failure this cap exists to prevent — take the page picture instead.
+  // Thousands of frames is what this cap exists to prevent; take the page picture instead.
   const degraded = frameCount > MAX_FRAMES_PER_PAGE && facts.raster !== undefined;
   const framed = facts.cls !== 'imageOnly' && !degraded;
 

@@ -1,12 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="FreeSecureKit">
-  <!--
-    Matches the header mark: lucide's shield-check on the accent indigo
-    rounded square. Drawn on a filled tile rather than as a bare glyph so it
-    stays legible at 16px and reads on both light and dark browser chrome.
-    Fill is rgb(79 70 229), the light theme accent colour.
-    NB: no double hyphens in this comment; they are illegal inside XML
-    comments and make the whole file fail to parse as an image.
-  -->
+  <!-- lucide shield-check on #4F46E5, the light theme accent; same mark as the header -->
   <rect width="32" height="32" rx="7" fill="#4F46E5" />
   <g
     transform="translate(4 4)"

@@ -3,7 +3,6 @@ import { exportStylesheet, type ThemeId } from './themes';
 export interface DocStats {
   words: number;
   characters: number;
-  /** Whole minutes at 225 wpm; 0 for an empty document. */
   readingMinutes: number;
 }
 
@@ -29,7 +28,7 @@ function plainText(heading: string): string {
     .trim();
 }
 
-/** The first H1 — ATX or setext — ignoring anything inside a fenced code block. */
+// First H1, ATX or setext, ignoring anything inside a fenced code block
 export function documentTitle(source: string, fallback = 'Document'): string {
   const lines = source.split(/\r?\n/);
   let fence: string | null = null;
@@ -75,7 +74,7 @@ export function buildStandaloneHtml({
   themeId,
 }: {
   title: string;
-  /** Already-sanitised document HTML. */
+  // Must already be sanitised
   bodyHtml: string;
   themeId: ThemeId;
 }): string {

@@ -110,7 +110,6 @@ function month(name: string): number | null {
   return MONTHS[key] ?? null;
 }
 
-/** Classify one raw cell value. Pure, allocation-light, never throws. */
 export function inspectDate(raw: string): Inspection {
   const value = raw.trim();
   if (value.length < 4 || value.length > 40) return NOT_A_DATE;

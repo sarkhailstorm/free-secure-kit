@@ -16,7 +16,7 @@ export interface BalanceCheck {
   amountCol?: number;
   transitions: number;
   breaks: number;
-  /** Row indices that do not reconcile. */
+  // Row indices that do not reconcile
   brokenRows: number[];
 }
 
@@ -29,13 +29,13 @@ const decimalsOf = (column: Column | undefined): number =>
 const amountOf = (cell: Cell | undefined): number | null =>
   cell && cell.value.kind === 'number' ? cell.value.value : null;
 
-/** 0 for an empty cell, the value for a number, null for anything we could not read. */
+// 0 for an empty cell, the value for a number, null for anything unreadable
 const contribution = (cell: Cell | undefined): number | null => {
   if (!cell || cell.value.kind === 'empty') return 0;
   return cell.value.kind === 'number' ? cell.value.value : null;
 };
 
-/** Minor units, so 192 transitions compare exactly and nothing drifts in floating point. */
+// Minor units, so comparisons are exact and nothing drifts in floating point
 type DeltaOf = (row: Row, decimals: number) => number | null;
 
 function reconcile(
@@ -69,7 +69,7 @@ function reconcile(
   return { transitions, breaks: brokenRows.length, brokenRows };
 }
 
-/** The last money column, read as a running balance, in whichever shape breaks least. */
+// The last money column, read as a running balance, in whichever shape breaks least
 export function findBalance(sheet: Sheet): BalanceCheck | null {
   const money: number[] = [];
   const numeric: number[] = [];
@@ -124,7 +124,7 @@ export function findBalance(sheet: Sheet): BalanceCheck | null {
   return best;
 }
 
-/** Flags the rows that do not add up. Never changes a value to make them add up. */
+// Flags rows that do not add up; never changes a value to make them add up
 export function applyBalance(sheet: Sheet, check: BalanceCheck | null): void {
   if (!check || check.transitions === 0) {
     sheet.notes.push({ code: 'balanceUnchecked' });

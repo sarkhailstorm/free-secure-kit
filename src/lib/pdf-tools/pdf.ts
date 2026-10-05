@@ -16,7 +16,7 @@ export interface LoadedPdf {
   name: string;
   size: number;
   pageCount: number;
-  /** The original file bytes. Every operation works from a copy of these. */
+  /** Original file bytes; every operation works from a copy of these. */
   bytes: Uint8Array;
 }
 
@@ -36,14 +36,14 @@ export function tick(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
-/** Truncates the base name so the result always still ends in its extension. */
+/** Truncates the base name, never the extension. */
 export function downloadName(base: string, extension: string, fallback: string): string {
   const chars = [...base];
   const capped = chars.length > 120 ? `${chars.slice(0, 120).join('').trimEnd()}…` : base;
   return safeFilename(`${capped}.${extension}`, fallback);
 }
 
-/** "pages 4-9" when contiguous, a plain count once the list is too scattered to spell out. */
+/** "pages 4-9", falling back to a plain count once the list gets too scattered. */
 export function groupLabel(pages: readonly number[]): string {
   const described = describeGroup([...pages]);
   return described.length > 48 ? `${pages.length} pages` : described;
@@ -52,7 +52,7 @@ export function groupLabel(pages: readonly number[]): string {
 export async function readPdf(file: File): Promise<LoadedPdf> {
   const { PDFDocument } = await import('pdf-lib');
   const bytes = new Uint8Array(await file.arrayBuffer());
-  // No `ignoreEncryption` on purpose: pdf-lib then throws for a password-protected file.
+  // No `ignoreEncryption`: without it pdf-lib throws for a password-protected file, which is what we want here.
   const doc = await PDFDocument.load(bytes.slice(), { updateMetadata: false });
   const pageCount = doc.getPageCount();
   if (pageCount === 0) {
@@ -69,7 +69,7 @@ export async function readPdf(file: File): Promise<LoadedPdf> {
   };
 }
 
-/** One page of one queued file. `page` is 1-based, the way it is shown. */
+/** One page of one queued file; `page` is 1-based. */
 export interface PageRef {
   fileId: string;
   page: number;
@@ -167,7 +167,6 @@ function checkPages(source: LoadedPdf, pages: readonly number[]): void {
   }
 }
 
-/** Pull the given 1-based pages into a single new document. */
 export async function extractPages(
   source: LoadedPdf,
   pages: readonly number[],
@@ -283,7 +282,7 @@ function nameOf(obj: PdfObject | undefined): string | null {
   return typeof value === 'string' && value.startsWith('/') ? value.slice(1) : null;
 }
 
-/** Re-encodes plain-JPEG images and takes the free structural wins; other images are left untouched. */
+/** Re-encodes plain JPEGs and takes the free structural wins; every other image is left alone. */
 export async function compressPdf(
   source: LoadedPdf,
   quality: number,
@@ -371,7 +370,7 @@ export async function compressPdf(
         imageBytesAfter += reencoded.byteLength;
       }
     } catch {
-      // An image the browser cannot decode simply stays as it was. Never fatal.
+      // An image the browser cannot decode just stays as it was; never fatal.
     }
 
     onProgress({ stage: 'images', done: i + 1, total: jpegImages });
@@ -420,7 +419,7 @@ function dropUnreachableObjects(
 
     let steps = 0;
     while (stack.length > 0) {
-      // A pathological file should degrade to "change nothing", not hang.
+      // Step cap so a pathological file degrades to "change nothing" instead of hanging.
       if (++steps > 4_000_000) return 0;
       const obj = stack.pop();
       if (!obj) continue;

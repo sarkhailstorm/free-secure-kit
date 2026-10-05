@@ -5,10 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-// qpdf, Apache-2.0, compiled to WebAssembly. See THIRD-PARTY-LICENCES.md.
-// The hash is pinned so an unexpected build fails the install loudly rather
-// than shipping a binary nobody looked at, and it is in the served filename so
-// a browser can keep the file forever.
+// qpdf, Apache-2.0, compiled to WebAssembly. See THIRD-PARTY-LICENCES.md
+// Pinned so an unexpected build fails the install; the digest also goes in the served filename so browsers cache it forever
 const EXPECTED = 'cbd81a244d622a39e3cf16f2e589a9a0d7cc51f588d35b3dd6b425a677cc3f99';
 
 const source = join(root, 'node_modules/@jspawn/qpdf-wasm/qpdf.wasm');
@@ -32,7 +30,7 @@ const name = `qpdf-${digest.slice(0, 8)}.wasm`;
 const destDir = join(root, 'public/qpdf');
 mkdirSync(destDir, { recursive: true });
 
-// Drop any older build, so a renamed file does not sit in public/ forever.
+// Name carries the hash, so clear out any previous build
 for (const existing of readdirSync(destDir)) {
   if (existing !== name) rmSync(join(destDir, existing));
 }

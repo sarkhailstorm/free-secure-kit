@@ -479,19 +479,16 @@ const PALETTES: Record<ThemeId, { light: Palette; dark: Palette }> = {
   serif: { light: SERIF_LIGHT, dark: SERIF_DARK },
 };
 
-/** Paper colour of a theme's light treatment — used behind exported files. */
 export function exportPaper(id: ThemeId): string {
   return PALETTES[id].light.paper;
 }
 
-/** One theme, light treatment, rendered against an arbitrary root selector. */
 export function lightStylesheet(id: ThemeId, root: string): string {
   return (
     structuralCss(root) + BUILDERS[id](root, PALETTES[id].light) + codeCss(root, CODE_LIGHT)
   );
 }
 
-/** Light treatment on `.md-doc`, plus a dark treatment under the site's `.dark` class. */
 export function previewStylesheet(id: ThemeId): string {
   const light = `.${PREVIEW_ROOT_CLASS}`;
   const dark = `.dark .${PREVIEW_ROOT_CLASS}`;
@@ -502,7 +499,7 @@ export function previewStylesheet(id: ThemeId): string {
   );
 }
 
-/** Print CSS: hides the rest of the page and always uses the light treatment. */
+// Print always uses the light treatment, whatever the site theme is
 export function printStylesheet(id: ThemeId): string {
   const r = `#${PRINT_ROOT_ID} .${PRINT_BODY_CLASS}`;
   return `
@@ -530,7 +527,7 @@ ${lightStylesheet(id, r)}
 `;
 }
 
-/** The `<style>` block for a standalone file; the print block must stay last to win. */
+// The print block must stay last: equal specificity, so source order decides
 export function exportStylesheet(id: ThemeId, root: string): string {
   return `
 *, *::before, *::after { box-sizing: border-box; }

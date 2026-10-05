@@ -21,7 +21,7 @@ function joinOne(spans: readonly Span[], bodySize: Pt): string {
   return text;
 }
 
-/** One cell's text, grouped into visual lines first so a wrapped line does not fuse onto the one above. */
+// Grouped into visual lines first, so a wrapped line does not fuse onto the one above
 export function cellText(spans: readonly Span[], bodySize: Pt): string {
   const ink = [...spans].filter(isInk);
   if (ink.length === 0) return '';

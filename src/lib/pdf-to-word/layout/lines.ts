@@ -5,7 +5,7 @@ export type GapKind = 'none' | 'space' | 'fragment';
 
 /** A fragment boundary is a tab stop, a column edge or a cell edge — never a run of spaces. */
 const FRAGMENT_SEP = '\t';
-/** §4.6: tab-column gap starts agree within 3 pt. */
+/** Tab-column gap starts agree within 3 pt. */
 const TAB_ALIGN: Pt = 3;
 
 const rightEdge = (span: Span): Pt => span.x + span.w;
@@ -186,7 +186,7 @@ function shareRatio(values: readonly Pt[]): number {
   return best / values.length;
 }
 
-/** §4.3: a justified block's wide gaps are word spaces, so the tab threshold must not apply. */
+/** A justified block's wide gaps are word spaces, so the tab threshold must not apply. */
 export function isJustified(lines: readonly Line[]): boolean {
   if (lines.length < 3) return false;
   const body = lines.slice(0, -1);
@@ -196,7 +196,7 @@ export function isJustified(lines: readonly Line[]): boolean {
   );
 }
 
-/** §4.6: the same boundary on 3 consecutive lines is a tab table, whose right edge also aligns. */
+/** The same boundary on 3 consecutive lines is a tab table, whose right edge also aligns. */
 export function hasTabColumns(lines: readonly Line[]): boolean {
   let run = 0;
   let shared: Pt[] = [];
@@ -218,7 +218,7 @@ export function hasTabColumns(lines: readonly Line[]): boolean {
   return false;
 }
 
-/** Re-splits a block's lines as justified when the test fires. Returns whether it did. */
+/** Mutates `lines`; returns whether the block turned out to be justified. */
 export function applyJustification(lines: Line[], bodySize: Pt): boolean {
   if (!isJustified(lines) || hasTabColumns(lines)) return false;
   for (const line of lines) {

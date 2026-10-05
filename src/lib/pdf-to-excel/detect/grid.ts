@@ -11,7 +11,7 @@ import { cellText } from './text';
 const isInk = (span: Span): boolean =>
   !span.synthetic && !span.artifact && span.text.trim().length > 0;
 
-/** Unions collinear segments across the per-cell gap Word leaves between its border rectangles. */
+// Unions collinear segments across the per-cell gap Word leaves between its border rectangles
 export function joinRules(rules: readonly RuleSeg[], gap: Pt): RuleSeg[] {
   const out: RuleSeg[] = [];
   for (const axis of ['h', 'v'] as const) {
@@ -33,7 +33,7 @@ export function joinRules(rules: readonly RuleSeg[], gap: Pt): RuleSeg[] {
   return out;
 }
 
-/** Connectivity at a wider tolerance than SEG_TOL: Word's top border clears the first vertical. */
+// Wider tolerance than SEG_TOL, because Word's top border clears the first vertical
 function tolerantComponents(rules: readonly RuleSeg[], touchTol: Pt): RuleSeg[][] {
   const parent = rules.map((_, i) => i);
   const find = (start: number): number => {
@@ -68,7 +68,7 @@ export interface Grid extends GridScore {
   rulesOf: RuleSeg[];
 }
 
-/** Every grid the page's rules draw. Scoring stays on the unpadded segments. */
+// Scoring stays on the unpadded segments
 export function gridsOf(rules: readonly RuleSeg[], touchTol: Pt): Grid[] {
   const out: Grid[] = [];
   for (const component of tolerantComponents(rules, touchTol)) {

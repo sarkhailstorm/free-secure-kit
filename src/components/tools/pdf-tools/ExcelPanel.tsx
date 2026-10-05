@@ -185,7 +185,6 @@ export function ExcelPanel() {
       setWorkbook(found);
       setInclude(new Set(found.sheets.map((sheet) => sheet.id)));
     } catch (err) {
-      // Stopping is not a failure: no error card, no toast.
       if (controller.signal.aborted) setStopped(true);
       else {
         setActionError(describePdfError(err, file.name));

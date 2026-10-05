@@ -7,7 +7,7 @@ const CORRUPT =
 const TOO_BIG =
   /out of memory|Array buffer allocation failed|Invalid (typed )?array length|Maximum call stack/i;
 
-/** An error we raised ourselves, whose message is already fit to show. */
+/** Our own error: the message is already fit to show the user. */
 export class PdfToolsError extends Error {
   constructor(message: string) {
     super(message);

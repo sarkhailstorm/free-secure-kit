@@ -1,7 +1,4 @@
-/**
- * @jspawn/qpdf-wasm ships no types. This is the part of the Emscripten module
- * this site uses, and nothing more.
- */
+// @jspawn/qpdf-wasm ships no types; only the parts of the Emscripten module we call are declared
 declare module '@jspawn/qpdf-wasm/qpdf.js' {
   interface QpdfModule {
     FS: {
@@ -9,7 +6,7 @@ declare module '@jspawn/qpdf-wasm/qpdf.js' {
       readFile(path: string): Uint8Array;
       unlink(path: string): void;
     };
-    /** Returns the exit code, or throws an ExitStatus carrying one. */
+    // May throw an ExitStatus carrying the code instead of returning it
     callMain(args: string[]): number | undefined;
   }
 

@@ -8,7 +8,7 @@ export interface ProfileColumn {
   x0: Pt;
   x1: Pt;
   align: ColumnAlign;
-  /** The edge its values line up on: the right edge for a right-aligned column. */
+  // The edge its values line up on: the right edge for a right-aligned column
   anchor: Pt;
   leftShare: number;
   rightShare: number;
@@ -17,9 +17,9 @@ export interface ProfileColumn {
 
 export interface ColumnProfile {
   cols: ProfileColumn[];
-  /** Low-occupancy intervals between columns. */
+  // Low-occupancy intervals between columns
   gutters: [Pt, Pt][];
-  /** [-Infinity, ...boundaries between kept columns, +Infinity]. */
+  // [-Infinity, ...boundaries between kept columns, +Infinity]
   bounds: Pt[];
   lineCount: number;
 }
@@ -27,7 +27,7 @@ export interface ColumnProfile {
 const isInk = (span: Span): boolean =>
   !span.synthetic && !span.artifact && span.text.trim().length > 0;
 
-/** The clustering unit is the PDF's own text run: fragments fuse date, description and reference. */
+// The clustering unit is the PDF's own text run: fragments fuse date, description and reference
 export const lineRuns = (line: Line): Span[] => line.spans.filter(isInk).sort((a, b) => a.x - b.x);
 
 const midOf = (span: Span): Pt => span.x + span.w / 2;
@@ -52,7 +52,7 @@ function biggestCluster(values: readonly Pt[], tol: Pt): { at: Pt; n: number } {
 }
 
 function alignOf(leftShare: number, rightShare: number): ColumnAlign {
-  // Ties go to right: the other way round moved an amount column's anchor by 33–43 pt.
+  // Ties go to right: the other way round moved an amount column's anchor by 33–43 pt
   if (rightShare >= leftShare && rightShare >= ALIGN_SHARE_MIN) return 'right';
   if (leftShare > rightShare && leftShare >= ALIGN_SHARE_MIN) return 'left';
   return 'ragged';
@@ -136,7 +136,7 @@ export function columnProfile(
   return { cols, gutters, bounds, lineCount: lines.length };
 }
 
-/** Which column a run's midpoint falls in. Never the nearest anchor — that splits hyphenated codes. */
+// By midpoint, never by nearest anchor: that splits hyphenated codes
 export function columnOfMid(profile: ColumnProfile, x: Pt): number {
   for (let i = 0; i + 1 < profile.bounds.length - 1; i++) {
     if (x < profile.bounds[i + 1]) return i;
@@ -173,7 +173,7 @@ export function cellsOfLine(profile: ColumnProfile, line: Line, bodySize: Pt = l
   return buckets.map((spans) => joinSpans(spans, bodySize));
 }
 
-/** Cross-page confirmation: the share of a page's runs that land inside a gutter. */
+// Share of a page's runs that land inside a gutter, used to confirm a profile across pages
 export function pageFit(profile: ColumnProfile, lines: readonly Line[]): number {
   let inside = 0;
   let total = 0;

@@ -60,7 +60,7 @@ const OP = {
 
 let opsRead = false;
 
-/** Optional: extract/page.ts may await this once so the codes come from pdf.js rather than the table. */
+/** Optional: await once and the codes come from pdf.js rather than the table above. */
 export async function ensureOps(): Promise<void> {
   if (opsRead) return;
   opsRead = true;
@@ -154,7 +154,7 @@ function operandCount(code: number): number {
   }
 }
 
-/** args = [subOpCodes, flatCoords, minMax]; minMax is pre-CTM local and deliberately ignored. */
+/** args = [subOpCodes, flatCoords, minMax]; minMax is pre-CTM local, so it is ignored. */
 function decodePath(args: unknown): SubPath[] {
   const codes = prop(args, 0);
   const coords = prop(args, 1);

@@ -95,7 +95,7 @@ export function isSymbolicName(psName: string): boolean {
   return SYMBOLIC_RE.test(clean(psName)) || SYMBOLIC_RE.test(parsePsName(psName).base);
 }
 
-/** True when the face was never embedded and the family is a guess, so the caller can note it. */
+/** The face was never embedded and no mapping matched, so the family is a guess. */
 export function isSubstituted(font: FontInfo): boolean {
   if (!font.missingFile || font.symbolic) return false;
   const { base } = parsePsName(font.psName);

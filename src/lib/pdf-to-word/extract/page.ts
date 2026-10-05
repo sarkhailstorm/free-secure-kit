@@ -29,7 +29,7 @@ import { indexStruct } from './struct';
 const FALLBACK_BODY_SIZE: Pt = 12;
 const SKIP_CHAR = /[\s\p{Cf}]/u;
 const GENERICS: ReadonlySet<string> = new Set(['serif', 'sans-serif', 'monospace']);
-/** PageFacts deliberately carries no pdf.js handles, but releasePage still has to free the page. */
+/** PageFacts carries no pdf.js handles, but releasePage still has to free the page. */
 const openPages = new WeakMap<PageFacts, PDFPageProxy>();
 
 /** pdf.js's font object, whose own .d.ts describes it as `any`. */
@@ -155,7 +155,7 @@ export async function readPage(
   const annots: unknown[] = await page.getAnnotations().catch(() => []);
   throwIfAborted(opts.signal);
 
-  // §4.7: a /Rotate page drawn in unrotated user space reads straight — only the paper turned.
+  // A /Rotate page drawn in unrotated user space reads straight — only the paper turned.
   if (page.rotate % 180 !== 0) {
     const flat = page.getViewport({ scale: 1, rotation: 0 });
     let turned = 0;
@@ -318,7 +318,7 @@ export async function readPage(
   facts.cls = classifyPage(facts);
   facts.degradeReason = degradeReasonFor(facts, facts.cls);
 
-  // §4.7: rotated text is dropped from the flow, so past the limit the page goes in as a picture.
+  // Rotated text is dropped from the flow, so past the limit the page goes in as a picture.
   const runs = spans.length + rotatedSpanCount;
   if (
     runs > 0 &&

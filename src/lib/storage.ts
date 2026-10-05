@@ -1,11 +1,5 @@
-/**
- * The app's storage keys were renamed along with the app. A returning visitor
- * still has the old ones, so every read looks for the new key first and adopts
- * the old one if that is all there is.
- *
- * Reads are deliberately left to throw: callers use that to tell a blocked
- * private window from an empty one. Only the move itself is forgiving.
- */
+// Keys were renamed with the app, so a read falls back to the old key and moves the value across
+// Reads are left to throw: callers use that to tell a blocked private window from an empty one
 function adopt(store: Storage, key: string, legacy: string): string | null {
   const current = store.getItem(key);
   if (current !== null) return current;
@@ -17,7 +11,7 @@ function adopt(store: Storage, key: string, legacy: string): string | null {
     store.setItem(key, old);
     store.removeItem(legacy);
   } catch {
-    // Full or read-only. The value is still returned; it just moves next time.
+    // Full or read-only; the value still comes back, it just moves next time
   }
   return old;
 }
@@ -30,16 +24,16 @@ export function readSession(key: string, legacy: string): string | null {
   return adopt(sessionStorage, key, legacy);
 }
 
-/** Separate attempts: a throw on the first must not skip the second. */
+// Separate try blocks: a throw on the first must not skip the second
 export function forgetLocal(key: string, legacy: string): void {
   try {
     localStorage.removeItem(key);
   } catch {
-    // Blocked. Nothing further to try for this one.
+    // Storage blocked
   }
   try {
     localStorage.removeItem(legacy);
   } catch {
-    // Same.
+    // Storage blocked
   }
 }

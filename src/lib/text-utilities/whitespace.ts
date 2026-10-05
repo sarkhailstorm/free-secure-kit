@@ -34,7 +34,7 @@ export const DEFAULT_WHITESPACE_OPTIONS: WhitespaceOptions = {
 export interface WhitespaceNote {
   id: string;
   count: number;
-  /** A finished sentence: "Trimmed 14 trailing whitespace characters". */
+  // A finished sentence, ready to show as-is
   text: string;
 }
 
@@ -45,13 +45,13 @@ export interface WhitespaceResult {
   after: { characters: number; lines: number };
 }
 
-/** Zero-width, bidirectional and other formatting characters that render as nothing. */
+// Zero-width, bidi and other formatting characters that render as nothing
 const INVISIBLE = /[\u00AD\u061C\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u206F\uFEFF]/g;
 
-/** Control characters that are not tab, newline or carriage return. */
+// Control characters that are not tab, newline or carriage return
 const STRAY_CONTROL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 
-/** Space-like characters that are not a plain ASCII space. */
+// Space-like characters that are not a plain ASCII space
 const ODD_SPACES = /[\u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]/g;
 
 function countMatches(text: string, pattern: RegExp): number {
@@ -64,7 +64,7 @@ function countLines(text: string): number {
   return text.split(/\r\n|\n|\r/).length;
 }
 
-/** Expand tabs to the next tab stop, which is what an editor actually does. */
+// Expands to the next tab stop like an editor, not to a fixed run of spaces
 function expandTabs(line: string, width: number): string {
   if (!line.includes('\t')) return line;
   const stop = Math.max(1, width);
@@ -83,7 +83,7 @@ function expandTabs(line: string, width: number): string {
   return out;
 }
 
-/** Turn runs of leading spaces back into tabs; only indentation is touched. */
+// Only the indentation is touched, never runs of spaces inside the line
 function contractIndent(line: string, width: number): string {
   const match = /^[ \t]+/.exec(line);
   if (!match) return line;
@@ -136,7 +136,7 @@ export function cleanWhitespace(input: string, options: WhitespaceOptions): Whit
     text = text.replace(ODD_SPACES, ' ');
   }
 
-  // Work in LF internally; the requested ending is applied at the very end.
+  // Work in LF internally; the requested ending is applied at the very end
   const originalCrlf = countMatches(text, /\r\n/g);
   const loneLf = countMatches(text, /\n/g) - originalCrlf;
   const loneCr = countMatches(text, /\r/g) - originalCrlf;
@@ -209,7 +209,7 @@ export function cleanWhitespace(input: string, options: WhitespaceOptions): Whit
   if (options.collapseSpaces) {
     let removed = 0;
     lines = lines.map((line) => {
-      // Keep the indentation intact; only squeeze runs inside the line.
+      // Keep the indentation intact; only squeeze runs inside the line
       const match = /^[ \t]*/.exec(line);
       const indent = match ? match[0] : '';
       const body = line.slice(indent.length).replace(/[ \t]{2,}/g, ' ');
@@ -262,7 +262,7 @@ export function cleanWhitespace(input: string, options: WhitespaceOptions): Whit
     }
   }
 
-  // A mixture cannot be preserved faithfully, so it settles on LF and says so.
+  // A mixture cannot be preserved faithfully, so it settles on LF and says so
   const keepCrlf = options.lineEndings === 'crlf' || (options.lineEndings === 'off' && wasAllCrlf);
   const output = lines.join(keepCrlf ? '\r\n' : '\n');
 
@@ -320,7 +320,7 @@ const INVISIBLE_NAMES: Readonly<Record<number, string>> = {
   0xfeff: 'Zero-width no-break space (BOM)',
 };
 
-/** Find the first `limit` invisible characters, with 1-based line/column. */
+// Line and column are 1-based
 export function findInvisible(input: string, limit = 20): InvisibleHit[] {
   const hits: InvisibleHit[] = [];
   const pattern = new RegExp(
