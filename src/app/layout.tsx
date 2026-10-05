@@ -4,6 +4,7 @@ import { site } from '@/config';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { ToastProvider } from '@/components/ToastProvider';
+import { ServiceWorker } from '@/components/ServiceWorker';
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               {children}
             </main>
             <Footer />
+            <ServiceWorker />
           </div>
         </ToastProvider>
       </body>

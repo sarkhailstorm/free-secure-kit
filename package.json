@@ -6,7 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-models.mjs && node scripts/copy-qpdf.mjs && next dev",
-    "build": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-models.mjs && node scripts/copy-qpdf.mjs && next build",
+    "build": "node scripts/copy-pdf-worker.mjs && node scripts/copy-onnx-runtime.mjs && node scripts/fetch-models.mjs && node scripts/copy-qpdf.mjs && next build && node scripts/build-sw.mjs",
     "start": "npx serve out",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
