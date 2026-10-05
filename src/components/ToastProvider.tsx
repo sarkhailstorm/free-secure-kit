@@ -10,6 +10,7 @@ import {
   useState,
 } from 'react';
 import { CheckCircle2, AlertTriangle, X, Info } from 'lucide-react';
+import Link from 'next/link';
 import { support, donationsConfigured } from '@/config';
 import { cn } from '@/lib/cn';
 import { readSession } from '@/lib/storage';
@@ -148,14 +149,13 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             <CoffeeIcon className="mt-0.5 h-4 w-4 text-accent" />
             <div className="min-w-0 flex-1">
               <p className="text-[13px] font-medium leading-snug text-ink">Glad that helped!</p>
-              <a
-                href={support.url}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href={support.href}
+                onClick={dismissNudge}
                 className="mt-0.5 inline-block text-[13px] font-medium text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent"
               >
                 {support.label}
-              </a>
+              </Link>
               <p className="mt-1 text-[11px] text-faint">Entirely optional — every tool stays free.</p>
             </div>
             <button

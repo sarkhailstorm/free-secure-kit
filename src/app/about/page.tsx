@@ -18,8 +18,10 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
+  const [world, india] = support.routes;
+
   return (
-    <LegalPage id="about" updated="16 September 2026">
+    <LegalPage id="about" updated="5 October 2026">
       <h2>What FreeSecureKit is</h2>
       <p>
         FreeSecureKit is software: a web application that gives you {tools.length} free tools for everyday file
@@ -103,14 +105,16 @@ export default function AboutPage() {
       </p>
       {donationsConfigured ? (
         <p>
-          Contributions are handled away from this site. The button takes you out to{' '}
-          {support.platform}, and {support.processor} takes the payment there, in your own currency.
-          Nothing is embedded here and no payment code runs on a page that is handling your files.
+          Contributions are handled away from this site. {world.provider} takes them from{' '}
+          {world.who}, in US dollars, and {india.provider} takes them from inside {india.who}, in
+          rupees &mdash; neither one reaches everybody. Each is a page that provider hosts, so you
+          leave this site to pay. Nothing is embedded here and no payment code runs on a page that is
+          handling your files.
         </p>
       ) : (
         <p>
-          There is no contribution page open at the moment. When one opens it will be a link out to{' '}
-          {support.platform}, with {support.processor} taking the payment there.
+          There is no contribution page open at the moment. When one opens it will be a link out to a
+          page the provider hosts, with nothing embedded here.
         </p>
       )}
 

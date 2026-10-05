@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/LegalPage';
-import { business, contactEmailConfigured, site, support } from '@/config';
+import { business, contactEmailConfigured, site } from '@/config';
 
 export const metadata: Metadata = {
   title: 'Delivery',
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <LegalPage id="shipping" updated="16 September 2026">
+    <LegalPage id="shipping" updated="5 October 2026">
       <h2>Nothing is posted to you</h2>
       <p>
         FreeSecureKit is software that runs inside your web browser. There is no physical product, no
@@ -39,8 +39,8 @@ export default function Page() {
         not buying a product, so nothing is dispatched and nothing changes on the site.
       </p>
       <p>
-        A receipt is emailed to you by {support.platform} or {support.processor}. That receipt is the
-        only thing you receive. If you would like the contribution back, the{' '}
+        A receipt is emailed to you by whichever provider took the payment. That receipt is the only
+        thing you receive. If you would like the contribution back, the{' '}
         <a href="/refunds">Refunds page</a> explains how.
       </p>
 

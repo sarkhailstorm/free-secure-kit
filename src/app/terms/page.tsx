@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <LegalPage id="terms" updated="16 September 2026">
+    <LegalPage id="terms" updated="5 October 2026">
       <h2>Who runs this site</h2>
       <p>
         FreeSecureKit is run by {traderName()}, an individual, from{' '}
@@ -109,8 +109,9 @@ export default function Page() {
         of the site.
       </p>
       <p>
-        To contribute you leave this site for {support.platform}, which hosts the page you land on.
-        The payment itself is taken by {support.processor}, and the money goes straight to us. There
+        To contribute you leave this site for the provider that matches where you are:{' '}
+        {support.routes.map((route) => `${route.provider} for ${route.who}`).join(', ')}. The
+        payment is taken on that provider&rsquo;s own page, and the money reaches us through them. There
         is no payment widget here, so nothing to do with money ever runs on a page holding your
         files. We never see or hold your card or bank details. If you want a contribution back, the{' '}
         <a href="/refunds">Refunds page</a> sets out the window, what to send us and how long it

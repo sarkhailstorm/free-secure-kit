@@ -9,8 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
+  const [world, india] = support.routes;
+
   return (
-    <LegalPage id="privacy" updated="29 September 2026">
+    <LegalPage id="privacy" updated="5 October 2026">
       <h2>The short version</h2>
       <ul>
         <li>Your files are processed inside your browser. They are never uploaded to us.</li>
@@ -172,9 +174,9 @@ export default function Page() {
           or the issue tracker, at which point you are on GitHub&rsquo;s site under its rules.
         </li>
         <li>
-          <strong>{support.platform}</strong> hosts the contribution page and{' '}
-          <strong>{support.processor}</strong> takes the payment. Neither is involved at all unless
-          you choose to contribute. See below.
+          <strong>{world.provider}</strong> and <strong>{india.provider}</strong> each host a
+          contribution page of their own, and each takes the payment on its own page. Neither is
+          involved at all unless you choose to contribute. See below.
         </li>
       </ul>
       <p>
@@ -197,39 +199,41 @@ export default function Page() {
       </p>
       <p>
         There is no payment widget on this site and no payment code in any page. If you choose to
-        contribute, you follow a link out to {support.platform}, and everything after that happens
-        away from here. That is deliberate: no payment script ever runs on a page that is handling
-        your files.
+        contribute, you follow a link out to a page the payment company hosts itself, and everything
+        after that happens away from here. That is deliberate: no payment script ever runs on a page
+        that is handling your files.
       </p>
       <p>
-        Two companies are involved, and they do different things. {support.platform} hosts the page
-        you land on. It asks you for a name and an email address, and lets you leave a message, but
-        it never holds or processes the money. {support.processor} takes the payment, and is the
-        only one that sees your card or bank details. You pay in your own currency and{' '}
-        {support.processor} converts it. The money goes straight into our {support.processor}{' '}
-        account. Each company holds what it collects under its own privacy policy:{' '}
-        <a href={support.platformPrivacyUrl} rel="noopener noreferrer" target="_blank">
-          {support.platform}
+        There are two such links, because no one company reaches everybody. {world.provider} is for
+        contributors {world.who}, and you pay in US dollars. {india.provider} is for contributors in{' '}
+        {india.who}, and you pay in rupees. Each is one company doing both jobs: it hosts the page
+        and it takes the money. You type the amount in yourself, and neither route converts your
+        currency for you. Each company holds what it collects under its own privacy policy:{' '}
+        <a href={world.privacyUrl} rel="noopener noreferrer" target="_blank">
+          {world.provider}
         </a>{' '}
         and{' '}
-        <a href={support.processorPrivacyUrl} rel="noopener noreferrer" target="_blank">
-          {support.processor}
+        <a href={india.privacyUrl} rel="noopener noreferrer" target="_blank">
+          {india.provider}
         </a>
         .
       </p>
       <p>
-        We never see or store card or bank details. All we ever see is what {support.platform} and{' '}
-        {support.processor} show us: a name, an email address, an amount, and any message that was
-        left. We use that only to answer a question about a contribution or to make a refund, which
-        goes back through {support.processor} to however you paid. We do not add you to any mailing
-        list.
+        We never see or store card or bank details. The {india.provider} page asks for your email
+        address and your phone number, and both are required &mdash; there is no name box and no
+        message box. So on that route we can see your email address, your phone number, the amount,
+        the date and whether the payment went through, and we can export that list. On{' '}
+        {world.provider} we see its usual record of the payment. We use any of it only to answer a
+        question about a contribution or to make a refund, which goes back through whichever company
+        took the payment, to however you paid. We do not add you to any mailing list.
       </p>
 
       <h2>Children</h2>
       <p>
         The tools are suitable for anyone, and there is no account to create. We do not knowingly
         collect personal information from a child; the only personal details that ever reach us are
-        the name, email address and any message a contributor gives {support.platform}.
+        the email address and phone number a contributor gives {india.provider}, and the record{' '}
+        {world.provider} keeps of a payment.
       </p>
 
       <h2>Changes to this policy</h2>

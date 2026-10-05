@@ -16,20 +16,56 @@ export const author = {
   since: 2026,
 } as const;
 
+export type SupportRoute = {
+  id: string;
+  /** The provider's own hosted page. Linked to, never embedded. */
+  url: string;
+  /** Button text. */
+  title: string;
+  /** Who this one is for, in the reader's terms. */
+  who: string;
+  provider: string;
+  providerUrl: string;
+  privacyUrl: string;
+};
+
+/**
+ * Two routes, because neither provider reaches everyone. PayPal cannot take a
+ * payment from inside India at all, and Razorpay will not give an individual
+ * account international cards. PayPal is listed first because its merchant
+ * terms ask for placement at least equal to any other method.
+ */
 export const support = {
-  url: 'https://rzp.io/rzp/OKGOxtcO',
   label: 'Buy me a coffee',
   emoji: '☕',
-  /** The page a contributor lands on. */
-  platform: 'Razorpay',
-  platformUrl: 'https://razorpay.com',
-  platformPrivacyUrl: 'https://razorpay.com/privacy',
-  /** Who actually takes the payment and sees the card details. */
-  processor: 'PayPal',
-  processorPrivacyUrl: 'https://www.paypal.com/uk/legalhub/privacy-full',
+  /** The on-site section holding both links; nothing leaves the site until a link is clicked. */
+  href: '/pricing#contribute',
+  routes: [
+    {
+      id: 'world',
+      url: 'https://www.paypal.com/ncp/payment/TAAQ6AS2ELBSJ',
+      title: 'Tip in US dollars',
+      who: 'anywhere outside India',
+      provider: 'PayPal',
+      providerUrl: 'https://www.paypal.com',
+      privacyUrl: 'https://www.paypal.com/uk/legalhub/privacy-full',
+    },
+    {
+      id: 'india',
+      url: 'https://rzp.io/rzp/OKGOxtcO',
+      title: 'Tip in rupees',
+      who: 'India',
+      provider: 'Razorpay',
+      providerUrl: 'https://razorpay.com',
+      privacyUrl: 'https://razorpay.com/privacy',
+    },
+  ] as readonly SupportRoute[],
 } as const;
 
-export const donationsConfigured: boolean = (support.url as string).length > 0;
+export const donationsConfigured: boolean = support.routes.some((r) => r.url.length > 0);
+
+/** Every provider a contributor could meet, for the legal pages to name. */
+export const supportProviders: readonly string[] = support.routes.map((r) => r.provider);
 
 export const business = {
   legalName: '',

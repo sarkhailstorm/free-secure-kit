@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { LegalPage } from '@/components/LegalPage';
-import { business, contactEmailConfigured, site, support } from '@/config';
+import { business, contactEmailConfigured, site, supportProviders } from '@/config';
 
 export const metadata: Metadata = {
   title: 'Refunds',
@@ -9,8 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
+  const providers = supportProviders.join(' or ');
+
   return (
-    <LegalPage id="refunds" updated="16 September 2026">
+    <LegalPage id="refunds" updated="5 October 2026">
       <h2>There is nothing to cancel</h2>
       <p>
         The tools are free. There is no product, no subscription, no order and no account, so there
@@ -19,9 +21,9 @@ export default function Page() {
       </p>
       <p>
         The only payment on this site is a voluntary contribution. It is a one-off payment, never
-        recurring, and it buys nothing. {support.platform} hosts the page you started from and{' '}
-        {support.processor} took the payment, so your receipt came from one of those two. This page
-        is about getting that money back.
+        recurring, and it buys nothing. You paid on a page hosted by {providers} &mdash; whichever
+        one you used took the payment and sent your receipt. This page is about getting that money
+        back.
       </p>
 
       <h2>You can have it back within 7 days</h2>
@@ -54,11 +56,11 @@ export default function Page() {
       <ul>
         <li>the date of the payment;</li>
         <li>the amount, and the currency you paid in;</li>
-        <li>the name and email address you gave {support.platform} when you paid;</li>
         <li>
-          the payment or transaction reference on your {support.processor} receipt, if you still
-          have the email.
+          the email address you gave when you paid, and the phone number too if you were asked for
+          one;
         </li>
+        <li>the payment or transaction reference on your receipt, if you still have the email.</li>
       </ul>
       <p>
         That is enough to find the payment. Please do not send your full card number, your CVV,
@@ -73,9 +75,9 @@ export default function Page() {
           that the refund is going ahead.
         </li>
         <li>
-          <strong>Within 5 to 7 business days:</strong> an approved refund is sent through{' '}
-          {support.processor}, back to however you paid &mdash; the same card or account the money
-          came from. We cannot send it anywhere else.
+          <strong>Within 5 to 7 business days:</strong> an approved refund goes back through
+          whichever company took the payment, to however you paid &mdash; the same card or account
+          the money came from. We cannot send it anywhere else.
         </li>
         <li>
           <strong>A few days more:</strong> your bank or card issuer decides when the money appears
