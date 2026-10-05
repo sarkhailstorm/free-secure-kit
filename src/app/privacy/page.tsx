@@ -19,8 +19,10 @@ export default function Page() {
         <li>There is no account, no sign-up and no contact form.</li>
         <li>We run no analytics and set no cookies.</li>
         <li>
-          Five things are saved in your own browser. They are named below. One is the text you
-          type into the Markdown Converter; one is a set of tool files that can reach about 25 MB.
+          Six things are saved in your own browser. They are named below. One is the text you
+          type into the Markdown Converter. Two are copies of this site&rsquo;s own files: about
+          7 MB so it opens with no internet connection, and up to about 27 MB more if you use
+          every tool.
         </li>
         <li>
           Our host, Vercel, logs every request for the pages themselves &mdash; as every website
@@ -54,7 +56,7 @@ export default function Page() {
 
       <h2>What is stored on your device</h2>
       <p>
-        Five things, all kept by your browser for this site alone. None of them is an identifier,
+        Six things, all kept by your browser for this site alone. None of them is an identifier,
         and we cannot read any of them, because nothing is ever sent back to us.
       </p>
       <table>
@@ -90,9 +92,21 @@ export default function Page() {
             <td>free-secure-kit-assets-v1 (Cache Storage)</td>
             <td>
               The model and engine files the Background Remover, Passport Photo and PDF unlock
-              tools need, kept so they are not fetched again. About 25 MB if you use all of them.
+              tools need, kept so they are not fetched again. About 27 MB if you use all of them.
             </td>
             <td>Until you remove them in the tool, or clear this site&rsquo;s data</td>
+          </tr>
+          <tr>
+            <td>A copy of the site</td>
+            <td>fsk-shell-&hellip; (Cache Storage)</td>
+            <td>
+              The pages, styling and code of this site, about 7 MB, so it opens with no
+              internet connection. None of your files, and nothing about you.
+            </td>
+            <td>
+              Replaced when the site is updated &mdash; the new copy arrives before the old one
+              goes, so both are there briefly; gone when you clear this site&rsquo;s data
+            </td>
           </tr>
           <tr>
             <td>Support message flag</td>
@@ -104,13 +118,40 @@ export default function Page() {
       </table>
       <p>
         The last one is only written if a contributions link is switched
-        on{donationsConfigured ? '' : ', which it is not at the moment'}. To remove all five, clear
+        on{donationsConfigured ? '' : ', which it is not at the moment'}. To remove all six, clear
         this site&rsquo;s data in your browser settings.
       </p>
       <p>
-        The tool files are the only large item, and they are our code rather than anything of
-        yours. Once the Background Remover has downloaded them it shows a link to remove them from
-        this browser, which clears them for every tool that shares them.
+        Both caches hold our code rather than anything of yours. Once the Background Remover
+        has downloaded the tool files it shows a link to remove them from this browser, which
+        clears them for every tool that shares them.
+      </p>
+
+      <h3>Working without an internet connection, in plain terms</h3>
+      <p>
+        <strong>
+          The first time you visit, your browser saves a copy of this site so you can use it with
+          no internet connection.
+        </strong>{' '}
+        Tools you have already used work too. A tool that still has files to download does not,
+        until you open it once with a connection. That copy is the pages, the styling and the code
+        &mdash; about 7 MB. It is the same
+        thing you would have downloaded anyway to see the site; it is simply kept instead of
+        being fetched again.
+      </p>
+      <p>
+        What it does not hold is anything of yours. Your files never travel over the network in
+        the first place: the browser reads them straight from your device into memory, so there is
+        nothing for this to see, store or send. It does use the network &mdash; that is how it
+        fetches the copy, and how it falls back when it has nothing saved &mdash; but only ever to
+        this site, for this site&rsquo;s own files. It contains no name, number or anything else
+        that could identify you.
+      </p>
+      <p>
+        What it costs you is disk space, and a copy of this site sitting on the machine until you
+        clear it. On a shared or public computer that is worth knowing, the same as the Markdown
+        draft below. When we publish a change, your browser fetches the new version and offers you
+        a Reload; the old copy is then deleted.
       </p>
 
       <h3>The Markdown draft, in plain terms</h3>

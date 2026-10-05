@@ -32,7 +32,7 @@ const promises = [
   {
     icon: WifiOff,
     title: 'Your files never leave',
-    body: 'Your browser does the work, so there is nowhere to upload to. Turn off your Wi-Fi and everything still works.',
+    body: 'Your browser does the work, so there is nowhere to upload to. Visit once and you can install it, then every tool you have used keeps working with the Wi-Fi off.',
   },
   {
     icon: UserX,

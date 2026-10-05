@@ -28,6 +28,20 @@ Four everyday file and data utilities, in one place, free and without an account
 
 No sign-up, no email wall, no file size caps, no paywalled features. Every tool is complete.
 
+## Works with no internet
+
+Because every tool already runs in the browser, there is nothing left that needs a connection
+except the site itself. So your browser keeps a copy of it: visit once, and after that the pages,
+styling and code load from your own machine rather than the network. About 7 MB.
+
+Chrome and Edge will then offer to install it; on Safari or Firefox you add it yourself from the
+browser menu. Either way it behaves like any other app on your phone or desktop. The models and the PDF unlocker are not part of that 6.5 MB &mdash; they are fetched the
+first time you use the tool that needs them, and kept from then on, so a tool you have used online
+once works offline afterwards and one you never have does not.
+
+When a new version is published your browser fetches it and offers a Reload. That matters: without
+it, a saved copy would keep people on an old version with no way to send them a fix.
+
 ## The "no upload" part
 
 This is the whole point, so it is worth being precise about what it means.
@@ -46,7 +60,8 @@ because there is no server to upload to — the whole site is static files.
 
 - Open your browser's developer tools, switch to the Network tab, and use any tool. You will not
   see your file go anywhere.
-- Load the site, turn off your Wi-Fi, and keep using it. Every tool still works offline.
+- Load the site, turn off your Wi-Fi, and keep using it. Your browser keeps a copy of the
+  site after the first visit, so it opens and runs with no connection at all.
 - Read the source. Every tool's page links directly to its own source file.
 
 What this approach genuinely costs you: very large files are limited by your device's memory rather
