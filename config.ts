@@ -162,17 +162,6 @@ export const tools: readonly Tool[] = [
     ],
   },
   {
-    id: 'image-tools',
-    name: 'Image Tools',
-    href: '/tools/image-tools',
-    blurb: 'Make a passport photo, shrink photos, or cut the subject out of one.',
-    description:
-      'Turn a photo from your phone into a passport photo at the exact size your country asks for, and hear what would get it turned down before you send it. Make photos smaller without a visible drop in quality — one or a whole folder. Or cut the subject out of a photo and get it back on a see-through background.',
-    icon: 'ImageDown',
-    source: 'src/app/tools/image-tools/page.tsx',
-    tags: ['Passport photos', 'Whole folders at once', 'Remove background', '6 × 4 print sheet'],
-  },
-  {
     id: 'spreadsheet-tools',
     name: 'Spreadsheet Tools',
     href: '/tools/spreadsheet-tools',
@@ -182,6 +171,17 @@ export const tools: readonly Tool[] = [
     icon: 'Table2',
     source: 'src/app/tools/spreadsheet-tools/page.tsx',
     tags: ['Finds the real headings', 'Shows what changed', 'Merges spellings', 'Every sheet at once'],
+  },
+  {
+    id: 'image-tools',
+    name: 'Image Tools',
+    href: '/tools/image-tools',
+    blurb: 'Make a passport photo, shrink photos, or cut the subject out of one.',
+    description:
+      'Turn a photo from your phone into a passport photo at the exact size your country asks for, and hear what would get it turned down before you send it. Make photos smaller without a visible drop in quality — one or a whole folder. Or cut the subject out of a photo and get it back on a see-through background.',
+    icon: 'ImageDown',
+    source: 'src/app/tools/image-tools/page.tsx',
+    tags: ['Passport photos', 'Whole folders at once', 'Remove background', '6 × 4 print sheet'],
   },
   {
     id: 'developer-tools',
