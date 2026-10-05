@@ -1,0 +1,25 @@
+name: Idea
+description: Suggest a tool or an improvement
+labels: [idea]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: The job, not the feature. What were you doing when you wished this existed?
+    validations:
+      required: true
+
+  - type: textarea
+    id: today
+    attributes:
+      label: How do you do it today
+      description: Which site or app, and what is annoying about it.
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: Worth checking
+      options:
+        - label: This can work entirely in the browser, with nothing uploaded
+        - label: This fits inside one of the four existing tool cards

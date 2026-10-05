@@ -22,8 +22,8 @@ Four everyday file and data utilities, in one place, free and without an account
 | Tool | What it does |
 | --- | --- |
 | [PDF Tools](src/app/tools/pdf-tools/page.tsx) | Merge PDFs and reorder their pages, extract pages as PDFs or PNG/JPEG images, compress, remove a known password (and the printing and copying restrictions) with qpdf, build a PDF from images, convert a PDF to an editable Word document, and turn the tables in a PDF into an Excel spreadsheet |
-| [Image Tools](src/app/tools/image-tools/page.tsx) | Passport photos: detects the face and the top of the hair, crops to the exact size and head height a document requires (UK, US, Schengen, India, Australia, Canada and the ICAO standards), flags what would get the photo rejected, and lays copies out on a 6 x 4, 7 x 5 or A4 print with cut marks. Also batch compress and resize JPEG, PNG and WebP, or cut the subject out of a photo and save it with a transparent or solid-colour background |
 | [Spreadsheet Tools](src/app/tools/spreadsheet-tools/page.tsx) | Detects the text encoding and separator, finds the real header row, removes duplicate and blank rows, strips invisible characters, normalises inconsistent date formats, clusters equivalent spellings for review, reports what cleaning cannot fix, shows every changed cell with per-row rescue, and cleans every sheet of a workbook |
+| [Image Tools](src/app/tools/image-tools/page.tsx) | Passport photos: detects the face and the top of the hair, crops to the exact size and head height a document requires (UK, US, Schengen, India, Australia, Canada and the ICAO standards), flags what would get the photo rejected, and lays copies out on a 6 x 4, 7 x 5 or A4 print with cut marks. Also batch compress and resize JPEG, PNG and WebP, or cut the subject out of a photo and save it with a transparent or solid-colour background |
 | [Developer Tools](src/app/tools/developer-tools/page.tsx) | Convert between JSON, CSV and YAML with nesting flattened to dot-notation columns and back; a live Markdown editor exporting to standalone HTML or PDF with themes; diff checker, case converter, whitespace cleaner and Base64 / URL / JWT encoding |
 
 No sign-up, no email wall, no file size caps, no paywalled features. Every tool is complete.
@@ -63,9 +63,9 @@ getting it right. If a dependency ever tried to phone home, the request would si
 ### What is *not* collected
 
 No analytics, no tracking pixels, no cookies, no error reporting service, no fonts or scripts
-fetched from a third-party CDN at runtime. The support button is a plain outbound link to a hosted
-Ko-fi page rather than an embedded payment widget, specifically so that no third-party script runs
-on this site and no payment code ever touches a page that handles your files.
+fetched from a third-party CDN at runtime. The support button is a plain outbound link to a page
+the payment company hosts, rather than an embedded widget, so no payment code ever runs on a page
+that is handling your files.
 
 The only data stored at all is in your own browser: your light/dark theme preference, the Markdown
 editor's draft so a refresh does not lose your work, and a flag recording that you dismissed the
@@ -165,22 +165,34 @@ than a domain root, set `basePath` in [`next.config.mjs`](next.config.mjs) to ma
 
 Everything site-specific lives in one file: **[`config.ts`](config.ts)**.
 
-Donations run through a hosted Ko-fi page, so there is no server and no API key in this
-repository. To point them at your own account, set the one value:
+Contributions are links out to a page the payment company hosts, so there is no server and no API
+key in this repository. `support.routes` holds one entry per route:
 
 ```ts
 export const support = {
-  url: '',   // ← your Ko-fi page, e.g. https://ko-fi.com/yourname
-  ...
+  href: '/support',
+  routes: [
+    {
+      id: 'world',
+      url: 'https://www.paypal.com/ncp/payment/XXXX',
+      title: 'Tip in US dollars',
+      who: 'anywhere outside India',
+      provider: 'PayPal',
+      providerUrl: 'https://www.paypal.com',
+      privacyUrl: 'https://www.paypal.com/uk/legalhub/privacy-full',
+    },
+    // ...
+  ],
 };
 ```
 
-The header button, the footer callout and the post-download message all read from it. While it is
-empty, the donation UI hides itself rather than linking to a dead page.
+There are two because neither company reaches everyone: PayPal stopped handling payments inside
+India in April 2021, and Razorpay does not offer international cards to an individual account.
+Swap the array for a single entry if one provider covers your case.
 
-The same block names the platform and the payment processor (`support.platform`,
-`support.processor`). The legal pages read those rather than hardcoding a company name, so moving
-to a different provider is a change in this one file plus the two privacy-policy links beside it.
+The legal pages render from this array rather than hardcoding a company name, so changing provider
+is a change in this one file. Empty the array and every donation link hides itself rather than
+pointing at a dead page.
 
 The same file holds the site name, URL, repository link and the tool registry that drives the
 landing page and navigation.
