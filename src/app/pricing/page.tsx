@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalPage } from '@/components/LegalPage';
+import { SupportRoutes } from '@/components/SupportRoutes';
 import { support, donationsConfigured, tools } from '@/config';
 
 export const metadata: Metadata = {
@@ -120,25 +121,10 @@ export default function PricingPage() {
         <>
           <p>
             Pick the one that matches where you are. Each link opens that company&rsquo;s own page in
-            a new tab, where you type the amount and pay. The {support.label} link in the footer of
-            every page brings you back to this section.
+            a new tab, where you type the amount and pay. The {support.label} link on every page
+            leads to the same two options.
           </p>
-          <div className="my-5 grid gap-3 sm:grid-cols-2">
-            {support.routes.map((route) => (
-              <a
-                key={route.id}
-                href={route.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex flex-col rounded-xl border border-line bg-surface p-4 !no-underline shadow-sm transition-colors hover:border-accent/40 hover:bg-elevated"
-              >
-                <span className="text-sm font-semibold text-ink">{route.title}</span>
-                <span className="mt-1 text-[13px] leading-relaxed text-muted">
-                  For {route.who}, on a page run by {route.provider}.
-                </span>
-              </a>
-            ))}
-          </div>
+          <SupportRoutes className="my-5" />
           <p>
             PayPal will not work if you are in India. It stopped handling payments inside India on 1
             April 2021, so use the rupee link instead.
@@ -147,8 +133,8 @@ export default function PricingPage() {
       ) : (
         <p>
           There is no contribution page open at the moment, so there is nothing to contribute to
-          today. When one opens, the links will appear here and the {support.label} link in the
-          footer will lead to them. You will type the amount yourself and pay on the payment
+          today. When one opens, the links will appear here and the {support.label} link on every
+          page will lead to them. You will type the amount yourself and pay on the payment
           company&rsquo;s own page.
         </p>
       )}

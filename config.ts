@@ -38,8 +38,8 @@ export type SupportRoute = {
 export const support = {
   label: 'Buy me a coffee',
   emoji: '☕',
-  /** The on-site section holding both links; nothing leaves the site until a link is clicked. */
-  href: '/pricing#contribute',
+  /** The page holding both links; nothing leaves the site until a link is clicked. */
+  href: '/support',
   routes: [
     {
       id: 'world',
